@@ -1,0 +1,120 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+- \(I = \{1,2,3,4,5,6,7,8\}\): insieme degli 8 progetti.
+- \(D = \{1,3,7\}\): progetti digitali.
+- \(v_i\): valore del progetto \(i\).
+- \(b_i\): fabbisogno di budget del progetto \(i\).
+- \(p_i\): fabbisogno di personale del progetto \(i\).
+- \(x_i \in \{0,1\}\): vale 1 se il progetto \(i\) viene selezionato, 0 altrimenti.
+
+## 2. Formulazione matematica
+
+\[
+\max \sum_{i=1}^{8} v_i x_i
+\]
+
+soggetto a:
+
+\[
+\sum_{i=1}^{8} b_i x_i \le 100
+\]
+
+\[
+\sum_{i=1}^{8} p_i x_i \le 18
+\]
+
+\[
+x_5 \le x_2
+\]
+
+\[
+x_7 \le x_3
+\]
+
+\[
+x_4 + x_6 \le 1
+\]
+
+\[
+x_1 + x_3 + x_7 \ge 1
+\]
+
+\[
+\sum_{i=1}^{8} x_i \ge 3
+\]
+
+\[
+x_i \in \{0,1\}, \quad i = 1,\dots,8
+\]
+
+## 3. Codice Python con Gurobi
+
+```python
+import json
+import gurobipy as gp
+from gurobipy import GRB
+
+projects = [1, 2, 3, 4, 5, 6, 7, 8]
+val = {1: 30, 2: 24, 3: 35, 4: 28, 5: 33, 6: 26, 7: 38, 8: 21}
+bud = {1: 20, 2: 18, 3: 27, 4: 24, 5: 22, 6: 19, 7: 30, 8: 15}
+staff = {1: 4, 2: 3, 3: 5, 4: 4, 5: 4, 6: 3, 7: 5, 8: 2}
+
+m = gp.Model("portfolio")
+m.setParam("OutputFlag", 0)
+
+x = {}
+for i in projects:
+    x[i] = m.addVar(vtype=GRB.BINARY, name=f"x{i}")
+
+m.setObjective(gp.quicksum(val[i] * x[i] for i in projects), GRB.MAXIMIZE)
+
+m.addConstr(gp.quicksum(bud[i] * x[i] for i in projects) <= 100, "budget")
+m.addConstr(gp.quicksum(staff[i] * x[i] for i in projects) <= 18, "personnel")
+m.addConstr(x[5] <= x[2], "req_P5_P2")
+m.addConstr(x[7] <= x[3], "req_P7_P3")
+m.addConstr(x[4] + x[6] <= 1, "incompat_P4_P6")
+m.addConstr(x[1] + x[3] + x[7] >= 1, "digital")
+m.addConstr(gp.quicksum(x[i] for i in projects) >= 3, "at_least_three")
+
+m.optimize()
+
+if m.status == GRB.OPTIMAL:
+    status = "OPTIMAL"
+    objective = float(m.ObjVal)
+    variables = {f"x{i}": float(x[i].X) for i in projects}
+else:
+    status = {
+        GRB.OPTIMAL: "OPTIMAL",
+        GRB.INFEASIBLE: "INFEASIBLE",
+        GRB.UNBOUNDED: "UNBOUNDED",
+        GRB.INF_OR_UNBD: "INF_OR_UNBD",
+        GRB.INTERRUPTED: "INTERRUPTED",
+        GRB.NUMERIC: "NUMERIC",
+        GRB.SUBOPTIMAL: "SUBOPTIMAL",
+        GRB.TIME_LIMIT: "TIME_LIMIT",
+        GRB.NODE_LIMIT: "NODE_LIMIT",
+    }.get(m.status, str(m.status))
+    objective = 0.0
+    variables = {}
+
+out = {
+    "status": status,
+    "objective": objective,
+    "variables": variables,
+}
+print("SOLUTION_JSON=" + json.dumps(out, separators=(",", ":"), ensure_ascii=False))
+```
+
+## 4. Sintesi della soluzione
+
+Il problema è **ottimo** con valore complessivo **136**.  
+Un portafoglio ottimo è:
+
+\[
+x_1=x_2=x_4=x_5=x_8=1
+\]
+
+cioè i progetti **P1, P2, P4, P5, P8**, con budget utilizzato 99 e personale utilizzato 17.
+
+Esiste anche un altro ottimo equivalente: **P1, P2, P3, P6, P8**, sempre con valore 136.  
+Il codice stampa la soluzione ottima restituita da Gurobi sotto forma di `SOLUTION_JSON`.

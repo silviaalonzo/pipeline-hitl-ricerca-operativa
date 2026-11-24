@@ -1,0 +1,64 @@
+{
+  "id": "gen-1786379521-9jSrQ4iBh7Wo1PnYU6Sh",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "# 1. Insiemi, parametri e variabili decisionali\n\n**Insiemi**\n- $I = \\{A, B, C, D\\}$: siti candidati per i centri di assistenza\n- $J = \\{Z1, Z2, Z3, Z4, Z5, Z6\\}$: zone commerciali da servire\n\n**Parametri**\n- $f_i$: costo fisso di apertura del sito $i \\in I$ (in migliaia di euro)\n- $Q_i$: capacità massima (numero di zone assegnabili) del sito $i \\in I$\n- $c_{ij}$: costo di assegnazione della zona $j \\in J$ al sito $i \\in I$ (in migliaia di euro)\n- $P = 2$: numero esatto di centri da aprire\n\nValori:\n\n| Sito | $f_i$ | $Q_i$ |\n|---|---|---|\n| A | 38 | 2 |\n| B | 42 | 3 |\n| C | 35 | 2 |\n| D | 46 | 3 |\n\n| Zona | A | B | C | D |\n|---|---|---|---|---|\n| Z1 | 8 | 14 | 11 | 17 |\n| Z2 | 10 | 9 | 13 | 15 |\n| Z3 | 12 | 8 | 14 | 10 |\n| Z4 | 15 | 11 | 9 | 7 |\n| Z5 | 9 | 13 | 8 | 14 |\n| Z6 | 14 | 10 | 7 | 9 |\n\n**Variabili decisionali**\n- $y_i \\in \\{0,1\\}$ per $i \\in I$: 1 se il sito $i$ viene aperto, 0 altrimenti\n- $x_{ij} \\in \\{0,1\\}$ per $i \\in I, j \\in J$: 1 se la zona $j$ è assegnata al sito $i$, 0 altrimenti\n\n# 2. Formulazione matematica\n\n**Funzione obiettivo** (minimizzare costi totali: fissi + assegnazione)\n\n$$\\min \\; Z = \\sum_{i \\in I} f_i \\, y_i \\;+\\; \\sum_{i \\in I} \\sum_{j \\in J} c_{ij} \\, x_{ij}$$\n\n**Vincoli**\n\n1. Ogni zona assegnata a esattamente un sito:\n$$\\sum_{i \\in I} x_{ij} = 1 \\qquad \\forall j \\in J$$\n\n2. Assegnazione possibile solo a siti aperti:\n$$x_{ij} \\le y_i \\qquad \\forall i \\in I, \\forall j \\in J$$\n\n3. Rispetto della capacità di ciascun sito:\n$$\\sum_{j \\in J} x_{ij} \\le Q_i \\, y_i \\qquad \\forall i \\in I$$\n\n4. Numero esatto di centri aperti:\n$$\\sum_{i \\in I} y_i = P$$\n\n5. Domini:\n$$x_{ij} \\in \\{0,1\\} \\quad \\forall i \\in I, j \\in J \\qquad\\qquad y_i \\in \\{0,1\\} \\quad \\forall i \\in I$$\n\n# 3. Codice Python con Gurobi\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\n# Insiemi\nsiti = ['A', 'B', 'C', 'D']\nzone = ['Z1', 'Z2', 'Z3', 'Z4', 'Z5', 'Z6']\n\n# Parametri\ncosto_fisso = {'A': 38, 'B': 42, 'C': 35, 'D': 46}\ncapacita = {'A': 2, 'B': 3, 'C': 2, 'D': 3}\nP = 2  # numero esatto di centri da aprire\n\ncosto_assegnazione = {\n    ('Z1', 'A'): 8,  ('Z1', 'B'): 14, ('Z1', 'C'): 11, ('Z1', 'D'): 17,\n    ('Z2', 'A'): 10, ('Z2', 'B'): 9,  ('Z2', 'C'): 13, ('Z2', 'D'): 15,\n    ('Z3', 'A'): 12, ('Z3', 'B'): 8,  ('Z3', 'C'): 14, ('Z3', 'D'): 10,\n    ('Z4', 'A'): 15, ('Z4', 'B'): 11, ('Z4', 'C'): 9,  ('Z4', 'D'): 7,\n    ('Z5', 'A'): 9,  ('Z5', 'B'): 13, ('Z5', 'C'): 8,  ('Z5', 'D'): 14,\n    ('Z6', 'A'): 14, ('Z6', 'B'): 10, ('Z6', 'C'): 7,  ('Z6', 'D'): 9,\n}\n\n# Modello\nm = gp.Model(\"Localizzazione_centri_assistenza\")\n\n# Variabili decisionali\ny = m.addVars(siti, vtype=GRB.BINARY, name=\"y\")\nx = m.addVars(zone, siti, vtype=GRB.BINARY, name=\"x\")\n\n# Funzione obiettivo\nm.setObjective(\n    gp.quicksum(costo_fisso[i] * y[i] for i in siti) +\n    gp.quicksum(costo_assegnazione[j, i] * x[j, i] for j in zone for i in siti),\n    GRB.MINIMIZE\n)\n\n# Vincolo 1: ogni zona assegnata a esattamente un sito\nfor j in zone:\n    m.addConstr(gp.quicksum(x[j, i] for i in siti) == 1, name=f\"assegna_{j}\")\n\n# Vincolo 2: assegnazione solo a siti aperti\nfor j in zone:\n    for i in siti:\n        m.addConstr(x[j, i] <= y[i], name=f\"link_{j}_{i}\")\n\n# Vincolo 3: capacità dei siti\nfor i in siti:\n    m.addConstr(gp.quicksum(x[j, i] for j in zone) <= capacita[i] * y[i], name=f\"cap_{i}\")\n\n# Vincolo 4: numero esatto di centri aperti\nm.addConstr(gp.quicksum(y[i] for i in siti) == P, name=\"num_centri\")\n\n# Risoluzione\nm.optimize()\n\n# Costruzione output\nresult = {\"status\": \"UNKNOWN\", \"objective\": None, \"variables\": {}}\n\nif m.Status == GRB.OPTIMAL:\n    result[\"status\"] = \"OPTIMAL\"\n    result[\"objective\"] = round(m.ObjVal, 4)\n    variables = {}\n    for i in siti:\n        variables[f\"y_{i}\"] = round(y[i].X, 4)\n    for j in zone:\n        for i in siti:\n            variables[f\"x_{j}_{i}\"] = round(x[j, i].X, 4)\n    result[\"variables\"] = variables\nelse:\n    result[\"status\"] = str(m.Status)\n\nprint(\"SOLUTION_JSON=\" + json.dumps(result))\n```\n\n# 4. Sintesi della soluzione\n\nIl modello, risolto con Gurobi, individua la combinazione ottima di **2 centri su 4** da aprire e la relativa assegnazione delle 6 zone, minimizzando la somma di costi fissi e costi di assegnazione.\n\n**Analisi della soluzione attesa:**\n- Confrontando i costi, i siti **A** e **D** (o **A** e **C**) risultano economicamente più vantaggiosi da aprire.\n- Con l'apertura di **A** (capacità 2) e **D** (capacità 3): si possono coprire al massimo 5 zone, insufficiente per 6 zone (serve capacità totale ≥ 6).\n- Quindi è necessaria una combinazione con capacità totale ≥ 6: **B+D** (3+3=6), **A+D+...**, ecc. La combinazione **A (cap 2) + B (cap 3)** dà capacità 5, insufficiente. Serve **B+D** (cap 6) o **A+B** con cap 5 insufficiente.\n- L'ottimo trovato da Gurobi apre i siti che minimizzano costo fisso + costo di assegnazione rispettando la capacità totale ≥ 6 zone: la soluzione ottima risulta apertura di **A** e **D**... ma la capacità A+D è solo 5 (< 6), quindi non fattibile; la soluzione fattibile con capacità ≥ 6 è **B+D** (costo fisso 42+46=88) o **A+B** (cap 5, non fattibile) o **C+D** (cap 5, non fattibile) — l'unica combinazione con capacità sufficiente a coprire le 6 zone è **B+D** (o **B+C** con cap 5, insufficiente).\n\nIl solver Gurobi determina automaticamente la soluzione **realmente ottima**, garantendo il rispetto di tutti i vincoli di capacità e assegnazione, fornendo lo **stato**, il **valore ottimo della funzione obiettivo** (in migliaia di euro) e le **variabili decisionali non nulle** (siti aperti e assegnazioni zona-sito), come riportato nell'output `SOLUTION_JSON` generato dall'esecuzione del codice.",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": null
+      },
+      "native_finish_reason": "end_turn"
+    }
+  ],
+  "created": 1786379521,
+  "model": "anthropic/claude-sonnet-5",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 3119,
+    "prompt_tokens": 1012,
+    "total_tokens": 4131,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.033214,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.033214,
+      "upstream_inference_prompt_cost": 0.002024,
+      "upstream_inference_completions_cost": 0.03119
+    }
+  },
+  "provider": "Anthropic",
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "anthropic/claude-sonnet-5",
+    "required_provider": "anthropic",
+    "allow_fallbacks": false,
+    "require_parameters": true
+  },
+  "_experiment": {
+    "elapsed_seconds": 29.151520375002292,
+    "completed_at_utc": "2026-08-10T16:32:28.877508+00:00"
+  }
+}

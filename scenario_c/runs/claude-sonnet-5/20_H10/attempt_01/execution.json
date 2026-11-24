@@ -1,0 +1,7 @@
+{
+  "returncode": 1,
+  "timed_out": false,
+  "elapsed_seconds": 0.07403245900059119,
+  "stdout": "Set parameter Username\nSet parameter LicenseID to value 2852205\nAcademic license - for non-commercial use only - expires 2027-08-08\n",
+  "stderr": "Traceback (most recent call last):\n  File \"/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/20_H10/attempt_01/generated.py\", line 43, in <module>\n    gp.quicksum(cost[a][k] * x[a, k] for a in ARCS for k in PRODUCTS)\n  File \"src/gurobipy/_helpers.pyx\", line 41, in gurobipy._helpers.quicksum\n  File \"/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/20_H10/attempt_01/generated.py\", line 43, in <genexpr>\n    gp.quicksum(cost[a][k] * x[a, k] for a in ARCS for k in PRODUCTS)\n                             ~^^^^^^\nKeyError: (('S', 'A'), 'K1')\n"
+}

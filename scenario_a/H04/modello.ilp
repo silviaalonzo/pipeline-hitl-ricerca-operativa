@@ -1,0 +1,36 @@
+\ Model H04_copy
+\ LP format - for model browsing. Use MPS format to capture full model detail.
+\ Signature: 0x50ed717a400ec66
+Minimize
+ 
+Subject To
+ domanda[R1]: x[Piccolo,R1] + x[Medio,R1] + x[Grande,R1] >= 42
+ domanda[R2]: x[Piccolo,R2] + x[Medio,R2] + x[Grande,R2] >= 55
+ domanda[R3]: x[Piccolo,R3] + x[Medio,R3] + x[Grande,R3] >= 38
+ domanda[R4]: x[Piccolo,R4] + x[Medio,R4] + x[Grande,R4] >= 64
+ disponibilita[Piccolo]: x[Piccolo,R1] + x[Piccolo,R2] + x[Piccolo,R3]
+   + x[Piccolo,R4] <= 10
+ disponibilita[Medio]: x[Medio,R1] + x[Medio,R2] + x[Medio,R3]
+   + x[Medio,R4] <= 9
+ emissioni: 5 x[Piccolo,R1] + 5 x[Piccolo,R2] + 5 x[Piccolo,R3]
+   + 5 x[Piccolo,R4] + 8 x[Medio,R1] + 8 x[Medio,R2] + 8 x[Medio,R3]
+   + 8 x[Medio,R4] + 11 x[Grande,R1] + 11 x[Grande,R2] + 11 x[Grande,R3]
+   + 11 x[Grande,R4] <= 145
+Bounds
+ x[Piccolo,R1] free
+ x[Piccolo,R2] free
+ x[Piccolo,R3] free
+ x[Piccolo,R4] free
+ x[Medio,R1] free
+ x[Medio,R2] free
+ x[Medio,R3] free
+ x[Medio,R4] free
+ x[Grande,R1] free
+ x[Grande,R2] free
+ x[Grande,R3] free
+ x[Grande,R4] free
+Generals
+ x[Piccolo,R1] x[Piccolo,R2] x[Piccolo,R3] x[Piccolo,R4] x[Medio,R1]
+ x[Medio,R2] x[Medio,R3] x[Medio,R4] x[Grande,R1] x[Grande,R2] x[Grande,R3]
+ x[Grande,R4]
+End

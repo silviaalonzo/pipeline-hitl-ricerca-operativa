@@ -1,0 +1,100 @@
+{
+  "status": "CANCELLED_INFRASTRUCTURE_FALSE_POSITIVE",
+  "cancelled_at_utc": "2026-08-24T19:07:43.480344+00:00",
+  "reason": "Claude ha omesso il prefisso x nei nomi delle cinque variabili di flotta; i nomi Autocarro, Refrigerato, Elettrico, Bilico e Van sono equivalenti in modo univoco alle corrispondenti variabili x_ della ground truth. La normalizzazione non modifica valori, decisioni, obiettivo o criterio di correttezza.",
+  "old_evaluation": {
+    "success": false,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "validazione_indipendente_fallita",
+    "detail": "la soluzione viola almeno un requisito del problema originale; il gap supera la soglia dello 0,1%; sono presenti variabili operative non riconosciute",
+    "finish_reason": "stop",
+    "validation_public": {
+      "problem_id": "M04",
+      "correct": false,
+      "candidate_status": "OPTIMAL",
+      "feasible_in_original_problem": false,
+      "gap_within_tolerance": false,
+      "declared_objective_corrected_automatically": false,
+      "max_constraint_violation": 180.0,
+      "constraint_violations": [
+        {
+          "constraint": "volume",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 180.0,
+          "violation": 180.0
+        },
+        {
+          "constraint": "peso",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 95.0,
+          "violation": 95.0
+        },
+        {
+          "constraint": "refrigerato",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 1.0,
+          "violation": 1.0
+        },
+        {
+          "constraint": "elettrico",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 1.0,
+          "violation": 1.0
+        }
+      ],
+      "bound_violations": [],
+      "integrality_violations": [],
+      "unknown_nonzero_variables": [
+        "Autocarro",
+        "Refrigerato",
+        "Elettrico",
+        "Bilico"
+      ],
+      "missing_variables_assumed_zero": [
+        "x_Autocarro",
+        "x_Bilico",
+        "x_Elettrico",
+        "x_Refrigerato",
+        "x_Van"
+      ]
+    },
+    "traceability": {
+      "present": true,
+      "valid": true,
+      "complete_ready": true,
+      "value": {
+        "status": "READY",
+        "unresolved": [],
+        "undefined_symbols": [],
+        "requirements_mapped": [
+          "almeno 180 unità di volume -> vincolo sum(volume_t*x_t)>=180",
+          "almeno 95 unità di portata -> vincolo sum(portata_t*x_t)>=95",
+          "almeno un mezzo refrigerato -> vincolo x_Refrigerato>=1",
+          "almeno un mezzo elettrico -> vincolo x_Elettrico>=1",
+          "emissioni complessive <=145 -> vincolo sum(emissioni_t*x_t)<=145",
+          "disponibilità limitata per tipo -> vincolo x_t<=disp_t",
+          "minimizzare costo giornaliero -> funzione obiettivo min sum(costo_t*x_t)"
+        ]
+      },
+      "needs_expert": false,
+      "errors": []
+    }
+  },
+  "new_evaluation": {
+    "success": true,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "corretta",
+    "detail": "Soluzione ammissibile e gap entro tolleranza",
+    "finish_reason": "stop",
+    "declared_objective_corrected_automatically": false
+  },
+  "count_as_handoff": false,
+  "count_as_human_time": false,
+  "count_as_memory_event": false
+}

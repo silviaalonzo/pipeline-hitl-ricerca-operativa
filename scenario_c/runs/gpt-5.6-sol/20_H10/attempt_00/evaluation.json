@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "domanda di 28 unità di K1 e 22 di K2 -> bilanci di flusso per prodotto in S e T",
+        "capacità condivisa tra prodotti -> vincolo somma_k x[k,i,j] <= u[i,j] y[i,j]",
+        "attivazione di entrambi gli archi uscenti da S -> y[S,A] = y[S,B] = 1",
+        "al massimo sette archi attivi -> somma_(i,j) y[i,j] <= 7",
+        "flussi interi -> x[k,i,j] intere non negative",
+        "costi fissi e di flusso -> funzione obiettivo combinata"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

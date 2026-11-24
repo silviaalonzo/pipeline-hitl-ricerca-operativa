@@ -1,0 +1,416 @@
+{
+  "schema_version": 2,
+  "created_at_utc": "2026-08-26T22:15:49.879419+00:00",
+  "model": "deepseek-v4-flash",
+  "problem_id": "L04",
+  "problem_sequence": 2,
+  "handoff_number": 1,
+  "stage": 4,
+  "failure_class": "validazione_indipendente_fallita",
+  "failure_detail": "la soluzione viola almeno un requisito del problema originale; il gap supera la soglia dello 0,1%; sono presenti variabili operative non riconosciute",
+  "handoff_mode": "CORRECTION",
+  "allowed_actions": [
+    "CORRECT",
+    "ACCEPT_FAILURE"
+  ],
+  "automatic_repairs_exhausted": 1,
+  "problem_prompt": "# L04 — Produzione multi-prodotto con straordinario attivabile\n\nDifficoltà: Elevata\nClasse: MILP intera\n\nUn impianto pianifica cinque prodotti per sei periodi. Per ogni prodotto sono note scorta iniziale, scorta finale minima, ore per unità e limiti di lotto. La scorta di ciascun prodotto non può superare 75 unità e la giacenza complessiva a fine periodo non può superare 210 unità.\n\nLa capacità ordinaria è condivisa. Lo straordinario è capacità aggiuntiva: in ogni periodo richiede un’attivazione dal costo fisso di 25, può essere acquistato soltanto in quantità comprese tra 10 ore e il massimo indicato e ha il costo unitario riportato in tabella. La produzione richiede un setup e deve rispettare lotto minimo e massimo. Sono consentiti al massimo ventisei setup complessivi e non più di quattro per periodo. Minimizzare produzione, setup, scorte e straordinario.\n\n## Parametri dei prodotti\n\nProdotto | Scorta iniziale | Scorta finale minima | Ore/unità | Lotto minimo | Lotto massimo | Costo setup | Costo scorta\n--- | --- | --- | --- | --- | --- | --- | ---\nA | 20 | 15 | 2 | 22 | 85 | 48 | 1.1\nB | 15 | 10 | 3 | 18 | 75 | 55 | 1.4\nC | 10 | 8 | 1 | 25 | 90 | 40 | 0.8\nD | 18 | 12 | 2 | 20 | 80 | 52 | 1.2\nE | 25 | 5 | 4 | 15 | 65 | 45 | 1.5\n\n## Domanda\n\nProdotto | T1 | T2 | T3 | T4 | T5 | T6\n--- | --- | --- | --- | --- | --- | ---\nA | 38 | 42 | 35 | 50 | 45 | 40\nB | 32 | 36 | 44 | 38 | 46 | 34\nC | 25 | 30 | 28 | 35 | 30 | 32\nD | 40 | 35 | 45 | 42 | 38 | 48\nE | 20 | 24 | 22 | 28 | 26 | 25\n\n## Costi unitari di produzione\n\nProdotto | T1 | T2 | T3 | T4 | T5 | T6\n--- | --- | --- | --- | --- | --- | ---\nA | 4 | 6 | 8 | 10 | 5 | 7\nB | 7 | 9 | 4 | 6 | 8 | 10\nC | 10 | 5 | 7 | 9 | 4 | 6\nD | 6 | 8 | 10 | 5 | 7 | 9\nE | 9 | 4 | 6 | 8 | 10 | 5\n\n## Capacità e straordinario\n\nVoce | T1 | T2 | T3 | T4 | T5 | T6\n--- | --- | --- | --- | --- | --- | ---\nCapacità ordinaria | 350 | 360 | 345 | 370 | 355 | 380\nStraordinario massimo | 85 | 80 | 90 | 75 | 85 | 80\nCosto unitario straordinario | 7 | 8 | 7 | 9 | 8 | 7\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n",
+  "last_code": "import json\nimport gurobipy as gp\nfrom gurobipy import GRB\n\nproducts = [\"A\", \"B\", \"C\", \"D\", \"E\"]\nperiods = list(range(1, 7))\n\ninitial_stock = {\"A\": 20, \"B\": 15, \"C\": 10, \"D\": 18, \"E\": 25}\nfinal_min_stock = {\"A\": 15, \"B\": 10, \"C\": 8, \"D\": 12, \"E\": 5}\nhours_per_unit = {\"A\": 2, \"B\": 3, \"C\": 1, \"D\": 2, \"E\": 4}\nlot_min = {\"A\": 22, \"B\": 18, \"C\": 25, \"D\": 20, \"E\": 15}\nlot_max = {\"A\": 85, \"B\": 75, \"C\": 90, \"D\": 80, \"E\": 65}\nsetup_cost = {\"A\": 48, \"B\": 55, \"C\": 40, \"D\": 52, \"E\": 45}\nholding_cost = {\"A\": 1.1, \"B\": 1.4, \"C\": 0.8, \"D\": 1.2, \"E\": 1.5}\n\ndemand = {\n    (\"A\", 1): 38, (\"A\", 2): 42, (\"A\", 3): 35, (\"A\", 4): 50, (\"A\", 5): 45, (\"A\", 6): 40,\n    (\"B\", 1): 32, (\"B\", 2): 36, (\"B\", 3): 44, (\"B\", 4): 38, (\"B\", 5): 46, (\"B\", 6): 34,\n    (\"C\", 1): 25, (\"C\", 2): 30, (\"C\", 3): 28, (\"C\", 4): 35, (\"C\", 5): 30, (\"C\", 6): 32,\n    (\"D\", 1): 40, (\"D\", 2): 35, (\"D\", 3): 45, (\"D\", 4): 42, (\"D\", 5): 38, (\"D\", 6): 48,\n    (\"E\", 1): 20, (\"E\", 2): 24, (\"E\", 3): 22, (\"E\", 4): 28, (\"E\", 5): 26, (\"E\", 6): 25,\n}\n\nprod_cost = {\n    (\"A\", 1): 4, (\"A\", 2): 6, (\"A\", 3): 8, (\"A\", 4): 10, (\"A\", 5): 5, (\"A\", 6): 7,\n    (\"B\", 1): 7, (\"B\", 2): 9, (\"B\", 3): 4, (\"B\", 4): 6, (\"B\", 5): 8, (\"B\", 6): 10,\n    (\"C\", 1): 10, (\"C\", 2): 5, (\"C\", 3): 7, (\"C\", 4): 9, (\"C\", 5): 4, (\"C\", 6): 6,\n    (\"D\", 1): 6, (\"D\", 2): 8, (\"D\", 3): 10, (\"D\", 4): 5, (\"D\", 5): 7, (\"D\", 6): 9,\n    (\"E\", 1): 9, (\"E\", 2): 4, (\"E\", 3): 6, (\"E\", 4): 8, (\"E\", 5): 10, (\"E\", 6): 5,\n}\n\ncap_ord = {1: 350, 2: 360, 3: 345, 4: 370, 5: 355, 6: 380}\novertime_max = {1: 85, 2: 80, 3: 90, 4: 75, 5: 85, 6: 80}\novertime_cost = {1: 7, 2: 8, 3: 7, 4: 9, 5: 8, 6: 7}\nfixed_overtime = 25\nmin_overtime = 10\n\nstatus_names = {\n    GRB.OPTIMAL: \"OPTIMAL\",\n    GRB.INFEASIBLE: \"INFEASIBLE\",\n    GRB.UNBOUNDED: \"UNBOUNDED\",\n    GRB.INF_OR_UNBD: \"INF_OR_UNBD\",\n    GRB.TIME_LIMIT: \"TIME_LIMIT\",\n    GRB.INTERRUPTED: \"INTERRUPTED\",\n    GRB.NUMERIC: \"NUMERIC\",\n    GRB.SUBOPTIMAL: \"SUBOPTIMAL\",\n}\n\nm = gp.Model(\"L04\")\nm.Params.OutputFlag = 0\nm.Params.MIPGap = 0\n\nProd = m.addVars(products, periods, name=\"Prod\", lb=0, vtype=GRB.INTEGER)\nInv = m.addVars(products, periods, name=\"Inv\", lb=0, vtype=GRB.INTEGER)\nSetup = m.addVars(products, periods, name=\"Setup\", vtype=GRB.BINARY)\nOT = m.addVars(periods, name=\"OT\", lb=0, vtype=GRB.CONTINUOUS)\nOTact = m.addVars(periods, name=\"OTact\", vtype=GRB.BINARY)\n\nfor i in products:\n    for t in periods:\n        prev = initial_stock[i] if t == 1 else Inv[i, t - 1]\n        m.addConstr(Inv[i, t] == prev + Prod[i, t] - demand[i, t], name=f\"Balance_{i}_{t}\")\n\nfor i in products:\n    for t in periods:\n        m.addConstr(Inv[i, t] <= 75, name=f\"InvUB_{i}_{t}\")\n\nfor i in products:\n    m.addConstr(Inv[i, 6] >= final_min_stock[i], name=f\"FinalMin_{i}\")\n\nfor t in periods:\n    m.addConstr(gp.quicksum(Inv[i, t] for i in products) <= 210, name=f\"TotalInv_{t}\")\n\nfor i in products:\n    for t in periods:\n        m.addConstr(Prod[i, t] <= lot_max[i] * Setup[i, t], name=f\"MaxLot_{i}_{t}\")\n        m.addConstr(Prod[i, t] >= lot_min[i] * Setup[i, t], name=f\"MinLot_{i}_{t}\")\n\nfor t in periods:\n    m.addConstr(gp.quicksum(Setup[i, t] for i in products) <= 4, name=f\"SetupPeriod_{t}\")\n\nm.addConstr(gp.quicksum(Setup[i, t] for i in products for t in periods) <= 26, name=\"SetupTotal\")\n\nfor t in periods:\n    m.addConstr(gp.quicksum(hours_per_unit[i] * Prod[i, t] for i in products) <= cap_ord[t] + OT[t], name=f\"Capacity_{t}\")\n    m.addConstr(OT[t] >= min_overtime * OTact[t], name=f\"OTmin_{t}\")\n    m.addConstr(OT[t] <= overtime_max[t] * OTact[t], name=f\"OTmax_{t}\")\n\nobjective = (\n    gp.quicksum(prod_cost[i, t] * Prod[i, t] for i in products for t in periods)\n    + gp.quicksum(setup_cost[i] * Setup[i, t] for i in products for t in periods)\n    + gp.quicksum(holding_cost[i] * Inv[i, t] for i in products for t in periods)\n    + gp.quicksum(overtime_cost[t] * OT[t] for t in periods)\n    + fixed_overtime * gp.quicksum(OTact[t] for t in periods)\n)\n\nm.setObjective(objective, GRB.MINIMIZE)\nm.optimize()\n\nif m.Status == GRB.OPTIMAL:\n    status = \"OPTIMAL\"\n    objective_value = float(m.ObjVal)\n    variables = {\n        v.VarName: float(v.X)\n        for v in sorted(m.getVars(), key=lambda var: var.VarName)\n    }\nelse:\n    status = status_names.get(m.Status, str(m.Status))\n    objective_value = 0.0\n    variables = {}\n\nprint(\"SOLUTION_JSON=\" + json.dumps(\n    {\"status\": status, \"objective\": objective_value, \"variables\": variables},\n    separators=(\",\", \":\"),\n    ensure_ascii=False,\n))\n",
+  "last_response_excerpt": "```python\nimport json\nimport gurobipy as gp\nfrom gurobipy import GRB\n\nproducts = [\"A\", \"B\", \"C\", \"D\", \"E\"]\nperiods = list(range(1, 7))\n\ninitial_stock = {\"A\": 20, \"B\": 15, \"C\": 10, \"D\": 18, \"E\": 25}\nfinal_min_stock = {\"A\": 15, \"B\": 10, \"C\": 8, \"D\": 12, \"E\": 5}\nhours_per_unit = {\"A\": 2, \"B\": 3, \"C\": 1, \"D\": 2, \"E\": 4}\nlot_min = {\"A\": 22, \"B\": 18, \"C\": 25, \"D\": 20, \"E\": 15}\nlot_max = {\"A\": 85, \"B\": 75, \"C\": 90, \"D\": 80, \"E\": 65}\nsetup_cost = {\"A\": 48, \"B\": 55, \"C\": 40, \"D\": 52, \"E\": 45}\nholding_cost = {\"A\": 1.1, \"B\": 1.4, \"C\": 0.8, \"D\": 1.2, \"E\": 1.5}\n\ndemand = {\n    (\"A\", 1): 38, (\"A\", 2): 42, (\"A\", 3): 35, (\"A\", 4): 50, (\"A\", 5): 45, (\"A\", 6): 40,\n    (\"B\", 1): 32, (\"B\", 2): 36, (\"B\", 3): 44, (\"B\", 4): 38, (\"B\", 5): 46, (\"B\", 6): 34,\n    (\"C\", 1): 25, (\"C\", 2): 30, (\"C\", 3): 28, (\"C\", 4): 35, (\"C\", 5): 30, (\"C\", 6): 32,\n    (\"D\", 1): 40, (\"D\", 2): 35, (\"D\", 3): 45, (\"D\", 4): 42, (\"D\", 5): 38, (\"D\", 6): 48,\n    (\"E\", 1): 20, (\"E\", 2): 24, (\"E\", 3): 22, (\"E\", 4): 28, (\"E\", 5): 26, (\"E\", 6): 25,\n}\n\nprod_cost = {\n    (\"A\", 1): 4, (\"A\", 2): 6, (\"A\", 3): 8, (\"A\", 4): 10, (\"A\", 5): 5, (\"A\", 6): 7,\n    (\"B\", 1): 7, (\"B\", 2): 9, (\"B\", 3): 4, (\"B\", 4): 6, (\"B\", 5): 8, (\"B\", 6): 10,\n    (\"C\", 1): 10, (\"C\", 2): 5, (\"C\", 3): 7, (\"C\", 4): 9, (\"C\", 5): 4, (\"C\", 6): 6,\n    (\"D\", 1): 6, (\"D\", 2): 8, (\"D\", 3): 10, (\"D\", 4): 5, (\"D\", 5): 7, (\"D\", 6): 9,\n    (\"E\", 1): 9, (\"E\", 2): 4, (\"E\", 3): 6, (\"E\", 4): 8, (\"E\", 5): 10, (\"E\", 6): 5,\n}\n\ncap_ord = {1: 350, 2: 360, 3: 345, 4: 370, 5: 355, 6: 380}\novertime_max = {1: 85, 2: 80, 3: 90, 4: 75, 5: 85, 6: 80}\novertime_cost = {1: 7, 2: 8, 3: 7, 4: 9, 5: 8, 6: 7}\nfixed_overtime = 25\nmin_overtime = 10\n\nstatus_names = {\n    GRB.OPTIMAL: \"OPTIMAL\",\n    GRB.INFEASIBLE: \"INFEASIBLE\",\n    GRB.UNBOUNDED: \"UNBOUNDED\",\n    GRB.INF_OR_UNBD: \"INF_OR_UNBD\",\n    GRB.TIME_LIMIT: \"TIME_LIMIT\",\n    GRB.INTERRUPTED: \"INTERRUPTED\",\n    GRB.NUMERIC: \"NUMERIC\",\n    GRB.SUBOPTIMAL: \"SUBOPTIMAL\",\n}\n\nm = gp.Model(\"L04\")\nm.Params.OutputFlag = 0\nm.Params.MIPGap = 0\n\nProd = m.addVars(products, periods, name=\"Prod\", lb=0, vtype=GRB.INTEGER)\nInv = m.addVars(products, periods, name=\"Inv\", lb=0, vtype=GRB.INTEGER)\nSetup = m.addVars(products, periods, name=\"Setup\", vtype=GRB.BINARY)\nOT = m.addVars(periods, name=\"OT\", lb=0, vtype=GRB.CONTINUOUS)\nOTact = m.addVars(periods, name=\"OTact\", vtype=GRB.BINARY)\n\nfor i in products:\n    for t in periods:\n        prev = initial_stock[i] if t == 1 else Inv[i, t - 1]\n        m.addConstr(Inv[i, t] == prev + Prod[i, t] - demand[i, t], name=f\"Balance_{i}_{t}\")\n\nfor i in products:\n    for t in periods:\n        m.addConstr(Inv[i, t] <= 75, name=f\"InvUB_{i}_{t}\")\n\nfor i in products:\n    m.addConstr(Inv[i, 6] >= final_min_stock[i], name=f\"FinalMin_{i}\")\n\nfor t in periods:\n    m.addConstr(gp.quicksum(Inv[i, t] for i in products) <= 210, name=f\"TotalInv_{t}\")\n\nfor i in products:\n    for t in periods:\n        m.addConstr(Prod[i, t] <= lot_max[i] * Setup[i, t], name=f\"MaxLot_{i}_{t}\")\n        m.addConstr(Prod[i, t] >= lot_min[i] * Setup[i, t], name=f\"MinLot_{i}_{t}\")\n\nfor t in periods:\n    m.addConstr(gp.quicksum(Setup[i, t] for i in products) <= 4, name=f\"SetupPeriod_{t}\")\n\nm.addConstr(gp.quicksum(Setup[i, t] for i in products for t in periods) <= 26, name=\"SetupTotal\")\n\nfor t in periods:\n    m.addConstr(gp.quicksum(hours_per_unit[i] * Prod[i, t] for i in products) <= cap_ord[t] + OT[t], name=f\"Capacity_{t}\")\n    m.addConstr(OT[t] >= min_overtime * OTact[t], name=f\"OTmin_{t}\")\n    m.addConstr(OT[t] <= overtime_max[t] * OTact[t], name=f\"OTmax_{t}\")\n\nobjective = (\n    gp.quicksum(prod_cost[i, t] * Prod[i, t] for i in products for t in periods)\n    + gp.quicksum(setup_cost[i] * Setup[i, t] for i in products for t in periods)\n    + gp.quicksum(holding_cost[i] * Inv[i, t] for i in products for t in periods)\n    + gp.quicksum(overtime_cost[t] * OT[t] for t in periods)\n    + fixed_overtime * gp.quicksum(OTact[t] for t in periods)\n)\n\nm.setObjective(objective, GRB.MINIMIZE)\nm.optimize()\n\nif m.Status == GRB.OPTIMAL:\n    status = \"OPTIMAL\"\n    objective_value = float(m.ObjVal)\n    variables = {\n        v.VarName: float(v.X)\n        for v in sorted(m.getVars(), key=lambda var: var.VarName)\n    }\nelse:\n    status = status_names.get(m.Status, str(m.Status))\n    objective_value = 0.0\n    variables = {}\n\nprint(\"SOLUTION_JSON=\" + json.dumps(\n    {\"status\": status, \"objective\": objective_value, \"variables\": variables},\n    separators=(\",\", \":\"),\n    ensure_ascii=False,\n))\n```",
+  "response_source_attempt": 1,
+  "validation": {
+    "problem_id": "L04",
+    "correct": false,
+    "candidate_status": "OPTIMAL",
+    "feasible_in_original_problem": false,
+    "gap_within_tolerance": false,
+    "declared_objective_corrected_automatically": false,
+    "max_constraint_violation": 85.0,
+    "constraint_violations": [
+      {
+        "constraint": "balance_A_T1",
+        "lhs": -67.0,
+        "sense": "=",
+        "rhs": 18.0,
+        "violation": 85.0
+      },
+      {
+        "constraint": "min_lot_A_T1",
+        "lhs": -22.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 22.0
+      },
+      {
+        "constraint": "balance_A_T3",
+        "lhs": -25.0,
+        "sense": "=",
+        "rhs": 35.0,
+        "violation": 60.0
+      },
+      {
+        "constraint": "min_lot_A_T3",
+        "lhs": -22.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 22.0
+      },
+      {
+        "constraint": "balance_A_T5",
+        "lhs": -28.0,
+        "sense": "=",
+        "rhs": 45.0,
+        "violation": 73.0
+      },
+      {
+        "constraint": "min_lot_A_T5",
+        "lhs": -22.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 22.0
+      },
+      {
+        "constraint": "balance_A_T6",
+        "lhs": 13.0,
+        "sense": "=",
+        "rhs": 40.0,
+        "violation": 27.0
+      },
+      {
+        "constraint": "min_lot_A_T6",
+        "lhs": -22.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 22.0
+      },
+      {
+        "constraint": "balance_B_T1",
+        "lhs": -36.0,
+        "sense": "=",
+        "rhs": 17.0,
+        "violation": 53.0
+      },
+      {
+        "constraint": "min_lot_B_T1",
+        "lhs": -18.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 18.0
+      },
+      {
+        "constraint": "balance_B_T3",
+        "lhs": -16.0,
+        "sense": "=",
+        "rhs": 44.0,
+        "violation": 60.0
+      },
+      {
+        "constraint": "min_lot_B_T3",
+        "lhs": -18.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 18.0
+      },
+      {
+        "constraint": "balance_B_T4",
+        "lhs": -32.0,
+        "sense": "=",
+        "rhs": 38.0,
+        "violation": 70.0
+      },
+      {
+        "constraint": "min_lot_B_T4",
+        "lhs": -18.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 18.0
+      },
+      {
+        "constraint": "balance_B_T6",
+        "lhs": -8.0,
+        "sense": "=",
+        "rhs": 34.0,
+        "violation": 42.0
+      },
+      {
+        "constraint": "min_lot_B_T6",
+        "lhs": -18.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 18.0
+      },
+      {
+        "constraint": "balance_C_T1",
+        "lhs": -10.0,
+        "sense": "=",
+        "rhs": 15.0,
+        "violation": 25.0
+      },
+      {
+        "constraint": "min_lot_C_T1",
+        "lhs": -25.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 25.0
+      },
+      {
+        "constraint": "balance_C_T2",
+        "lhs": -54.0,
+        "sense": "=",
+        "rhs": 30.0,
+        "violation": 84.0
+      },
+      {
+        "constraint": "min_lot_C_T2",
+        "lhs": -25.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 25.0
+      },
+      {
+        "constraint": "balance_C_T5",
+        "lhs": -39.0,
+        "sense": "=",
+        "rhs": 30.0,
+        "violation": 69.0
+      },
+      {
+        "constraint": "min_lot_C_T5",
+        "lhs": -25.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 25.0
+      },
+      {
+        "constraint": "balance_D_T1",
+        "lhs": -18.0,
+        "sense": "=",
+        "rhs": 22.0,
+        "violation": 40.0
+      },
+      {
+        "constraint": "min_lot_D_T1",
+        "lhs": -20.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 20.0
+      },
+      {
+        "constraint": "balance_D_T2",
+        "lhs": -27.0,
+        "sense": "=",
+        "rhs": 35.0,
+        "violation": 62.0
+      },
+      {
+        "constraint": "min_lot_D_T2",
+        "lhs": -20.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 20.0
+      },
+      {
+        "constraint": "balance_D_T4",
+        "lhs": -38.0,
+        "sense": "=",
+        "rhs": 42.0,
+        "violation": 80.0
+      },
+      {
+        "constraint": "min_lot_D_T4",
+        "lhs": -20.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 20.0
+      },
+      {
+        "constraint": "balance_D_T5",
+        "lhs": 18.0,
+        "sense": "=",
+        "rhs": 38.0,
+        "violation": 20.0
+      },
+      {
+        "constraint": "min_lot_D_T5",
+        "lhs": -20.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 20.0
+      },
+      {
+        "constraint": "balance_D_T6",
+        "lhs": 8.0,
+        "sense": "=",
+        "rhs": 48.0,
+        "violation": 40.0
+      },
+      {
+        "constraint": "min_lot_D_T6",
+        "lhs": -20.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 20.0
+      },
+      {
+        "constraint": "balance_E_T2",
+        "lhs": -14.0,
+        "sense": "=",
+        "rhs": 24.0,
+        "violation": 38.0
+      },
+      {
+        "constraint": "min_lot_E_T2",
+        "lhs": -15.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 15.0
+      },
+      {
+        "constraint": "balance_E_T3",
+        "lhs": -10.0,
+        "sense": "=",
+        "rhs": 22.0,
+        "violation": 32.0
+      },
+      {
+        "constraint": "min_lot_E_T3",
+        "lhs": -15.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 15.0
+      },
+      {
+        "constraint": "balance_E_T5",
+        "lhs": 1.0,
+        "sense": "=",
+        "rhs": 26.0,
+        "violation": 25.0
+      },
+      {
+        "constraint": "min_lot_E_T5",
+        "lhs": -15.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 15.0
+      },
+      {
+        "constraint": "balance_E_T6",
+        "lhs": -5.0,
+        "sense": "=",
+        "rhs": 25.0,
+        "violation": 30.0
+      },
+      {
+        "constraint": "min_lot_E_T6",
+        "lhs": -15.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 15.0
+      },
+      {
+        "constraint": "overtime_upper_T1",
+        "lhs": 84.0,
+        "sense": "<=",
+        "rhs": 0.0,
+        "violation": 84.0
+      },
+      {
+        "constraint": "overtime_upper_T3",
+        "lhs": 83.0,
+        "sense": "<=",
+        "rhs": 0.0,
+        "violation": 83.0
+      }
+    ],
+    "bound_violations": [],
+    "integrality_violations": [],
+    "unknown_nonzero_variables": [
+      "OTact_1",
+      "OTact_3",
+      "Prod_A_1",
+      "Prod_A_3",
+      "Prod_A_5",
+      "Prod_A_6",
+      "Prod_B_1",
+      "Prod_B_3",
+      "Prod_B_4",
+      "Prod_B_6",
+      "Prod_C_1",
+      "Prod_C_2",
+      "Prod_C_5",
+      "Prod_D_1",
+      "Prod_D_2",
+      "Prod_D_4",
+      "Prod_D_5",
+      "Prod_D_6",
+      "Prod_E_2",
+      "Prod_E_3",
+      "Prod_E_5",
+      "Prod_E_6"
+    ],
+    "missing_variables_assumed_zero": [
+      "u_T1",
+      "u_T2",
+      "u_T3",
+      "u_T4",
+      "u_T5",
+      "u_T6",
+      "x_A_T1",
+      "x_A_T2",
+      "x_A_T3",
+      "x_A_T4",
+      "x_A_T5",
+      "x_A_T6",
+      "x_B_T1",
+      "x_B_T2",
+      "x_B_T3",
+      "x_B_T4",
+      "x_B_T5",
+      "x_B_T6",
+      "x_C_T1",
+      "x_C_T2",
+      "x_C_T3",
+      "x_C_T4",
+      "x_C_T5",
+      "x_C_T6",
+      "x_D_T1",
+      "x_D_T2",
+      "x_D_T3",
+      "x_D_T4",
+      "x_D_T5",
+      "x_D_T6",
+      "x_E_T1",
+      "x_E_T2",
+      "x_E_T3",
+      "x_E_T4",
+      "x_E_T5",
+      "x_E_T6"
+    ]
+  },
+  "attempt_history": [
+    {
+      "attempt_number": 0,
+      "attempt_kind": "INITIAL",
+      "finish_reason": "length",
+      "content_characters": 0,
+      "completion_tokens": 64001,
+      "reasoning_tokens": 64001,
+      "code_extracted": false,
+      "failure_class": "output_troncato_o_senza_codice",
+      "failure_detail": "Atteso un solo blocco Python, trovati 0"
+    },
+    {
+      "attempt_number": 1,
+      "attempt_kind": "AUTO_REPAIR",
+      "finish_reason": "stop",
+      "content_characters": 4458,
+      "completion_tokens": 34857,
+      "reasoning_tokens": 32868,
+      "code_extracted": true,
+      "failure_class": "validazione_indipendente_fallita",
+      "failure_detail": "la soluzione viola almeno un requisito del problema originale; il gap supera la soglia dello 0,1%; sono presenti variabili operative non riconosciute"
+    }
+  ],
+  "automatic_diagnosis": "Il codice è stato eseguito, ma la soluzione non ha superato la validazione indipendente. Esaminare le violazioni e il codice riportati nel pacchetto.",
+  "ground_truth_disclosed": false
+}

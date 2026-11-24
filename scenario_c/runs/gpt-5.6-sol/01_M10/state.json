@@ -1,0 +1,64 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "gpt-5.6-sol",
+  "problem_id": "M10",
+  "problem_sequence": 1,
+  "domain": "Network design",
+  "difficulty": "Media",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-24T17:57:35.917092+00:00",
+  "updated_at_utc": "2026-08-24T17:58:46.772023+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T17:58:46.771262+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "invio di 40 unità da S a T -> bilanci di flusso b_S=40 e b_T=-40",
+              "conservazione nei nodi A, B e C -> vincoli di bilancio con b_i=0",
+              "attivazione degli archi -> variabili binarie y_ij e vincoli x_ij<=u_ij y_ij",
+              "flusso intero -> variabili x_ij intere non negative",
+              "capacità degli archi -> parametri u_ij nei vincoli di collegamento",
+              "minimizzazione dei costi -> somma di costi fissi e costi unitari nella funzione obiettivo"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "gpt-5.6-sol",
+    "problem_id": "M10",
+    "retrieved_at_utc": "2026-08-24T17:57:35.916939+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

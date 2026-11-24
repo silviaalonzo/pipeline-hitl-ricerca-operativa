@@ -1,0 +1,4 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+- \(I = \{1,\dots,8\}\): insieme degli otto progetti.
+- \(D = \{1,3,7\}\): progetti

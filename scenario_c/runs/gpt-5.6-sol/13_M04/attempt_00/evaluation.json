@@ -1,0 +1,30 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "volume minimo 180 -> vincolo di capacità volumetrica",
+        "portata minima 95 -> vincolo di portata",
+        "almeno un refrigerato -> x_Refrigerato >= 1",
+        "almeno un elettrico -> x_Elettrico >= 1",
+        "emissioni massime 145 -> vincolo sulle emissioni",
+        "disponibilità dei mezzi -> limiti superiori sulle variabili",
+        "minimizzare il costo giornaliero -> funzione obiettivo"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

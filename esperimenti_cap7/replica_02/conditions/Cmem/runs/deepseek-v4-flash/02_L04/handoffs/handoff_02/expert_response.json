@@ -1,0 +1,9 @@
+{
+  "status": "SUBMITTED",
+  "action": "APPROVE",
+  "active_minutes": 20.0,
+  "expert_instruction": "",
+  "correction_summary": "Revisione di assicurazione del modello e del codice dopo una riparazione automatica; la formulazione è stata approvata senza modifiche.",
+  "semantic_principle": "",
+  "submitted_at_utc": "2026-08-27T10:56:10.308484+00:00"
+}

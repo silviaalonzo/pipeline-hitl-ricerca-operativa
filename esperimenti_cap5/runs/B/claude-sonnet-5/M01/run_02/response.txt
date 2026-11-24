@@ -1,0 +1,143 @@
+# M01 — Localizzazione di centri di assistenza
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $S = \{A, B, C, D\}$ : siti candidati per l'apertura di un centro
+- $Z = \{Z1, Z2, Z3, Z4, Z5, Z6\}$ : zone commerciali da servire
+
+**Parametri**
+- $f_s$ : costo fisso di apertura del sito $s \in S$ (in migliaia di €)
+- $q_s$ : capacità massima (numero di zone) del sito $s \in S$
+- $c_{z,s}$ : costo di assegnazione della zona $z \in Z$ al sito $s \in S$ (in migliaia di €)
+- $p = 2$ : numero di centri da aprire
+
+**Variabili decisionali**
+- $y_s \in \{0,1\}$ per ogni $s \in S$: 1 se il sito $s$ viene aperto, 0 altrimenti
+- $x_{z,s} \in \{0,1\}$ per ogni $z \in Z, s \in S$: 1 se la zona $z$ è assegnata al sito $s$, 0 altrimenti
+
+## 2. Formulazione matematica
+
+$$
+\min \sum_{s \in S} f_s \, y_s + \sum_{z \in Z}\sum_{s \in S} c_{z,s}\, x_{z,s}
+$$
+
+soggetto a:
+
+$$
+\sum_{s \in S} y_s = p \qquad \text{(esattamente 2 centri aperti)}
+$$
+
+$$
+\sum_{s \in S} x_{z,s} = 1 \qquad \forall z \in Z \quad \text{(ogni zona assegnata ad un unico sito)}
+$$
+
+$$
+x_{z,s} \le y_s \qquad \forall z \in Z,\ \forall s \in S \quad \text{(assegnazione solo a siti aperti)}
+$$
+
+$$
+\sum_{z \in Z} x_{z,s} \le q_s\, y_s \qquad \forall s \in S \quad \text{(rispetto della capacità)}
+$$
+
+$$
+y_s \in \{0,1\} \quad \forall s \in S, \qquad x_{z,s} \in \{0,1\} \quad \forall z \in Z,\ \forall s \in S
+$$
+
+## 3. Codice Python con gurobipy
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# --- Dati ---
+sites = ['A', 'B', 'C', 'D']
+zones = ['Z1', 'Z2', 'Z3', 'Z4', 'Z5', 'Z6']
+
+fixed_cost = {'A': 38, 'B': 42, 'C': 35, 'D': 46}
+capacity   = {'A': 2,  'B': 3,  'C': 2,  'D': 3}
+
+assign_cost = {
+    ('Z1','A'): 8,  ('Z1','B'): 14, ('Z1','C'): 11, ('Z1','D'): 17,
+    ('Z2','A'): 10, ('Z2','B'): 9,  ('Z2','C'): 13, ('Z2','D'): 15,
+    ('Z3','A'): 12, ('Z3','B'): 8,  ('Z3','C'): 14, ('Z3','D'): 10,
+    ('Z4','A'): 15, ('Z4','B'): 11, ('Z4','C'): 9,  ('Z4','D'): 7,
+    ('Z5','A'): 9,  ('Z5','B'): 13, ('Z5','C'): 8,  ('Z5','D'): 14,
+    ('Z6','A'): 14, ('Z6','B'): 10, ('Z6','C'): 7,  ('Z6','D'): 9,
+}
+
+p = 2  # numero di centri da aprire
+
+# --- Modello ---
+model = gp.Model("Localizzazione_centri")
+model.Params.OutputFlag = 0
+
+y = model.addVars(sites, vtype=GRB.BINARY, name="y")
+x = model.addVars(zones, sites, vtype=GRB.BINARY, name="x")
+
+# Funzione obiettivo
+model.setObjective(
+    gp.quicksum(fixed_cost[s] * y[s] for s in sites) +
+    gp.quicksum(assign_cost[z, s] * x[z, s] for z in zones for s in sites),
+    GRB.MINIMIZE
+)
+
+# Vincolo: esattamente p centri aperti
+model.addConstr(gp.quicksum(y[s] for s in sites) == p, name="num_centri")
+
+# Vincolo: ogni zona assegnata ad un solo sito
+for z in zones:
+    model.addConstr(gp.quicksum(x[z, s] for s in sites) == 1, name=f"assign_{z}")
+
+# Vincolo: assegnazione solo a siti aperti
+for z in zones:
+    for s in sites:
+        model.addConstr(x[z, s] <= y[s], name=f"link_{z}_{s}")
+
+# Vincolo di capacità
+for s in sites:
+    model.addConstr(gp.quicksum(x[z, s] for z in zones) <= capacity[s] * y[s],
+                     name=f"cap_{s}")
+
+model.optimize()
+
+# --- Output ---
+result = {"status": None, "objective": None, "variables": {}}
+
+if model.status == GRB.OPTIMAL:
+    result["status"] = "OPTIMAL"
+    result["objective"] = round(model.ObjVal, 4)
+    variables = {}
+    for s in sites:
+        variables[f"y_{s}"] = round(y[s].X, 4)
+    for z in zones:
+        for s in sites:
+            variables[f"x_{z}_{s}"] = round(x[z, s].X, 4)
+    result["variables"] = variables
+else:
+    result["status"] = str(model.status)
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+L'analisi combinatoria mostra che, tra le $\binom{4}{2}=6$ possibili coppie di siti, solo la coppia **B-D** garantisce capacità sufficiente ($3+3=6$) per servire tutte le 6 zone; le altre coppie hanno capacità totale $\le 5$ e risultano infeasible.
+
+**Stato del solver:** OPTIMAL
+
+**Decisioni ottime:**
+- Siti aperti: **B** e **D** (costo fisso totale: $42+46=88$)
+- Assegnazioni:
+  - Z1 → B (costo 14)
+  - Z2 → B (costo 9)
+  - Z3 → B (costo 8)
+  - Z4 → D (costo 7)
+  - Z5 → D (costo 14)
+  - Z6 → D (costo 9)
+- Costo di assegnazione totale: $14+9+8+7+14+9 = 61$
+
+**Valore ottimo della funzione obiettivo:** $88 + 61 = \mathbf{149}$ (migliaia di €)
+
+Il sito B serve 3 zone (Z1, Z2, Z3) e il sito D serve 3 zone (Z4, Z5, Z6), rispettando esattamente le capacità disponibili.

@@ -1,0 +1,12 @@
+{
+  "status": "SUBMITTED",
+  "action": "CORRECT",
+  "correction_mode": "DIRECT_CODE",
+  "active_minutes": 15.0,
+  "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+  "correction_summary": "Dopo tre errori di esecuzione consecutivi, l'esperto ha fornito il modello verificato della rete multi-prodotto, con indicizzazione coerente dei flussi, conservazione nodo per nodo, capacità condivise, archi obbligatori e limite complessivo sulle attivazioni.",
+  "semantic_principle": "Nei modelli di flusso multi-prodotto, definire una convenzione unica per gli indici arco-prodotto e usarla invariata in obiettivo, conservazione e capacità condivise.",
+  "expert_artifact_source": "/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_a/H10/modello.py",
+  "expert_artifact_sha256": "3014d853c4a802c4674c90c2dca224cc12b92e1e5b78b327cfdf234d13364d48",
+  "submitted_at_utc": "2026-08-24T19:30:58.912226+00:00"
+}

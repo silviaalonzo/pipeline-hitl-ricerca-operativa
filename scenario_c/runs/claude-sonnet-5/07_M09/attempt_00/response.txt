@@ -1,0 +1,119 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["scorta iniziale 10 -> parametro I0 e vincolo di bilancio al periodo 1","nessun arretrato -> I_t >= 0 per ogni t","scorta finale >= 5 -> vincolo I_6 >= 5","ordine minimo 10 se attivato -> vincolo L*y_t <= x_t","capacità ordine per periodo -> vincolo x_t <= U_t*y_t","costo fisso 40 per ordine -> termine f*y_t nell'obiettivo","costo di mantenimento 2/unità -> termine h*I_t nell'obiettivo","variabili intere -> dominio Integer per x_t e I_t, Binary per y_t"]}
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- T = {1, 2, 3, 4, 5, 6}: periodi di pianificazione
+
+**Parametri**
+- d_t: domanda nel periodo t (20, 30, 15, 35, 25, 20)
+- c_t: costo di acquisto unitario nel periodo t (9, 8, 11, 7, 10, 9)
+- U_t: capacità massima di ordine nel periodo t (50, 50, 45, 55, 45, 50)
+- L = 10: quantità minima di ordine se attivato
+- f = 40: costo fisso per ordine attivato
+- h = 2: costo di mantenimento per unità a fine periodo
+- I0 = 10: scorta iniziale (prima del periodo 1)
+- I_min_final = 5: scorta minima richiesta a fine periodo 6
+
+**Variabili decisionali**
+- x_t ∈ ℤ≥0: quantità ordinata nel periodo t, per t ∈ T
+- I_t ∈ ℤ≥0: scorta di fine periodo t, per t ∈ T
+- y_t ∈ {0,1}: indicatore di attivazione ordine nel periodo t, per t ∈ T
+
+## 2. Formulazione matematica
+
+**Funzione obiettivo**
+
+min Σ_{t∈T} [ f·y_t + c_t·x_t + h·I_t ]
+
+**Vincoli**
+
+1. Bilancio di inventario:
+   - I_1 = I0 + x_1 − d_1
+   - I_t = I_{t-1} + x_t − d_t,  ∀t ∈ T, t ≥ 2
+
+2. Scorta finale minima:
+   - I_6 ≥ I_min_final
+
+3. Attivazione ordine e limiti quantità (min-batch e capacità):
+   - L·y_t ≤ x_t ≤ U_t·y_t,  ∀t ∈ T
+
+4. Domini:
+   - x_t ∈ ℤ≥0,  I_t ∈ ℤ≥0,  y_t ∈ {0,1},  ∀t ∈ T
+
+Non sono ammessi arretrati: la non negatività di I_t (I_t ≥ 0) garantisce che la domanda sia sempre soddisfatta senza backlog.
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+
+# --- Dati ---
+T = [1, 2, 3, 4, 5, 6]
+
+demand = {1: 20, 2: 30, 3: 15, 4: 35, 5: 25, 6: 20}
+purchase_cost = {1: 9, 2: 8, 3: 11, 4: 7, 5: 10, 6: 9}
+capacity = {1: 50, 2: 50, 3: 45, 4: 55, 5: 45, 6: 50}
+
+L = 10          # ordine minimo se attivato
+f = 40          # costo fisso per ordine
+h = 2           # costo di mantenimento per unità
+I0 = 10         # scorta iniziale
+I_min_final = 5 # scorta minima a fine orizzonte
+
+# --- Modello ---
+m = gp.Model("M09_piano_riordino")
+
+x = m.addVars(T, vtype=GRB.INTEGER, lb=0, name="x")
+I = m.addVars(T, vtype=GRB.INTEGER, lb=0, name="I")
+y = m.addVars(T, vtype=GRB.BINARY, name="y")
+
+# Funzione obiettivo
+m.setObjective(
+    gp.quicksum(f * y[t] + purchase_cost[t] * x[t] + h * I[t] for t in T),
+    GRB.MINIMIZE
+)
+
+# Bilancio di inventario
+for t in T:
+    if t == 1:
+        m.addConstr(I[t] == I0 + x[t] - demand[t], name=f"bilancio_{t}")
+    else:
+        m.addConstr(I[t] == I[t-1] + x[t] - demand[t], name=f"bilancio_{t}")
+
+# Scorta finale minima
+m.addConstr(I[T[-1]] >= I_min_final, name="scorta_finale_min")
+
+# Ordine minimo (batch) e capacità, legati all'attivazione
+for t in T:
+    m.addConstr(x[t] >= L * y[t], name=f"min_batch_{t}")
+    m.addConstr(x[t] <= capacity[t] * y[t], name=f"capacita_{t}")
+
+m.optimize()
+
+status_map = {
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.UNBOUNDED: "UNBOUNDED"
+}
+status_str = status_map.get(m.status, str(m.status))
+
+if m.status == GRB.OPTIMAL:
+    variables = {}
+    for t in T:
+        variables[f"x_{t}"] = round(x[t].X, 2)
+        variables[f"I_{t}"] = round(I[t].X, 2)
+        variables[f"y_{t}"] = round(y[t].X, 2)
+    objective_val = round(m.ObjVal, 2)
+else:
+    variables = {}
+    objective_val = None
+
+import json
+print(f"SOLUTION_JSON={json.dumps({'status': status_str, 'objective': objective_val, 'variables': variables})}")
+```
+
+## 4. Sintesi della soluzione
+
+Il modello determina il piano di riordino ottimo su 6 periodi minimizzando la somma di costi fissi di ordine (40 per ogni ordine attivato), costi di acquisto (variabili per periodo) e costi di mantenimento a magazzino (2 per unità residua). I vincoli garantiscono il bilancio inventariale periodo per periodo, l'assenza di arretrati, una scorta finale di almeno 5 unità, e — quando un ordine viene attivato — un lotto minimo di 10 unità senza superare la capacità di ordine del periodo. Il codice Gurobi risolve il MILP a variabili intere/binarie e stampa lo stato del solver, il valore ottimo della funzione obiettivo e tutte le decisioni (quantità ordinate, livelli di scorta, indicatori di attivazione) per ciascun periodo.

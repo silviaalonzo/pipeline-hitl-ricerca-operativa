@@ -1,0 +1,73 @@
+{
+  "id": "gen-1786378177-aKQQAnBLDm9ls6KDkKFb",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "# M09 — Piano di riordino con costi fissi\n\n## 1. Insiemi, parametri e variabili decisionali\n\n**Insiemi**\n- $T = \\{1,2,3,4,5,6\\}$: periodi di pianificazione\n\n**Parametri**\n- $d_t$: domanda nel periodo $t$\n- $c_t$: costo unitario di acquisto nel periodo $t$\n- $Cap_t$: capacità massima di un ordine nel periodo $t$\n- $I_0 = 10$: scorta iniziale\n- $I_{min} = 5$: scorta minima richiesta a fine orizzonte (periodo 6)\n- $L = 10$: quantità minima di un ordine attivato\n- $K = 40$: costo fisso per ordine attivato\n- $h = 2$: costo di mantenimento per unità a fine periodo\n\nValori numerici:\n\n| t | d_t | c_t | Cap_t |\n|---|-----|-----|-------|\n| 1 | 20  | 9   | 50    |\n| 2 | 30  | 8   | 50    |\n| 3 | 15  | 11  | 45    |\n| 4 | 35  | 7   | 55    |\n| 5 | 25  | 10  | 45    |\n| 6 | 20  | 9   | 50    |\n\n**Variabili decisionali**\n- $x_t \\in \\mathbb{Z}_{\\ge 0}$: quantità ordinata nel periodo $t$\n- $I_t \\in \\mathbb{Z}_{\\ge 0}$: scorta di fine periodo $t$\n- $y_t \\in \\{0,1\\}$: 1 se nel periodo $t$ viene attivato un ordine, 0 altrimenti\n\n## 2. Formulazione matematica\n\n$$\n\\min \\sum_{t \\in T} \\left( c_t x_t + K y_t + h I_t \\right)\n$$\n\nsoggetto a:\n\n$$\nI_{t-1} + x_t - d_t = I_t \\qquad \\forall t \\in T \\quad (I_0 = 10 \\text{ dato})\n$$\n\n$$\nI_6 \\ge I_{min}\n$$\n\n$$\nx_t \\le Cap_t \\, y_t \\qquad \\forall t \\in T\n$$\n\n$$\nx_t \\ge L \\, y_t \\qquad \\forall t \\in T\n$$\n\n$$\nx_t \\in \\mathbb{Z}_{\\ge 0}, \\quad I_t \\in \\mathbb{Z}_{\\ge 0}, \\quad y_t \\in \\{0,1\\} \\qquad \\forall t \\in T\n$$\n\nI vincoli di non negatività su $I_t$ garantiscono l'assenza di arretrati (backlog).\n\n## 3. Codice Python con gurobipy\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\n# Dati\nT = [1, 2, 3, 4, 5, 6]\ndemand = {1: 20, 2: 30, 3: 15, 4: 35, 5: 25, 6: 20}\ncost   = {1: 9,  2: 8,  3: 11, 4: 7,  5: 10, 6: 9}\ncap    = {1: 50, 2: 50, 3: 45, 4: 55, 5: 45, 6: 50}\n\nI0 = 10\nImin_final = 5\nL = 10      # ordine minimo\nK = 40      # costo fisso\nh = 2       # costo mantenimento\n\nmodel = gp.Model(\"Lot_sizing_fixed_cost\")\n\n# Variabili\nx = model.addVars(T, vtype=GRB.INTEGER, lb=0, name=\"x\")\nI = model.addVars(T, vtype=GRB.INTEGER, lb=0, name=\"I\")\ny = model.addVars(T, vtype=GRB.BINARY, name=\"y\")\n\n# Funzione obiettivo\nmodel.setObjective(\n    gp.quicksum(cost[t] * x[t] + K * y[t] + h * I[t] for t in T),\n    GRB.MINIMIZE\n)\n\n# Vincoli di bilancio scorte\nfor t in T:\n    prev_inv = I0 if t == 1 else I[t - 1]\n    model.addConstr(prev_inv + x[t] - demand[t] == I[t], name=f\"balance_{t}\")\n\n# Scorta finale minima\nmodel.addConstr(I[6] >= Imin_final, name=\"final_stock\")\n\n# Capacità e minimo ordine legati all'attivazione\nfor t in T:\n    model.addConstr(x[t] <= cap[t] * y[t], name=f\"cap_{t}\")\n    model.addConstr(x[t] >= L * y[t], name=f\"minlot_{t}\")\n\nmodel.optimize()\n\nstatus = model.Status\nresult = {\"status\": None, \"objective\": None, \"variables\": {}}\n\nif status == GRB.OPTIMAL:\n    result[\"status\"] = \"OPTIMAL\"\n    result[\"objective\"] = model.ObjVal\n    variables = {}\n    for t in T:\n        variables[f\"x_{t}\"] = x[t].X\n        variables[f\"I_{t}\"] = I[t].X\n        variables[f\"y_{t}\"] = y[t].X\n    result[\"variables\"] = variables\nelse:\n    result[\"status\"] = str(status)\n\nprint(\"SOLUTION_JSON=\" + json.dumps(result))\n```\n\n## 4. Sintesi della soluzione\n\nIl modello determina il piano di riordino ottimale su 6 periodi che minimizza la somma di costi di acquisto, costi fissi di ordinazione e costi di mantenimento a scorta, rispettando:\n- il bilancio di magazzino periodo per periodo (senza arretrati),\n- la scorta finale minima di 5 unità,\n- il vincolo di ordine minimo (10 unità) e massimo (capacità del periodo) legato alla variabile binaria di attivazione.\n\nIl solver Gurobi risolve il problema MILP in tempi trascurabili data la dimensione ridotta. Alla fine dell'esecuzione viene stampata un'unica riga `SOLUTION_JSON` contenente lo stato di risoluzione (`OPTIMAL`), il valore ottimo della funzione obiettivo e i valori di tutte le variabili decisionali ($x_t$, $I_t$, $y_t$ per $t=1,\\dots,6$), inclusi quelli nulli, in conformità con il formato richiesto.",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": "I'm setting up a lot-sizing optimization problem with six periods, where I need to account for demand, purchase costs, order capacity limits, and a fixed cost per order. I'm also tracking holding costs for inventory and setting constraints on initial inventory and minimum final stock levels.",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "I'm setting up a lot-sizing optimization problem with six periods, where I need to account for demand, purchase costs, order capacity limits, and a fixed cost per order. I'm also tracking holding costs for inventory and setting constraints on initial inventory and minimum final stock levels.",
+            "format": "anthropic-claude-v1",
+            "index": 0,
+            "signature": "EuAJCokBCBAYAipA8Eu7hMoZ0wHA3g3V4kwhzN2wjoFA37d7laaheK1mpYsxImuUIu++hZV1ezYPygwI5rPOctzzwtinzE5OUc3LSzIPY2xhdWRlLXNvbm5ldC01OABCCHRoaW5raW5nWiQwZDk4M2YzZi00OWZhLTRhNDYtODI1NC1iMWJiMjQ5MWEyYTkSDDdLrqp9nq129SsJ7BoMb84BEgfEk23iwX2pIjC1KOb/nWlVWLMkCGHVc1LfwECb6xgGXc/x+fH6KYNWA+U/T6CiL3fO2Toc7JY7jp8qgwjvuHz+pVkfm4N6Io6Tk/MVFh+OMPuXlzowYyhFwRPmqy582FuAfFlGFrDOtHV44f2/senK0fEPXZmVIuuUxhOeVYgD0yeAlFrEB/4r4TakeDwAfvWd19qf69fxxnPv5SaLp+fm/JC0xkvnVAfkT0pNN/Qryn7upPgavN6KDWgP6x+JOClAMbq1z3LJW5S3wjM4ozpzHcrQNZR3Zi/atHS0t0QrJ+QefcOYhaueYTs0bR2Axm3ArKmNYWPIcfhof3vFThA5gx0HhgRi8+b1RtdCfzv6j0yerfFyki/Ft8CWWZ/G6F3VI+lsLMc7jPMcmk96GXOJVYy1NUmnCAYbSLuvbIt6ExLxi1mWdjtdiyCY3aVxAZTGcDoD3i6dst6w3YSCfT0tKw2aVukFXCZ5TNI1eBDEcS3iUc0B5oPjwlB2KW0kU61xD+aKVkPhtmOcm6gSdJ4I0H/pzDFRxDPjOTDIuT/H6t/kJ8amKJ5WwwCl3I07bfCphfAWPFevTBzuSLv08n/knvWYCnXwnq1J1lVsMSjKNSUYbi9Aal/8Lf4Zguxx157OuhOo6UaJ5wGJ7p9YJiHeHXlyc7COCKVKkbMv5gTEBPtBB86PapeyQMeCW7rk5CU/oZeN+0j1C6ElO7i7o4YfbA60sOJsqO/BBApw0Zce3BtzKYpHyM7mObK9OSJ3BUUo1GPWtClD+9FjpQyuwqz6MY0Quu+oXAyRf3JG2KAvXe6+s1R2m+SunLPXOMybwSvS1SKpT6vyRy8MI/f1TweNlkkZ9WGAC288AgA3kwfk3fbfNM9K98MrX+ky8Uo+B6q1TL1yjf01WKof/FExxklxpGawD6cG/f/hdR7Vaew4O+5JBOuy2Ko+YQLDMktKTRBPfcJI6xWCvz1mHwuUWEh26PQLpWatpFsYWGrCy8xuZBX+pIoPGzjr/mVUM6VUxsuxQTgd7/YO/CiQXgMVCDNTx//iTZDTaStYtgkpt3bfCIl6DPcXUguHHvzIaIw7tlh27Uw0lROdJwqsf4zvilDo0FU+R0oab4dVVxsDAJVi5Sv6XMhSxYpAwErJoHNta+HFJkPW+tllHtIX1aiVL2vm72/7BgZ2weEhg6hyRCMKu/9L9XJn+OZHoKqHgomHNshXOCjnrFo5oxnCZ14CFFCEg7MtOkfhuLovaA2HfXKqc+1V+MjSYnImVmkLsN1vwi8L6HlI2MYUxKmF8lxOkMA0lyzW4sbq5RdVgYLqUh8JjVESYpDuq7O6uLmnaJ3obqem7wQmh89FuiYgpvwRfY9IFjPb0GVCtQgepnmByACTsXZf8R30nnZ8Yv4SeE7ASEoq2zYAZ13OxxgzHjXlEhKPxZYvLztPQ0I5gGoYYi2NGAE="
+          }
+        ]
+      },
+      "native_finish_reason": "end_turn"
+    }
+  ],
+  "created": 1786378177,
+  "model": "anthropic/claude-sonnet-5",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 2591,
+    "prompt_tokens": 968,
+    "total_tokens": 3559,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 73,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.027846,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.027846,
+      "upstream_inference_prompt_cost": 0.001936,
+      "upstream_inference_completions_cost": 0.02591
+    }
+  },
+  "provider": "Anthropic",
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "anthropic/claude-sonnet-5",
+    "required_provider": "anthropic",
+    "allow_fallbacks": false,
+    "require_parameters": true
+  },
+  "_experiment": {
+    "elapsed_seconds": 25.877521207999962,
+    "completed_at_utc": "2026-08-10T16:10:02.683885+00:00"
+  }
+}

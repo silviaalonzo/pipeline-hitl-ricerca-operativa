@@ -1,0 +1,230 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["copertura delle dieci zone -> vincoli di copertura","doppia copertura di Z3 e Z7 -> requisiti r_Z3=r_Z7=2","apertura di al massimo cinque centri -> vincolo di cardinalità","minimizzazione dei costi di apertura -> funzione obiettivo","decisione di apertura dei centri -> variabili binarie x_j"]}
+
+## Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+
+- Centri:
+  \[
+  J=\{A,B,C,D,E,F,G,H\}.
+  \]
+- Zone:
+  \[
+  I=\{Z1,Z2,Z3,Z4,Z5,Z6,Z7,Z8,Z9,Z10\}.
+  \]
+- Centri che possono coprire ciascuna zona:
+  \[
+  \begin{aligned}
+  N_{Z1}&=\{A,C\}, & N_{Z2}&=\{A,B\},\\
+  N_{Z3}&=\{A,B,D\}, & N_{Z4}&=\{B,E\},\\
+  N_{Z5}&=\{B,C,F\}, & N_{Z6}&=\{C,D,G\},\\
+  N_{Z7}&=\{D,E,H\}, & N_{Z8}&=\{E,F,H\},\\
+  N_{Z9}&=\{F,G\}, & N_{Z10}&=\{G,H\}.
+  \end{aligned}
+  \]
+
+**Parametri**
+
+- Costi di apertura:
+  \[
+  (c_A,c_B,c_C,c_D,c_E,c_F,c_G,c_H)
+  =(24,20,27,22,25,19,23,21).
+  \]
+- Copertura richiesta:
+  \[
+  r_i=
+  \begin{cases}
+  2 & i\in\{Z3,Z7\},\\
+  1 & \text{altrimenti}.
+  \end{cases}
+  \]
+- Numero massimo di centri apribili:
+  \[
+  K=5.
+  \]
+
+**Variabili decisionali**
+
+\[
+x_j=
+\begin{cases}
+1 & \text{se il centro }j\text{ viene aperto},\\
+0 & \text{altrimenti},
+\end{cases}
+\qquad j\in J.
+\]
+
+## Formulazione matematica completa
+
+### Funzione obiettivo
+
+\[
+\min\quad
+24x_A+20x_B+27x_C+22x_D+25x_E+19x_F+23x_G+21x_H.
+\]
+
+### Vincoli di copertura
+
+\[
+\sum_{j\in N_i}x_j\ge r_i
+\qquad \forall i\in I.
+\]
+
+Esplicitamente:
+
+\[
+\begin{aligned}
+x_A+x_C &\ge 1 &&(Z1),\\
+x_A+x_B &\ge 1 &&(Z2),\\
+x_A+x_B+x_D &\ge 2 &&(Z3),\\
+x_B+x_E &\ge 1 &&(Z4),\\
+x_B+x_C+x_F &\ge 1 &&(Z5),\\
+x_C+x_D+x_G &\ge 1 &&(Z6),\\
+x_D+x_E+x_H &\ge 2 &&(Z7),\\
+x_E+x_F+x_H &\ge 1 &&(Z8),\\
+x_F+x_G &\ge 1 &&(Z9),\\
+x_G+x_H &\ge 1 &&(Z10).
+\end{aligned}
+\]
+
+### Limite sul numero di centri
+
+\[
+x_A+x_B+x_C+x_D+x_E+x_F+x_G+x_H\le 5.
+\]
+
+### Dominio
+
+\[
+x_j\in\{0,1\}
+\qquad \forall j\in J.
+\]
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+centers = ["A", "B", "C", "D", "E", "F", "G", "H"]
+zones = ["Z1", "Z2", "Z3", "Z4", "Z5", "Z6", "Z7", "Z8", "Z9", "Z10"]
+
+cost = {
+    "A": 24,
+    "B": 20,
+    "C": 27,
+    "D": 22,
+    "E": 25,
+    "F": 19,
+    "G": 23,
+    "H": 21
+}
+
+coverage = {
+    "Z1": ["A", "C"],
+    "Z2": ["A", "B"],
+    "Z3": ["A", "B", "D"],
+    "Z4": ["B", "E"],
+    "Z5": ["B", "C", "F"],
+    "Z6": ["C", "D", "G"],
+    "Z7": ["D", "E", "H"],
+    "Z8": ["E", "F", "H"],
+    "Z9": ["F", "G"],
+    "Z10": ["G", "H"]
+}
+
+required_coverage = {
+    zone: 2 if zone in ["Z3", "Z7"] else 1
+    for zone in zones
+}
+
+max_open_centers = 5
+
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+model = gp.Model("copertura_zone", env=env)
+
+x = {
+    center: model.addVar(vtype=GRB.BINARY, name="x_" + center)
+    for center in centers
+}
+
+model.setObjective(
+    gp.quicksum(cost[center] * x[center] for center in centers),
+    GRB.MINIMIZE
+)
+
+for zone in zones:
+    model.addConstr(
+        gp.quicksum(x[center] for center in coverage[zone])
+        >= required_coverage[zone],
+        name="coverage_" + zone
+    )
+
+model.addConstr(
+    gp.quicksum(x[center] for center in centers) <= max_open_centers,
+    name="max_open_centers"
+)
+
+model.optimize()
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+solver_status = status_names.get(model.Status, "STATUS_" + str(model.Status))
+
+if model.Status == GRB.OPTIMAL:
+    variable_values = {}
+    for center in centers:
+        value = x[center].X
+        if abs(value - round(value)) <= 1e-9:
+            value = float(round(value))
+        else:
+            value = float(value)
+        variable_values["x_" + center] = value
+
+    result = {
+        "status": "OPTIMAL",
+        "objective": float(model.ObjVal),
+        "variables": variable_values
+    }
+else:
+    result = {
+        "status": solver_status,
+        "objective": None,
+        "variables": {}
+    }
+
+model.dispose()
+env.dispose()
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## Sintesi della soluzione
+
+Lo stato è **OPTIMAL** e il costo minimo è **106**. I centri aperti sono:
+
+\[
+x_A=x_B=x_D=x_F=x_H=1,
+\]
+
+mentre \(x_C=x_E=x_G=0\). Le cinque aperture coprono tutte le zone e garantiscono la doppia copertura richiesta per \(Z3\) e \(Z7\).

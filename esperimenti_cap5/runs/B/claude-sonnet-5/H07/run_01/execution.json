@@ -1,0 +1,7 @@
+{
+  "returncode": 1,
+  "timed_out": false,
+  "elapsed_seconds": 0.06440075000136858,
+  "stdout": "Set parameter Username\nSet parameter LicenseID to value 2852205\nAcademic license - for non-commercial use only - expires 2027-08-08\n",
+  "stderr": "Traceback (most recent call last):\n  File \"/Users/silviaalonzo/Desktop/tesi_sorgenti/esperimenti_cap5/runs/B/claude-sonnet-5/H07/run_01/generated.py\", line 60, in <module>\n    m.remove([m.getConstrByName(f\"demand_{k}\") for k in K])\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/silviaalonzo/Desktop/tesi_sorgenti/esperimenti_cap5/runs/B/claude-sonnet-5/H07/run_01/generated.py\", line 60, in <listcomp>\n    m.remove([m.getConstrByName(f\"demand_{k}\") for k in K])\n              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"src/gurobipy/_model.pyx\", line 697, in gurobipy._model.Model.getConstrByName\ngurobipy._exception.GurobiError: No constraint names available to index\n"
+}

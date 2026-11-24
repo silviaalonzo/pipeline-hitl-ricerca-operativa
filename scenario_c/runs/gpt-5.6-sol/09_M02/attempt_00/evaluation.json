@@ -1,0 +1,30 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "lotti interi -> x_i variabile intera non negativa",
+        "costo fisso di setup -> termine -f_i y_i nell'obiettivo",
+        "lotto minimo e domanda massima -> L_i y_i <= x_i <= U_i y_i",
+        "90 ore-macchina -> somma_i a_i x_i <= 90",
+        "100 ore di lavoro -> somma_i h_i x_i <= 100",
+        "almeno due articoli diversi -> somma_i y_i >= 2",
+        "margine totale netto -> max somma_i (p_i x_i-f_i y_i)"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

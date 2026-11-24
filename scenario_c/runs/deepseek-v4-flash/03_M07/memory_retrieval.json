@@ -1,0 +1,9 @@
+{
+  "model": "deepseek-v4-flash",
+  "problem_id": "M07",
+  "retrieved_at_utc": "2026-08-24T19:53:40.890759+00:00",
+  "semantic": [],
+  "episodic": [],
+  "semantic_count_total": 1,
+  "episodic_count_total": 1
+}

@@ -1,0 +1,114 @@
+{
+  "schema_version": 1,
+  "chapter": 7,
+  "experiment": "paired_memory_ablation_robustness_replication",
+  "replicate": 2,
+  "created_at_utc": "2026-08-26T18:58:31.492486+00:00",
+  "primary_protocol_sha256": "0fa2f07e2a2107782f02532856b2d2c9b1783179839372f94b0974ee7396d985",
+  "primary_schedule_sha256": "71c4e10dd880ccd1bc0edca9cfbb14501c95f86a71758cf6b75b682211172251",
+  "primary_results_sha256": "ad2b04cac8a94596402338aaed9fd7032d4992cb1eec4875595d3f1a0e68b75f",
+  "same_dataset_prompt_model_solver_gates": true,
+  "memory_updates_during_test": false,
+  "order_reversed_from_primary": true,
+  "executions": 10,
+  "conditions": {
+    "Cmem": "snapshot congelato con cinque episodi e cinque principi semantici",
+    "C0": "memoria vuota e congelata"
+  },
+  "memory_sha256": {
+    "C0": "7b8bcf3a436f07fe0fbdf1167141de2b03b01757e71ca8f2ab7016ede89d032b",
+    "Cmem": "5ecfa21ddb2e834c388cf1bbece9008ae9a88585f2feda1e7c2e69c470e0abc6"
+  },
+  "order": [
+    {
+      "global_order": 1,
+      "pair_sequence": 1,
+      "within_pair": 1,
+      "problem_id": "L05",
+      "condition": "Cmem",
+      "model": "deepseek-v4-flash",
+      "replicate": 2
+    },
+    {
+      "global_order": 2,
+      "pair_sequence": 1,
+      "within_pair": 2,
+      "problem_id": "L05",
+      "condition": "C0",
+      "model": "deepseek-v4-flash",
+      "replicate": 2
+    },
+    {
+      "global_order": 3,
+      "pair_sequence": 2,
+      "within_pair": 1,
+      "problem_id": "L04",
+      "condition": "C0",
+      "model": "deepseek-v4-flash",
+      "replicate": 2
+    },
+    {
+      "global_order": 4,
+      "pair_sequence": 2,
+      "within_pair": 2,
+      "problem_id": "L04",
+      "condition": "Cmem",
+      "model": "deepseek-v4-flash",
+      "replicate": 2
+    },
+    {
+      "global_order": 5,
+      "pair_sequence": 3,
+      "within_pair": 1,
+      "problem_id": "L03",
+      "condition": "Cmem",
+      "model": "deepseek-v4-flash",
+      "replicate": 2
+    },
+    {
+      "global_order": 6,
+      "pair_sequence": 3,
+      "within_pair": 2,
+      "problem_id": "L03",
+      "condition": "C0",
+      "model": "deepseek-v4-flash",
+      "replicate": 2
+    },
+    {
+      "global_order": 7,
+      "pair_sequence": 4,
+      "within_pair": 1,
+      "problem_id": "L02",
+      "condition": "C0",
+      "model": "deepseek-v4-flash",
+      "replicate": 2
+    },
+    {
+      "global_order": 8,
+      "pair_sequence": 4,
+      "within_pair": 2,
+      "problem_id": "L02",
+      "condition": "Cmem",
+      "model": "deepseek-v4-flash",
+      "replicate": 2
+    },
+    {
+      "global_order": 9,
+      "pair_sequence": 5,
+      "within_pair": 1,
+      "problem_id": "L01",
+      "condition": "Cmem",
+      "model": "deepseek-v4-flash",
+      "replicate": 2
+    },
+    {
+      "global_order": 10,
+      "pair_sequence": 5,
+      "within_pair": 2,
+      "problem_id": "L01",
+      "condition": "C0",
+      "model": "deepseek-v4-flash",
+      "replicate": 2
+    }
+  ]
+}

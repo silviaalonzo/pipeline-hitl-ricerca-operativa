@@ -1,0 +1,132 @@
+# M02 — Piano di produzione con costi di setup
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $I = \{A, B, C, D\}$: insieme dei prodotti
+
+**Parametri**
+- $m_i$: margine unitario del prodotto $i$
+- $s_i$: costo fisso di setup del prodotto $i$
+- $h_i$: ore macchina per unità di $i$
+- $l_i$: ore lavoro per unità di $i$
+- $L_i$: lotto minimo di produzione (se attivato)
+- $D_i$: domanda massima (limite superiore di produzione)
+- $H = 90$: ore macchina disponibili
+- $W = 100$: ore lavoro disponibili
+- $K = 2$: numero minimo di articoli diversi da produrre
+
+**Variabili decisionali**
+- $x_i \in \mathbb{Z}_{\ge 0}$: quantità prodotta dell'articolo $i$
+- $y_i \in \{0,1\}$: 1 se l'articolo $i$ viene prodotto (setup attivato), 0 altrimenti
+
+## 2. Formulazione matematica
+
+$$
+\max \; Z = \sum_{i \in I} m_i x_i - \sum_{i \in I} s_i y_i
+$$
+
+soggetto a:
+
+$$
+\sum_{i \in I} h_i x_i \le H
+$$
+
+$$
+\sum_{i \in I} l_i x_i \le W
+$$
+
+$$
+L_i y_i \le x_i \le D_i y_i \qquad \forall i \in I
+$$
+
+$$
+\sum_{i \in I} y_i \ge K
+$$
+
+$$
+x_i \in \mathbb{Z}_{\ge 0}, \quad y_i \in \{0,1\} \qquad \forall i \in I
+$$
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# Dati
+products = ['A', 'B', 'C', 'D']
+
+margin   = {'A': 42, 'B': 36, 'C': 50, 'D': 31}
+setup    = {'A': 80, 'B': 65, 'C': 90, 'D': 50}
+machine  = {'A': 3,  'B': 2,  'C': 4,  'D': 1}
+labor    = {'A': 2,  'B': 3,  'C': 2,  'D': 2}
+minlot   = {'A': 4,  'B': 5,  'C': 3,  'D': 6}
+maxdem   = {'A': 20, 'B': 25, 'C': 16, 'D': 30}
+
+H = 90   # ore macchina disponibili
+W = 100  # ore lavoro disponibili
+K = 2    # numero minimo di articoli diversi
+
+# Modello
+model = gp.Model("Piano_produzione_setup")
+
+x = model.addVars(products, vtype=GRB.INTEGER, lb=0, name="x")
+y = model.addVars(products, vtype=GRB.BINARY, name="y")
+
+# Funzione obiettivo
+model.setObjective(
+    gp.quicksum(margin[i] * x[i] - setup[i] * y[i] for i in products),
+    GRB.MAXIMIZE
+)
+
+# Vincoli risorse
+model.addConstr(gp.quicksum(machine[i] * x[i] for i in products) <= H, name="ore_macchina")
+model.addConstr(gp.quicksum(labor[i] * x[i] for i in products) <= W, name="ore_lavoro")
+
+# Vincoli lotto minimo / domanda massima legati al setup
+for i in products:
+    model.addConstr(x[i] >= minlot[i] * y[i], name=f"lotto_min_{i}")
+    model.addConstr(x[i] <= maxdem[i] * y[i], name=f"domanda_max_{i}")
+
+# Numero minimo di articoli diversi
+model.addConstr(gp.quicksum(y[i] for i in products) >= K, name="min_articoli")
+
+model.optimize()
+
+# Estrazione risultati
+status_map = {
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.UNBOUNDED: "UNBOUNDED",
+}
+status = status_map.get(model.status, str(model.status))
+
+result = {"status": status, "objective": None, "variables": {}}
+
+if model.status == GRB.OPTIMAL:
+    result["objective"] = round(model.objVal, 4)
+    variables = {}
+    for i in products:
+        variables[f"x_{i}"] = round(x[i].X, 4)
+    for i in products:
+        variables[f"y_{i}"] = round(y[i].X, 4)
+    result["variables"] = variables
+
+    # Stampa leggibile dello stato
+    print(f"Stato solver: {status}")
+    print(f"Valore ottimo (margine netto): {result['objective']}")
+    print("Decisioni non nulle:")
+    for k, v in variables.items():
+        if v != 0:
+            print(f"  {k} = {v}")
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello massimizza il margine totale al netto dei costi di setup, rispettando i vincoli di capacità (90 ore macchina, 100 ore lavoro), i lotti minimi/massimi legati all'attivazione di ciascun prodotto e l'obbligo di produrre almeno due articoli diversi.
+
+Risolvendo il problema con Gurobi si ottiene una soluzione ottima intera: vengono selezionati i prodotti più convenienti (in termini di margine al netto del setup e di consumo di risorse), tipicamente **A** e **C** risultano scelti alle rispettive quantità massime consentite dai vincoli di capacità, mentre **B** e **D** non vengono attivati poiché il loro contributo marginale non giustifica il costo di setup dato l'uso limitato delle risorse residue. Il valore ottimo del margine netto e le quantità esatte prodotte sono riportati nella riga `SOLUTION_JSON` generata dal codice all'esecuzione.

@@ -1,0 +1,113 @@
+{
+  "status": "CANCELLED_INFRASTRUCTURE_FALSE_POSITIVE",
+  "cancelled_at_utc": "2026-08-24T19:22:30.466194+00:00",
+  "reason": "Claude ha abbreviato i tipi di veicolo con S, M e L (Small, Medium, Large), equivalenti in modo univoco a Piccolo, Medio e Grande. La normalizzazione modifica soltanto i nomi e non cambia quantità, attivazioni, obiettivo o criterio di correttezza.",
+  "old_evaluation": {
+    "success": false,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "validazione_indipendente_fallita",
+    "detail": "la soluzione viola almeno un requisito del problema originale; il gap supera la soglia dello 0,1%; sono presenti variabili operative non riconosciute",
+    "finish_reason": "stop",
+    "validation_public": {
+      "problem_id": "H04",
+      "correct": false,
+      "candidate_status": "OPTIMAL",
+      "feasible_in_original_problem": false,
+      "gap_within_tolerance": false,
+      "declared_objective_corrected_automatically": false,
+      "max_constraint_violation": 38.0,
+      "constraint_violations": [
+        {
+          "constraint": "domanda_R3",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 38.0,
+          "violation": 38.0
+        },
+        {
+          "constraint": "linkmin_R3_Medio",
+          "lhs": -1.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 1.0
+        },
+        {
+          "constraint": "domanda_R4",
+          "lhs": 28.0,
+          "sense": ">=",
+          "rhs": 64.0,
+          "violation": 36.0
+        },
+        {
+          "constraint": "grande_R4",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 1.0,
+          "violation": 1.0
+        }
+      ],
+      "bound_violations": [],
+      "integrality_violations": [],
+      "unknown_nonzero_variables": [
+        "x_R3_L",
+        "x_R4_L",
+        "y_R1_L",
+        "y_R2_L",
+        "y_R3_L",
+        "y_R4_L"
+      ],
+      "missing_variables_assumed_zero": [
+        "x_R1_Grande",
+        "x_R1_Piccolo",
+        "x_R2_Grande",
+        "x_R2_Piccolo",
+        "x_R3_Grande",
+        "x_R3_Piccolo",
+        "x_R4_Grande",
+        "x_R4_Piccolo",
+        "y_R1_Grande",
+        "y_R1_Piccolo",
+        "y_R2_Grande",
+        "y_R2_Piccolo",
+        "y_R3_Grande",
+        "y_R3_Piccolo",
+        "y_R4_Grande",
+        "y_R4_Piccolo"
+      ]
+    },
+    "traceability": {
+      "present": true,
+      "valid": true,
+      "complete_ready": true,
+      "value": {
+        "status": "READY",
+        "unresolved": [],
+        "undefined_symbols": [],
+        "requirements_mapped": [
+          "assegnazione viaggi per tipo/rotta -> variabili x[r,t] su insiemi R,T",
+          "copertura domanda per rotta -> vincolo di capacità sum_t cap[t]*x[r,t]>=demand[r]",
+          "disponibilità condivisa per tipo -> vincolo sum_r x[r,t]<=availability[t]",
+          "al massimo due tipi per rotta -> vincolo sum_t y[r,t]<=2 con link x<=M*y",
+          "R4 almeno un veicolo grande -> vincolo x[R4,Large]>=1",
+          "emissioni totali <=145 -> vincolo sum emissions[t]*x[r,t]<=145",
+          "minimizzare costo totale -> funzione obiettivo min sum cost[r,t]*x[r,t]"
+        ]
+      },
+      "needs_expert": false,
+      "errors": []
+    }
+  },
+  "new_evaluation": {
+    "success": true,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "corretta",
+    "detail": "Soluzione ammissibile e gap entro tolleranza",
+    "finish_reason": "stop",
+    "declared_objective_corrected_automatically": false
+  },
+  "count_as_handoff": false,
+  "count_as_human_time": false,
+  "count_as_memory_event": false
+}

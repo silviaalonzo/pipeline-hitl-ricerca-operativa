@@ -1,0 +1,68 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "gpt-5.6-sol",
+  "problem_id": "H02",
+  "problem_sequence": 4,
+  "domain": "Produzione e scorte",
+  "difficulty": "Elevata",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-24T18:02:49.226851+00:00",
+  "updated_at_utc": "2026-08-24T18:07:54.120899+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:07:54.120097+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "domanda senza arretrati -> equazioni di bilancio con scorte non negative",
+              "scorte iniziali 0,0,6 -> parametro I0 nei bilanci di T1",
+              "setup per articolo e periodo -> variabili binarie y e costi f_i y_it",
+              "lotto minimo -> vincoli L_i y_it <= x_it",
+              "massimo due articoli attivi per periodo -> somma_i y_it <= 2",
+              "capacità in ore -> somma_i a_i x_it <= H_t",
+              "scorta totale massima 20 -> somma_i I_it <= 20",
+              "scorte finali nulle -> I_i,T4 = 0",
+              "produzione e scorte intere -> x_it e I_it intere non negative",
+              "minimizzazione dei costi -> costi di produzione, setup e mantenimento in funzione obiettivo"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "gpt-5.6-sol",
+    "problem_id": "H02",
+    "retrieved_at_utc": "2026-08-24T18:02:49.226844+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

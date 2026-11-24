@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "domanda integralmente soddisfatta e ripartibile -> vincoli di bilancio con flussi continui x_ij",
+        "apertura da tre a quattro centri -> 3 <= somma_i y_i <= 4",
+        "movimentazione minima e capacità -> 20 y_i <= somma_j x_ij <= u_i y_i",
+        "resilienza Nord-Sud -> somma_{i in N} y_i >= 1 e somma_{i in S} y_i >= 1",
+        "costi fissi e unitari -> funzione obiettivo",
+        "limite di 470 emissioni -> somma_{i,j} e_ij x_ij <= 470"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "returncode": 0,
+  "timed_out": false,
+  "elapsed_seconds": 0.08374229199944239,
+  "stdout": "Set parameter Username\nSet parameter LicenseID to value 2852205\nAcademic license - for non-commercial use only - expires 2027-08-08\nSOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":42.0,\"variables\":{\"S[J1]\":0.0,\"S[J2]\":12.0,\"S[J3]\":5.0,\"S[J4]\":24.0,\"S[J5]\":9.0,\"S[J6]\":30.0,\"S[J7]\":19.0,\"C[J1]\":5.0,\"C[J2]\":19.0,\"C[J3]\":9.0,\"C[J4]\":30.0,\"C[J5]\":12.0,\"C[J6]\":38.0,\"C[J7]\":24.0,\"T[J1]\":0.0,\"T[J2]\":2.0,\"T[J3]\":0.0,\"T[J4]\":8.0,\"T[J5]\":0.0,\"T[J6]\":10.0,\"T[J7]\":0.0,\"x[J1,J2]\":1.0,\"x[J1,J3]\":1.0,\"x[J1,J4]\":1.0,\"x[J1,J5]\":1.0,\"x[J1,J6]\":1.0,\"x[J1,J7]\":1.0,\"x[J2,J3]\":0.0,\"x[J2,J4]\":1.0,\"x[J2,J5]\":0.0,\"x[J2,J6]\":1.0,\"x[J2,J7]\":1.0,\"x[J3,J4]\":1.0,\"x[J3,J5]\":1.0,\"x[J3,J6]\":1.0,\"x[J3,J7]\":1.0,\"x[J4,J5]\":0.0,\"x[J4,J6]\":1.0,\"x[J4,J7]\":0.0,\"x[J5,J6]\":1.0,\"x[J5,J7]\":1.0,\"x[J6,J7]\":0.0}}\n",
+  "stderr": ""
+}

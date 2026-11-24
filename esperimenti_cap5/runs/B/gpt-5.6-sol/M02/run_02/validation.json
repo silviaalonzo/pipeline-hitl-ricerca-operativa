@@ -1,0 +1,34 @@
+{
+  "problem_id": "M02",
+  "candidate_status": "OPTIMAL",
+  "feasible": true,
+  "correct": true,
+  "recomputed_objective": 1640.0,
+  "known_optimum": 1640.0,
+  "relative_gap": 0.0,
+  "max_violation": 0.0,
+  "declared_objective": 1640.0,
+  "declared_objective_delta": 0.0,
+  "missing_variables_assumed_zero": [],
+  "unknown_variables": [],
+  "duplicate_variable_names": [],
+  "normalized_variable_names": {
+    "x[A]": "x_A",
+    "x[B]": "x_B",
+    "x[C]": "x_C",
+    "x[D]": "x_D",
+    "y[A]": "y_A",
+    "y[B]": "y_B",
+    "y[C]": "y_C",
+    "y[D]": "y_D"
+  },
+  "numeric_error": null,
+  "bound_violations": [],
+  "integrality_violations": [],
+  "constraint_violations": [],
+  "tolerances": {
+    "feasibility": 1e-06,
+    "integrality": 1e-05,
+    "relative_gap": 0.001
+  }
+}

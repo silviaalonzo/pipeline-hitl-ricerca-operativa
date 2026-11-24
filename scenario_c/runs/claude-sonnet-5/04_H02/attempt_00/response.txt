@@ -1,0 +1,169 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["Domanda soddisfatta senza arretrati -> vincolo di bilancio scorte s[i,t-1]+x[i,t]-d[i,t]=s[i,t]","Setup per attivazione produzione -> variabile binaria y[i,t] e vincolo x[i,t]<=M*y[i,t]","Massimo due articoli attivi per periodo -> vincolo sum_i y[i,t] <= 2","Scorta totale massima 20 unità -> vincolo sum_i s[i,t] <= 20","Scorte finali nulle -> vincolo s[i,T]=0","Capacità oraria per periodo -> vincolo sum_i hours[i]*x[i,t] <= capacity[t]","Lotto minimo di produzione -> vincolo x[i,t]>=minlot[i]*y[i,t]","Minimizzazione costi di produzione, setup e mantenimento -> funzione obiettivo"]}
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- I = {A, B, C}: prodotti
+- T = {1, 2, 3, 4}: periodi
+
+**Parametri**
+- d[i,t]: domanda del prodotto i nel periodo t
+- c[i,t]: costo unitario di produzione del prodotto i nel periodo t
+- su[i]: costo di setup del prodotto i
+- h[i]: costo unitario di mantenimento a scorta del prodotto i
+- a[i]: ore richieste per unità del prodotto i
+- L[i]: lotto minimo di produzione del prodotto i
+- Cap[t]: capacità oraria disponibile nel periodo t
+- I0[i]: scorta iniziale del prodotto i (A=0, B=0, C=6)
+- maxSetups = 2: massimo numero di articoli attivabili per periodo
+- maxInv = 20: scorta totale massima per periodo
+- M[i] = Σ_t d[i,t]: big-M per il legame produzione–setup (limite superiore sicuro sulla produzione in un singolo periodo)
+
+**Variabili decisionali**
+- x[i,t] ≥ 0, intera: quantità prodotta del prodotto i nel periodo t
+- s[i,t] ≥ 0, intera: scorta finale del prodotto i alla fine del periodo t (s[i,0] = I0[i])
+- y[i,t] ∈ {0,1}: 1 se il prodotto i viene prodotto (setup attivato) nel periodo t
+
+## 2. Formulazione matematica
+
+**Funzione obiettivo**
+
+min Σ_{i∈I} Σ_{t∈T} ( c[i,t]·x[i,t] + su[i]·y[i,t] + h[i]·s[i,t] )
+
+**Vincoli**
+
+1. Bilancio di scorte:
+   s[i,t-1] + x[i,t] − d[i,t] = s[i,t]  ∀ i∈I, t∈T (con s[i,0] = I0[i])
+
+2. Scorte finali nulle:
+   s[i,|T|] = 0  ∀ i∈I
+
+3. Legame produzione–setup (big-M):
+   x[i,t] ≤ M[i]·y[i,t]  ∀ i∈I, t∈T
+
+4. Lotto minimo:
+   x[i,t] ≥ L[i]·y[i,t]  ∀ i∈I, t∈T
+
+5. Massimo due articoli attivi per periodo:
+   Σ_{i∈I} y[i,t] ≤ maxSetups  ∀ t∈T
+
+6. Scorta totale massima:
+   Σ_{i∈I} s[i,t] ≤ maxInv  ∀ t∈T
+
+7. Capacità oraria:
+   Σ_{i∈I} a[i]·x[i,t] ≤ Cap[t]  ∀ t∈T
+
+8. Domini:
+   x[i,t] ∈ ℤ≥0, s[i,t] ∈ ℤ≥0, y[i,t] ∈ {0,1}  ∀ i∈I, t∈T
+
+## 3. Codice Python (gurobipy)
+
+```python
+import json
+import gurobipy as gp
+from gurobipy import GRB
+
+# ---------------- Dati ----------------
+products = ['A', 'B', 'C']
+periods = [1, 2, 3, 4]
+
+demand = {
+    ('A',1):8, ('A',2):12, ('A',3):10, ('A',4):14,
+    ('B',1):10,('B',2):8,  ('B',3):14, ('B',4):12,
+    ('C',1):6, ('C',2):9,  ('C',3):7,  ('C',4):11,
+}
+
+prod_cost = {
+    ('A',1):9,  ('A',2):11, ('A',3):10, ('A',4):12,
+    ('B',1):8,  ('B',2):9,  ('B',3):11, ('B',4):10,
+    ('C',1):13, ('C',2):12, ('C',3):14, ('C',4):11,
+}
+
+setup_cost = {'A':45, 'B':40, 'C':50}
+holding_cost = {'A':2, 'B':3, 'C':2}
+hours_per_unit = {'A':2, 'B':3, 'C':4}
+min_lot = {'A':4, 'B':4, 'C':3}
+initial_inv = {'A':0, 'B':0, 'C':6}
+
+capacity = {1:90, 2:95, 3:90, 4:100}
+
+max_setups_per_period = 2
+max_total_inventory = 20
+
+# Big-M: somma totale della domanda per prodotto (limite sicuro sulla produzione in un periodo)
+bigM = {i: sum(demand[(i,t)] for t in periods) for i in products}
+
+# ---------------- Modello ----------------
+m = gp.Model("H02_produzione_multiperiodo")
+
+x = m.addVars(products, periods, vtype=GRB.INTEGER, lb=0, name="x")
+s = m.addVars(products, periods, vtype=GRB.INTEGER, lb=0, name="s")
+y = m.addVars(products, periods, vtype=GRB.BINARY, name="y")
+
+# Bilancio di scorte
+for i in products:
+    prev = initial_inv[i]
+    for t in periods:
+        m.addConstr(prev + x[i,t] - demand[(i,t)] == s[i,t], name=f"bal_{i}_{t}")
+        prev = s[i,t]
+
+# Scorte finali nulle
+last_t = periods[-1]
+for i in products:
+    m.addConstr(s[i,last_t] == 0, name=f"final_inv_{i}")
+
+# Legame produzione-setup (big-M) e lotto minimo
+for i in products:
+    for t in periods:
+        m.addConstr(x[i,t] <= bigM[i] * y[i,t], name=f"link_{i}_{t}")
+        m.addConstr(x[i,t] >= min_lot[i] * y[i,t], name=f"minlot_{i}_{t}")
+
+# Massimo due articoli attivi per periodo
+for t in periods:
+    m.addConstr(gp.quicksum(y[i,t] for i in products) <= max_setups_per_period,
+                name=f"max_setups_{t}")
+
+# Scorta totale massima
+for t in periods:
+    m.addConstr(gp.quicksum(s[i,t] for i in products) <= max_total_inventory,
+                name=f"max_inv_{t}")
+
+# Capacità oraria
+for t in periods:
+    m.addConstr(gp.quicksum(hours_per_unit[i] * x[i,t] for i in products) <= capacity[t],
+                name=f"cap_{t}")
+
+# ---------------- Obiettivo ----------------
+obj = gp.quicksum(prod_cost[(i,t)] * x[i,t] for i in products for t in periods) \
+    + gp.quicksum(setup_cost[i] * y[i,t] for i in products for t in periods) \
+    + gp.quicksum(holding_cost[i] * s[i,t] for i in products for t in periods)
+
+m.setObjective(obj, GRB.MINIMIZE)
+
+m.optimize()
+
+# ---------------- Output ----------------
+status = m.Status
+result = {"status": None, "objective": None, "variables": {}}
+
+if status == GRB.OPTIMAL:
+    result["status"] = "OPTIMAL"
+    result["objective"] = round(m.ObjVal, 4)
+    variables = {}
+    for i in products:
+        for t in periods:
+            variables[f"x_{i}_{t}"] = round(x[i,t].X, 4)
+            variables[f"s_{i}_{t}"] = round(s[i,t].X, 4)
+            variables[f"y_{i}_{t}"] = round(y[i,t].X, 4)
+    result["variables"] = variables
+else:
+    result["status"] = "NOT_OPTIMAL_STATUS_%d" % status
+    result["objective"] = None
+    result["variables"] = {}
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello MILP pianifica la produzione, i setup e le scorte dei tre articoli su quattro periodi, minimizzando la somma di costi di produzione, costi fissi di setup e costi di mantenimento a scorta, nel rispetto di: bilancio di scorte periodo-per-periodo (con scorta iniziale nulla per A e B, pari a 6 per C), scorte finali obbligatoriamente nulle, legame tra produzione e setup tramite big‑M e lotto minimo, limite di due setup attivi per periodo, limite di 20 unità di scorta totale per periodo e capacità oraria per periodo. Il codice Gurobi costruisce esplicitamente tutte le variabili (x, s, y) per ogni combinazione prodotto‑periodo, impone tutti i vincoli sopra descritti e risolve il problema; al termine stampa un'unica riga `SOLUTION_JSON` con lo stato del solver, il valore ottimo della funzione obiettivo e il valore di tutte le variabili decisionali (comprese quelle nulle).

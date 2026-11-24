@@ -1,0 +1,64 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "gpt-5.6-sol",
+  "problem_id": "H04",
+  "problem_sequence": 18,
+  "domain": "Trasporto",
+  "difficulty": "Elevata",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-24T18:34:38.018632+00:00",
+  "updated_at_utc": "2026-08-24T18:36:34.505061+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:36:34.504283+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "copertura della domanda per rotta -> vincoli di capacità assegnata",
+              "disponibilità condivisa della flotta -> vincoli aggregati per tipo",
+              "massimo due tipi per rotta -> variabili binarie y e vincoli di cardinalità",
+              "almeno un veicolo grande su R4 -> x[R4,Grande]>=1",
+              "emissioni totali non superiori a 145 -> vincolo globale sulle emissioni",
+              "minimizzazione del costo dei viaggi -> funzione obiettivo"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "gpt-5.6-sol",
+    "problem_id": "H04",
+    "retrieved_at_utc": "2026-08-24T18:34:38.018624+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

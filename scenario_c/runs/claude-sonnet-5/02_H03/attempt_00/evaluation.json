@@ -1,0 +1,31 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "Domanda giornaliera minima -> vincolo di copertura sum_e x[e,d] >= dom[d]",
+        "Presenza senior (E1,E2,E3) ogni giorno -> vincolo sum_{e in Senior} x[e,d] >= 1",
+        "Ogni dipendente lavora 3-5 giorni -> vincolo 3 <= sum_d x[e,d] <= 5",
+        "Vietati 4 giorni consecutivi -> vincolo su finestre mobili di 4 giorni sum x[e,t..t+3] <= 3",
+        "E7/E8 specialisti Gio/Ven -> vincoli x[E7,d]+x[E8,d] >= 1 per d in {Gio,Ven}",
+        "E1/E2 al massimo 1 giorno di weekend -> vincolo x[e,Sab]+x[e,Dom] <= 1 per e in {E1,E2}",
+        "Indisponibilità (—) -> variabili x[e,d] non create/fissate a 0",
+        "Minimizzare il costo -> funzione obiettivo min sum cost[e,d]*x[e,d]"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "problem_id": "H04",
+  "correct": true,
+  "candidate_status": "OPTIMAL",
+  "feasible_in_original_problem": true,
+  "gap_within_tolerance": true,
+  "declared_objective_corrected_automatically": false,
+  "max_constraint_violation": 1.0,
+  "constraint_violations": [
+    {
+      "constraint": "linkmin_R1_Grande",
+      "lhs": -1.0,
+      "sense": ">=",
+      "rhs": 0.0,
+      "violation": 1.0
+    },
+    {
+      "constraint": "linkmin_R2_Grande",
+      "lhs": -1.0,
+      "sense": ">=",
+      "rhs": 0.0,
+      "violation": 1.0
+    },
+    {
+      "constraint": "linkmin_R3_Medio",
+      "lhs": -1.0,
+      "sense": ">=",
+      "rhs": 0.0,
+      "violation": 1.0
+    }
+  ],
+  "bound_violations": [],
+  "integrality_violations": [],
+  "unknown_nonzero_variables": [],
+  "missing_variables_assumed_zero": []
+}

@@ -1,0 +1,19 @@
+{
+  "scenario": "C",
+  "model": "deepseek-v4-flash",
+  "problem_id": "M05",
+  "problem_sequence": 11,
+  "completed_at_utc": "2026-08-24T21:02:40.319330+00:00",
+  "correct": true,
+  "pass": true,
+  "final_attempt": "attempt_00",
+  "attempt_count": 1,
+  "automatic_repair_count": 0,
+  "traceability_repair_count": 0,
+  "code_repair_count": 0,
+  "handoff_count": 0,
+  "human_minutes": 0,
+  "handoff_stages": [],
+  "memory_semantic_retrieved": 1,
+  "memory_episodic_retrieved": 1
+}

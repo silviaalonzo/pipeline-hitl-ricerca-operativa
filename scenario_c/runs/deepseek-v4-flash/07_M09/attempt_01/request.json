@@ -1,0 +1,23 @@
+{
+  "scenario": "C",
+  "model_key": "deepseek-v4-flash",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "configuration": {
+    "provider": "openrouter",
+    "upstream_provider": "deepseek",
+    "model": "deepseek/deepseek-v4-flash",
+    "reasoning_effort": "high",
+    "max_output_tokens": 24000
+  },
+  "created_at_utc": "2026-08-24T20:32:14.601153+00:00",
+  "metadata": {
+    "problem_id": "M09",
+    "problem_sequence": 7,
+    "attempt_number": 1,
+    "attempt_kind": "AUTO_REPAIR",
+    "auto_repair_count_current_cycle": 1
+  },
+  "system_prompt": "Correggi un programma Python/gurobipy all'interno di una pipeline di Ricerca Operativa.\nUsa soltanto la traccia, la formulazione o l'istruzione dell'esperto e il messaggio di errore forniti.\nNon usare informazioni esterne e non inventare dati.\n\nRestituisci ESCLUSIVAMENTE un solo blocco di codice Python eseguibile, senza testo prima o dopo.\nIl codice deve costruire e risolvere il modello con Gurobi e stampare alla fine esattamente una riga:\n\nSOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":0.0,\"variables\":{\"nome_variabile\":0.0}}\n\nNel dizionario variables devono comparire tutte le variabili decisionali, comprese quelle nulle.\nSe il solver non restituisce una soluzione ottima, usa lo stato effettivo, objective null e variables vuoto.\nNon leggere o scrivere file, non accedere alla rete, non invocare altri processi e non importare librerie diverse\nda gurobipy, json, math e itertools.\n",
+  "user_prompt": "TRACCIA ORIGINALE:\n# M09 — Piano di riordino con costi fissi\n\nDifficoltà: Media\nClasse: MILP intera\n\nUn’impresa pianifica gli ordini di un prodotto per sei periodi. La scorta iniziale è 10, non sono ammessi arretrati e la scorta finale deve essere almeno 5.\nUn ordine attivato deve essere di almeno 10 unità e non può superare la capacità del periodo. Ogni ordine comporta un costo fisso di 40; il costo di mantenimento è 2 per unità rimasta a fine periodo.\nOrdini e scorte sono interi. Minimizzare il costo complessivo.\n\n## Dati per periodo\n\nPeriodo | Domanda | Costo acquisto | Capacità ordine\n--- | --- | --- | ---\n1 | 20 | 9 | 50\n2 | 30 | 8 | 50\n3 | 15 | 11 | 45\n4 | 35 | 7 | 55\n5 | 25 | 10 | 45\n6 | 20 | 9 | 50\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n\nMEMORIA DELLA PIPELINE (usa solo gli elementi pertinenti; non sono soluzioni del problema corrente):\n- Principio: Nei problemi di produzione multi-periodo, indicizzare esplicitamente anche la scorta iniziale e collegare periodi consecutivi mediante il bilancio produzione più scorta precedente uguale domanda più scorta finale; completare poi il collegamento tra produzione e setup con limiti minimo e massimo di lotto.\n- Episodio precedente: dominio=Produzione e scorte; errore=output_troncato_o_senza_codice; correzione=Dopo tre riparazioni automatiche concluse senza codice eseguibile, l’esperto ha completato il modello MILP introducendo variabili di produzione, scorta e setup, bilanci intertemporali, condizioni iniziali e finali, capacità, limite ai setup e vincoli di lotto.\n\nCICLO DI SELF-REPAIR 1/3\nCategoria: output_troncato_o_senza_codice\nDettaglio verificabile:\nAtteso un solo blocco Python, trovati 0\n\nLa risposta precedente non ha prodotto codice estraibile. Non ripeterne le spiegazioni.\n\nCorreggi soltanto ciò che impedisce l'esecuzione o la soluzione del modello. Restituisci esclusivamente il singolo blocco Python richiesto."
+}

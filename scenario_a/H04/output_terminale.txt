@@ -1,0 +1,74 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 37 rows, 24 columns and 97 nonzeros (Min)
+Model fingerprint: 0xcc690906
+Model has 12 linear objective coefficients
+Variable types: 0 continuous, 24 integer (12 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 2e+01]
+  Objective range  [4e+01, 1e+02]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+02]
+
+Found heuristic solution: objective 1172.0000000
+Presolve removed 3 rows and 1 columns
+Presolve time: 0.00s
+Presolved: 34 rows, 23 columns, 91 nonzeros
+Variable types: 0 continuous, 23 integer (11 binary)
+
+Root relaxation: objective 8.970286e+02, 8 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  897.02857    0    3 1172.00000  897.02857  23.5%     -    0s
+H    0     0                     972.0000000  897.02857  7.71%     -    0s
+H    0     0                     970.0000000  897.02857  7.52%     -    0s
+     0     0  934.02222    0    6  970.00000  934.02222  3.71%     -    0s
+     0     0  934.41270    0    7  970.00000  934.41270  3.67%     -    0s
+     0     0  948.85714    0    6  970.00000  948.85714  2.18%     -    0s
+     0     0  956.66667    0    1  970.00000  956.66667  1.37%     -    0s
+H    0     0                     962.0000000  957.64286  0.45%     -    0s
+
+Cutting planes:
+  Gomory: 2
+  Cover: 1
+  Implied bound: 1
+  MIR: 4
+
+Explored 1 nodes (33 simplex iterations) in 0.01 seconds (0.00 work units)
+Thread count was 8 (of 8 available processors)
+
+Solution count 4: 962 970 972 1172 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 9.620000000000e+02, best bound 9.620000000000e+02, gap 0.0000%
+
+======================================================================
+Stato finale Gurobi : 2
+Runtime Gurobi      : 0.0120 s
+Variabili           : 24
+Vincoli             : 37
+Valore obiettivo    : 962
+
+Viaggi assegnati (tipo -> rotta : numero):
+  Medio -> R1 : 3
+  Medio -> R2 : 4
+  Medio -> R4 : 2
+  Grande -> R3 : 2
+  Grande -> R4 : 2
+
+Capacità offerta per rotta:
+  R1 : 42 unità di capacità, 3 viaggi (domanda 42)
+  R2 : 56 unità di capacità, 4 viaggi (domanda 55)
+  R3 : 40 unità di capacità, 2 viaggi (domanda 38)
+  R4 : 68 unità di capacità, 4 viaggi (domanda 64)
+
+Emissioni totali : 116 / 145
+======================================================================

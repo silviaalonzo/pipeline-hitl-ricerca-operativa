@@ -1,0 +1,29 @@
+{
+  "success": false,
+  "repairable": true,
+  "stage": 3,
+  "failure_class": "soluzione_non_leggibile",
+  "detail": "Expecting property name enclosed in double quotes: line 1 column 53 (char 52)",
+  "finish_reason": "stop",
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "Acquisto esatto di 80/70/60 unità -> vincoli di domanda sum_i x[i,k]=demand[k]",
+        "Almeno due fornitori per componente con minimo 10 unità -> vincoli sum_i z[i,k]>=2 e x[i,k]>=10*z[i,k]",
+        "Capacità complessiva sui tre componenti -> vincolo sum_k x[i,k]<=cap[i]*y[i]",
+        "Qualità media >=95 per componente -> vincolo sum_i qual[i,k]*x[i,k]>=95*demand[k]",
+        "Al massimo 4 fornitori attivi e almeno uno tra A e B -> vincoli sum_i y[i]<=4 e y[A]+y[B]>=1",
+        "Rischio totale <=580 -> vincolo sum risk[i]*x[i,k]<=580",
+        "Minimizzare costi acquisto e attivazione -> funzione obiettivo con costi unitari e costi fissi"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

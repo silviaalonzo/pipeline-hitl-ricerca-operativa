@@ -1,0 +1,72 @@
+{
+  "problem_id": "H06",
+  "correct": true,
+  "candidate_status": "OPTIMAL",
+  "feasible_in_original_problem": true,
+  "gap_within_tolerance": true,
+  "declared_objective_corrected_automatically": false,
+  "max_constraint_violation": 38.0,
+  "constraint_violations": [
+    {
+      "constraint": "completion_J1",
+      "lhs": 0.0,
+      "sense": "=",
+      "rhs": 5.0,
+      "violation": 5.0
+    },
+    {
+      "constraint": "completion_J2",
+      "lhs": -12.0,
+      "sense": "=",
+      "rhs": 7.0,
+      "violation": 19.0
+    },
+    {
+      "constraint": "completion_J3",
+      "lhs": -5.0,
+      "sense": "=",
+      "rhs": 4.0,
+      "violation": 9.0
+    },
+    {
+      "constraint": "completion_J4",
+      "lhs": -24.0,
+      "sense": "=",
+      "rhs": 6.0,
+      "violation": 30.0
+    },
+    {
+      "constraint": "completion_J5",
+      "lhs": -9.0,
+      "sense": "=",
+      "rhs": 3.0,
+      "violation": 12.0
+    },
+    {
+      "constraint": "completion_J6",
+      "lhs": -30.0,
+      "sense": "=",
+      "rhs": 8.0,
+      "violation": 38.0
+    },
+    {
+      "constraint": "completion_J7",
+      "lhs": -19.0,
+      "sense": "=",
+      "rhs": 5.0,
+      "violation": 24.0
+    }
+  ],
+  "bound_violations": [],
+  "integrality_violations": [],
+  "unknown_nonzero_variables": [],
+  "missing_variables_assumed_zero": [
+    "C_J1",
+    "C_J2",
+    "C_J3",
+    "C_J4",
+    "C_J5",
+    "C_J6",
+    "C_J7"
+  ]
+}

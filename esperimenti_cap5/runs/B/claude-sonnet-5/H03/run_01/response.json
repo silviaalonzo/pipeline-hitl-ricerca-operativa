@@ -1,0 +1,73 @@
+{
+  "id": "gen-1786382159-CzYia7RNo4KuseGZsKDp",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "# H03 — Turnazione settimanale con competenze e riposi\n\n## 1. Insiemi, parametri e variabili decisionali\n\n**Insiemi**\n- $E = \\{E1,E2,E3,E4,E5,E6,E7,E8\\}$ — dipendenti\n- $D = \\{1,\\dots,7\\}$ — giorni (1=Lun,...,7=Dom)\n- $S = \\{E1,E2,E3\\} \\subset E$ — dipendenti \"senior\"\n- $P = \\{E7,E8\\} \\subset E$ — specialisti\n- $W = \\{6,7\\}$ — giorni di fine settimana (Sab, Dom)\n- $A \\subseteq E\\times D$ — coppie (dipendente, giorno) in cui il dipendente è **disponibile** (costo diverso da “—”)\n\n**Parametri**\n- $c_{e,d}$ = costo giornaliero del dipendente $e$ nel giorno $d$, per $(e,d)\\in A$ (per $(e,d)\\notin A$ il valore non è definito / non ammesso)\n- $dem_d$ = domanda minima di addetti nel giorno $d$ (4,3,4,4,5,3,3)\n\n**Variabili decisionali**\n$$x_{e,d} \\in \\{0,1\\} \\quad \\forall e\\in E, d\\in D$$\n$x_{e,d}=1$ se il dipendente $e$ lavora nel giorno $d$, 0 altrimenti. Per $(e,d)\\notin A$ si impone $x_{e,d}=0$ (indisponibilità).\n\n## 2. Formulazione matematica\n\n**Funzione obiettivo**\n\n$$\\min \\sum_{(e,d)\\in A} c_{e,d}\\, x_{e,d}$$\n\n**Vincoli**\n\n1. Copertura minima giornaliera:\n$$\\sum_{e\\in E} x_{e,d} \\ge dem_d \\qquad \\forall d\\in D$$\n\n2. Presenza di almeno un senior ogni giorno:\n$$\\sum_{e\\in S} x_{e,d} \\ge 1 \\qquad \\forall d\\in D$$\n\n3. Giorni lavorati per dipendente (min 3, max 5):\n$$3 \\le \\sum_{d\\in D} x_{e,d} \\le 5 \\qquad \\forall e\\in E$$\n\n4. Divieto di 4 giorni consecutivi lavorati (finestre mobili di lunghezza 4, senza ciclicità):\n$$\\sum_{d=w}^{w+3} x_{e,d} \\le 3 \\qquad \\forall e\\in E,\\ w=1,2,3,4$$\n\n5. Specialisti presenti Giovedì (d=4) e Venerdì (d=5):\n$$\\sum_{e\\in P} x_{e,4} \\ge 1, \\qquad \\sum_{e\\in P} x_{e,5} \\ge 1$$\n\n6. E1 ed E2 al massimo un giorno di weekend:\n$$\\sum_{d\\in W} x_{e,d} \\le 1 \\qquad \\forall e\\in \\{E1,E2\\}$$\n\n7. Indisponibilità:\n$$x_{e,d} = 0 \\qquad \\forall (e,d)\\notin A$$\n\n8. Dominio:\n$$x_{e,d}\\in\\{0,1\\}\\qquad \\forall e\\in E,\\ d\\in D$$\n\n## 3. Codice Python (gurobipy)\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\n# ---------------- Dati ----------------\ndays = [\"Lun\",\"Mar\",\"Mer\",\"Gio\",\"Ven\",\"Sab\",\"Dom\"]\nemployees = [\"E1\",\"E2\",\"E3\",\"E4\",\"E5\",\"E6\",\"E7\",\"E8\"]\n\ndemand = {1:4, 2:3, 3:4, 4:4, 5:5, 6:3, 7:3}  # 1..7 -> Lun..Dom\n\n# Costi: None indica indisponibilità (\"—\")\ncost = {\n    \"E1\": [9, 9, 10, 9, 11, 14, None],\n    \"E2\": [10, 9, 9, 10, 10, None, 14],\n    \"E3\": [9, 10, 9, 9, 12, 12, 13],\n    \"E4\": [7, None, 7, 8, 8, 11, 11],\n    \"E5\": [8, 7, 8, None, 9, 10, 12],\n    \"E6\": [None, 8, 8, 7, 8, 12, 10],\n    \"E7\": [8, 8, 7, 9, 7, 11, None],\n    \"E8\": [9, 7, 8, 8, 7, 10, 11],\n}\n\nsenior = [\"E1\", \"E2\", \"E3\"]\nspecialist = [\"E7\", \"E8\"]\nweekend_days = [6, 7]  # Sab, Dom\n\nD = list(range(1, 8))\n\n# ---------------- Modello ----------------\nm = gp.Model(\"H03_turnazione\")\n\nx = {}\nfor e in employees:\n    for d in D:\n        c = cost[e][d - 1]\n        avail = c is not None\n        ub = 1 if avail else 0\n        obj_c = c if avail else 0\n        x[e, d] = m.addVar(vtype=GRB.BINARY, ub=ub, obj=obj_c, name=f\"x_{e}_{d}\")\n\nm.modelSense = GRB.MINIMIZE\nm.update()\n\n# 1. Copertura minima giornaliera\nfor d in D:\n    m.addConstr(gp.quicksum(x[e, d] for e in employees) >= demand[d], name=f\"coverage_{d}\")\n\n# 2. Almeno un senior al giorno\nfor d in D:\n    m.addConstr(gp.quicksum(x[e, d] for e in senior) >= 1, name=f\"senior_{d}\")\n\n# 3. Giorni lavorati per dipendente: 3 <= ... <= 5\nfor e in employees:\n    tot = gp.quicksum(x[e, d] for d in D)\n    m.addConstr(tot >= 3, name=f\"min_days_{e}\")\n    m.addConstr(tot <= 5, name=f\"max_days_{e}\")\n\n# 4. No 4 giorni consecutivi\nfor e in employees:\n    for w in range(1, 5):  # finestre: 1-4,2-5,3-6,4-7\n        m.addConstr(gp.quicksum(x[e, d] for d in range(w, w + 4)) <= 3,\n                    name=f\"no4cons_{e}_{w}\")\n\n# 5. Specialisti presenti Gio (4) e Ven (5)\nm.addConstr(gp.quicksum(x[e, 4] for e in specialist) >= 1, name=\"specialist_thu\")\nm.addConstr(gp.quicksum(x[e, 5] for e in specialist) >= 1, name=\"specialist_fri\")\n\n# 6. E1, E2: massimo un giorno di weekend\nfor e in [\"E1\", \"E2\"]:\n    m.addConstr(gp.quicksum(x[e, d] for d in weekend_days) <= 1, name=f\"weekend_{e}\")\n\nm.optimize()\n\n# ---------------- Output ----------------\nresult = {\"status\": None, \"objective\": None, \"variables\": {}}\n\nif m.status == GRB.OPTIMAL:\n    result[\"status\"] = \"OPTIMAL\"\n    result[\"objective\"] = round(m.objVal, 2)\n    for e in employees:\n        for d in D:\n            result[\"variables\"][f\"x_{e}_{d}\"] = round(x[e, d].X, 2)\nelse:\n    result[\"status\"] = str(m.status)\n    result[\"objective\"] = None\n    result[\"variables\"] = {}\n\nprint(\"SOLUTION_JSON=\" + json.dumps(result))\n```\n\n## 4. Sintesi della soluzione\n\nIl modello IP binario individua il piano settimanale a costo minimo che soddisfa:\n- la copertura giornaliera minima richiesta,\n- la presenza di almeno un senior (E1/E2/E3) ogni giorno,\n- il numero di giorni lavorati per dipendente (tra 3 e 5),\n- il divieto di 4 giorni consecutivi di lavoro,\n- la presenza di almeno uno specialista (E7/E8) giovedì e venerdì,\n- il limite di un solo giorno di weekend per E1 ed E2,\n- le indisponibilità individuali.\n\nEseguendo il codice con Gurobi si ottiene lo stato del solver (tipicamente `OPTIMAL`), il valore ottimo della funzione obiettivo (costo totale minimo del piano settimanale) e l'assegnazione ottimale $x_{e,d}$ per ciascun dipendente e giorno, riportata integralmente — incluse le variabili nulle — nella riga `SOLUTION_JSON` stampata a console.",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": "I'm setting up a scheduling optimization problem with eight employees across a week, where I need to define a cost matrix that accounts for availability constraints and daily staffing requirements. The goal is to minimize total scheduling costs while ensuring each day meets its minimum coverage demand. Writing the Gurobi model... of days to costs, then set up the optimization model using a solver to enforce all these constraints and find the minimum-cost schedule.",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "I'm setting up a scheduling optimization problem with eight employees across a week, where I need to define a cost matrix that accounts for availability constraints and daily staffing requirements. The goal is to minimize total scheduling costs while ensuring each day meets its minimum coverage demand. Writing the Gurobi model... of days to costs, then set up the optimization model using a solver to enforce all these constraints and find the minimum-cost schedule.",
+            "format": "anthropic-claude-v1",
+            "index": 0,
+            "signature": "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"
+          }
+        ]
+      },
+      "native_finish_reason": "end_turn"
+    }
+  ],
+  "created": 1786382159,
+  "model": "anthropic/claude-sonnet-5",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 4727,
+    "prompt_tokens": 1292,
+    "total_tokens": 6019,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 117,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.049854,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.049854,
+      "upstream_inference_prompt_cost": 0.002584,
+      "upstream_inference_completions_cost": 0.04727
+    }
+  },
+  "provider": "Anthropic",
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "anthropic/claude-sonnet-5",
+    "required_provider": "anthropic",
+    "allow_fallbacks": false,
+    "require_parameters": true
+  },
+  "_experiment": {
+    "elapsed_seconds": 39.792999792000046,
+    "completed_at_utc": "2026-08-10T17:16:38.092197+00:00"
+  }
+}

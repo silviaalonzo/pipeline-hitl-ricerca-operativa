@@ -1,0 +1,66 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 72 rows, 56 columns and 331 nonzeros (Min)
+Model fingerprint: 0x7fa50727
+Model has 50 linear objective coefficients
+Variable types: 0 continuous, 56 integer (56 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+00]
+  Objective range  [7e+00, 1e+01]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 5e+00]
+
+Found heuristic solution: objective 262.0000000
+Presolve removed 24 rows and 6 columns
+Presolve time: 0.00s
+Presolved: 48 rows, 50 columns, 227 nonzeros
+Variable types: 0 continuous, 50 integer (50 binary)
+
+Root relaxation: objective 2.270000e+02, 17 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+*    0     0               0     227.0000000  227.00000  0.00%     -    0s
+
+Explored 1 nodes (17 simplex iterations) in 0.01 seconds (0.00 work units)
+Thread count was 8 (of 8 available processors)
+
+Solution count 2: 227 262 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 2.270000000000e+02, best bound 2.270000000000e+02, gap 0.0000%
+
+======================================================================
+Stato finale Gurobi : 2
+Runtime Gurobi      : 0.0098 s
+Variabili           : 56
+Vincoli             : 72
+Valore obiettivo    : 227
+
+Piano settimanale (X = in servizio):
+        Lun  Mar  Mer  Gio  Ven  Sab  Dom
+  E1      X    X    .    X    .    .    .   (3 giorni)
+  E2      .    X    X    .    X    .    .   (3 giorni)
+  E3      .    .    .    X    .    X    X   (3 giorni)
+  E4      X    .    X    .    X    .    X   (4 giorni)
+  E5      X    .    X    .    .    X    .   (3 giorni)
+  E6      .    .    .    X    X    .    X   (3 giorni)
+  E7      X    .    X    .    X    .    .   (3 giorni)
+  E8      .    X    .    X    X    X    .   (4 giorni)
+
+Copertura giornaliera (assegnati / richiesti):
+  Lun : 4 / 4
+  Mar : 3 / 3
+  Mer : 4 / 4
+  Gio : 4 / 4
+  Ven : 5 / 5
+  Sab : 3 / 3
+  Dom : 3 / 3
+======================================================================

@@ -1,0 +1,65 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "gpt-5.6-sol",
+  "problem_id": "H06",
+  "problem_sequence": 10,
+  "domain": "Scheduling",
+  "difficulty": "Elevata",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-24T18:15:51.857957+00:00",
+  "updated_at_utc": "2026-08-24T18:19:12.705286+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:19:12.704644+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "macchina singola senza sovrapposizioni -> vincoli disgiuntivi con y_ij",
+              "date di disponibilità -> S_i >= r_i",
+              "precedenza J1 prima di J2 -> S_J2 >= C_J1",
+              "precedenza J3 prima di J5 -> S_J5 >= C_J3",
+              "ritardo max(0, completamento-scadenza) -> T_i >= C_i-d_i e T_i >= 0",
+              "minimizzazione dei ritardi pesati -> min somma_i w_i T_i",
+              "big-M giustificata -> M=max_i r_i+somma_i p_i=44"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "gpt-5.6-sol",
+    "problem_id": "H06",
+    "retrieved_at_utc": "2026-08-24T18:15:51.857949+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

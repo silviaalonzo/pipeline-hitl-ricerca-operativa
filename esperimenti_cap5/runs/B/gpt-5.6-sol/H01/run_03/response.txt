@@ -1,0 +1,359 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+### Insiemi
+
+- Siti candidati:
+  \[
+  I=\{A,B,C,D,E,F\}.
+  \]
+- Zone di domanda:
+  \[
+  J=\{Z1,Z2,Z3,Z4,Z5,Z6,Z7,Z8\}.
+  \]
+- Siti del gruppo Nord:
+  \[
+  I_N=\{A,B,C\}.
+  \]
+- Siti del gruppo Sud:
+  \[
+  I_S=\{D,E,F\}.
+  \]
+
+### Parametri
+
+Domande, nell’ordine \(Z1,\ldots,Z8\):
+\[
+d=(30,25,35,20,28,32,24,26).
+\]
+
+Costi fissi, nell’ordine \(A,\ldots,F\):
+\[
+f=(110,95,120,90,105,100).
+\]
+
+Capacità:
+\[
+u=(90,80,110,75,95,85).
+\]
+
+Movimentazione minima di un centro aperto:
+\[
+L=20.
+\]
+
+Limite complessivo di emissioni:
+\[
+E^{\max}=470.
+\]
+
+Numero minimo e massimo di centri:
+\[
+K^{\min}=3,\qquad K^{\max}=4.
+\]
+
+La matrice dei costi unitari \(c_{ji}\), con righe ordinate per zona e colonne per sito, è:
+
+\[
+(c_{ji})=
+\begin{pmatrix}
+4&7&6&10&9&11\\
+5&4&8&9&7&10\\
+7&5&4&8&9&7\\
+9&8&7&4&5&6\\
+8&9&6&5&4&7\\
+10&8&7&6&5&4\\
+6&7&5&8&6&7\\
+7&6&8&5&7&4
+\end{pmatrix}.
+\]
+
+La matrice dei coefficienti di emissione \(e_{ji}\) è:
+
+\[
+(e_{ji})=
+\begin{pmatrix}
+1&2&2&4&3&4\\
+2&1&3&3&2&4\\
+3&2&1&3&4&3\\
+4&3&3&1&2&2\\
+3&4&2&2&1&3\\
+4&3&3&2&2&1\\
+2&3&1&3&2&3\\
+3&2&3&1&3&1
+\end{pmatrix}.
+\]
+
+### Variabili decisionali
+
+- \(y_i\in\{0,1\}\): vale 1 se il sito \(i\) viene aperto, 0 altrimenti.
+- \(x_{ij}\geq 0\): quantità distribuita dal sito \(i\) alla zona \(j\). Essendo la domanda ripartibile, le variabili sono continue.
+
+---
+
+## 2. Formulazione matematica completa
+
+### Funzione obiettivo
+
+Minimizzazione dei costi fissi e di distribuzione:
+
+\[
+\min \quad
+\sum_{i\in I} f_i y_i
++
+\sum_{i\in I}\sum_{j\in J} c_{ji}x_{ij}.
+\]
+
+### Soddisfacimento integrale della domanda
+
+\[
+\sum_{i\in I}x_{ij}=d_j
+\qquad \forall j\in J.
+\]
+
+### Capacità massima dei centri
+
+\[
+\sum_{j\in J}x_{ij}\leq u_i y_i
+\qquad \forall i\in I.
+\]
+
+### Movimentazione minima dei centri aperti
+
+\[
+\sum_{j\in J}x_{ij}\geq L y_i
+\qquad \forall i\in I.
+\]
+
+Questi due vincoli impongono anche \(x_{ij}=0\) per ogni centro chiuso.
+
+### Numero di centri aperti
+
+\[
+K^{\min}\leq \sum_{i\in I}y_i\leq K^{\max},
+\]
+
+ossia:
+
+\[
+3\leq \sum_{i\in I}y_i\leq 4.
+\]
+
+### Resilienza geografica
+
+Almeno un sito nel gruppo Nord:
+
+\[
+\sum_{i\in I_N}y_i\geq 1.
+\]
+
+Almeno un sito nel gruppo Sud:
+
+\[
+\sum_{i\in I_S}y_i\geq 1.
+\]
+
+### Limite alle emissioni
+
+\[
+\sum_{i\in I}\sum_{j\in J}e_{ji}x_{ij}
+\leq E^{\max}.
+\]
+
+### Dominio
+
+\[
+y_i\in\{0,1\}
+\qquad \forall i\in I,
+\]
+
+\[
+x_{ij}\in\mathbb{R}_+
+\qquad \forall i\in I,\ j\in J.
+\]
+
+---
+
+## 3. Codice Python eseguibile con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+I = ["A", "B", "C", "D", "E", "F"]
+J = ["Z1", "Z2", "Z3", "Z4", "Z5", "Z6", "Z7", "Z8"]
+NORD = ["A", "B", "C"]
+SUD = ["D", "E", "F"]
+
+domanda = {
+    "Z1": 30, "Z2": 25, "Z3": 35, "Z4": 20,
+    "Z5": 28, "Z6": 32, "Z7": 24, "Z8": 26
+}
+
+costo_fisso = {
+    "A": 110, "B": 95, "C": 120,
+    "D": 90, "E": 105, "F": 100
+}
+
+capacita = {
+    "A": 90, "B": 80, "C": 110,
+    "D": 75, "E": 95, "F": 85
+}
+
+costo = {
+    "Z1": {"A": 4, "B": 7, "C": 6, "D": 10, "E": 9, "F": 11},
+    "Z2": {"A": 5, "B": 4, "C": 8, "D": 9, "E": 7, "F": 10},
+    "Z3": {"A": 7, "B": 5, "C": 4, "D": 8, "E": 9, "F": 7},
+    "Z4": {"A": 9, "B": 8, "C": 7, "D": 4, "E": 5, "F": 6},
+    "Z5": {"A": 8, "B": 9, "C": 6, "D": 5, "E": 4, "F": 7},
+    "Z6": {"A": 10, "B": 8, "C": 7, "D": 6, "E": 5, "F": 4},
+    "Z7": {"A": 6, "B": 7, "C": 5, "D": 8, "E": 6, "F": 7},
+    "Z8": {"A": 7, "B": 6, "C": 8, "D": 5, "E": 7, "F": 4}
+}
+
+emissione = {
+    "Z1": {"A": 1, "B": 2, "C": 2, "D": 4, "E": 3, "F": 4},
+    "Z2": {"A": 2, "B": 1, "C": 3, "D": 3, "E": 2, "F": 4},
+    "Z3": {"A": 3, "B": 2, "C": 1, "D": 3, "E": 4, "F": 3},
+    "Z4": {"A": 4, "B": 3, "C": 3, "D": 1, "E": 2, "F": 2},
+    "Z5": {"A": 3, "B": 4, "C": 2, "D": 2, "E": 1, "F": 3},
+    "Z6": {"A": 4, "B": 3, "C": 3, "D": 2, "E": 2, "F": 1},
+    "Z7": {"A": 2, "B": 3, "C": 1, "D": 3, "E": 2, "F": 3},
+    "Z8": {"A": 3, "B": 2, "C": 3, "D": 1, "E": 3, "F": 1}
+}
+
+L = 20
+E_MAX = 470
+K_MIN = 3
+K_MAX = 4
+
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+model = gp.Model("H01_rete_capacitata", env=env)
+
+y = model.addVars(I, vtype=GRB.BINARY, name="y")
+x = model.addVars(I, J, lb=0.0, vtype=GRB.CONTINUOUS, name="x")
+
+model.setObjective(
+    gp.quicksum(costo_fisso[i] * y[i] for i in I)
+    + gp.quicksum(costo[j][i] * x[i, j] for i in I for j in J),
+    GRB.MINIMIZE
+)
+
+model.addConstrs(
+    (gp.quicksum(x[i, j] for i in I) == domanda[j] for j in J),
+    name="domanda"
+)
+
+model.addConstrs(
+    (gp.quicksum(x[i, j] for j in J) <= capacita[i] * y[i] for i in I),
+    name="capacita_massima"
+)
+
+model.addConstrs(
+    (gp.quicksum(x[i, j] for j in J) >= L * y[i] for i in I),
+    name="movimentazione_minima"
+)
+
+model.addConstr(
+    gp.quicksum(y[i] for i in I) >= K_MIN,
+    name="numero_minimo_centri"
+)
+
+model.addConstr(
+    gp.quicksum(y[i] for i in I) <= K_MAX,
+    name="numero_massimo_centri"
+)
+
+model.addConstr(
+    gp.quicksum(y[i] for i in NORD) >= 1,
+    name="resilienza_nord"
+)
+
+model.addConstr(
+    gp.quicksum(y[i] for i in SUD) >= 1,
+    name="resilienza_sud"
+)
+
+model.addConstr(
+    gp.quicksum(emissione[j][i] * x[i, j] for i in I for j in J) <= E_MAX,
+    name="limite_emissioni"
+)
+
+model.optimize()
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+status = status_names.get(model.Status, "STATUS_" + str(model.Status))
+
+if model.Status == GRB.OPTIMAL:
+    def clean(value):
+        value = float(value)
+        if abs(value) < 1e-9:
+            return 0.0
+        return float(round(value, 10))
+
+    variables = {}
+    for variable in model.getVars():
+        variables[variable.VarName] = clean(variable.X)
+
+    payload = {
+        "status": "OPTIMAL",
+        "objective": clean(model.ObjVal),
+        "variables": variables
+    }
+else:
+    payload = {
+        "status": status,
+        "objective": None,
+        "variables": {}
+    }
+
+print("SOLUTION_JSON=" + json.dumps(payload, separators=(",", ":"), allow_nan=False))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato del modello è **OPTIMAL** e il costo minimo è:
+
+\[
+\boxed{1355}.
+\]
+
+Vengono aperti i centri:
+
+\[
+y_A=y_C=y_F=1.
+\]
+
+Le decisioni di distribuzione non nulle sono:
+
+\[
+\begin{aligned}
+x_{A,Z1}&=30, & x_{A,Z2}&=25,\\
+x_{C,Z3}&=35, & x_{C,Z5}&=28, & x_{C,Z7}&=24,\\
+x_{F,Z4}&=20, & x_{F,Z6}&=32, & x_{F,Z8}&=26.
+\end{aligned}
+\]
+
+I carichi dei centri sono rispettivamente \(55\), \(87\) e \(78\) unità. Le emissioni complessive sono \(293\), inferiori al limite di \(470\). Il costo comprende \(330\) di costi fissi e \(1025\) di costi di distribuzione.

@@ -1,0 +1,157 @@
+{
+  "problem_id": "H02",
+  "correct": false,
+  "candidate_status": "OPTIMAL",
+  "feasible_in_original_problem": false,
+  "gap_within_tolerance": false,
+  "declared_objective_corrected_automatically": false,
+  "max_constraint_violation": 32.0,
+  "constraint_violations": [
+    {
+      "constraint": "bilancio_A_1",
+      "lhs": 20.0,
+      "sense": "=",
+      "rhs": 8.0,
+      "violation": 12.0
+    },
+    {
+      "constraint": "minlotto_A_1",
+      "lhs": -28.0,
+      "sense": ">=",
+      "rhs": 0.0,
+      "violation": 28.0
+    },
+    {
+      "constraint": "bilancio_A_2",
+      "lhs": 0.0,
+      "sense": "=",
+      "rhs": 12.0,
+      "violation": 12.0
+    },
+    {
+      "constraint": "bilancio_A_3",
+      "lhs": 24.0,
+      "sense": "=",
+      "rhs": 10.0,
+      "violation": 14.0
+    },
+    {
+      "constraint": "minlotto_A_3",
+      "lhs": -32.0,
+      "sense": ">=",
+      "rhs": 0.0,
+      "violation": 32.0
+    },
+    {
+      "constraint": "bilancio_A_4",
+      "lhs": 0.0,
+      "sense": "=",
+      "rhs": 14.0,
+      "violation": 14.0
+    },
+    {
+      "constraint": "maxprod_B_1",
+      "lhs": 10.0,
+      "sense": "<=",
+      "rhs": 0.0,
+      "violation": 10.0
+    },
+    {
+      "constraint": "maxprod_B_2",
+      "lhs": 8.0,
+      "sense": "<=",
+      "rhs": 0.0,
+      "violation": 8.0
+    },
+    {
+      "constraint": "maxprod_B_3",
+      "lhs": 14.0,
+      "sense": "<=",
+      "rhs": 0.0,
+      "violation": 14.0
+    },
+    {
+      "constraint": "maxprod_B_4",
+      "lhs": 12.0,
+      "sense": "<=",
+      "rhs": 0.0,
+      "violation": 12.0
+    },
+    {
+      "constraint": "bilancio_C_2",
+      "lhs": 16.0,
+      "sense": "=",
+      "rhs": 9.0,
+      "violation": 7.0
+    },
+    {
+      "constraint": "minlotto_C_2",
+      "lhs": -5.0,
+      "sense": ">=",
+      "rhs": 0.0,
+      "violation": 5.0
+    },
+    {
+      "constraint": "bilancio_C_3",
+      "lhs": 0.0,
+      "sense": "=",
+      "rhs": 7.0,
+      "violation": 7.0
+    },
+    {
+      "constraint": "maxprod_C_4",
+      "lhs": 11.0,
+      "sense": "<=",
+      "rhs": 0.0,
+      "violation": 11.0
+    },
+    {
+      "constraint": "setup_1",
+      "lhs": 12.0,
+      "sense": "<=",
+      "rhs": 2.0,
+      "violation": 10.0
+    },
+    {
+      "constraint": "setup_2",
+      "lhs": 7.0,
+      "sense": "<=",
+      "rhs": 2.0,
+      "violation": 5.0
+    },
+    {
+      "constraint": "setup_3",
+      "lhs": 14.0,
+      "sense": "<=",
+      "rhs": 2.0,
+      "violation": 12.0
+    }
+  ],
+  "bound_violations": [],
+  "integrality_violations": [],
+  "unknown_nonzero_variables": [
+    "y_C_0",
+    "delta_A_1",
+    "delta_A_3",
+    "delta_B_1",
+    "delta_B_2",
+    "delta_B_3",
+    "delta_B_4",
+    "delta_C_2",
+    "delta_C_4"
+  ],
+  "missing_variables_assumed_zero": [
+    "I_A_1",
+    "I_A_2",
+    "I_A_3",
+    "I_A_4",
+    "I_B_1",
+    "I_B_2",
+    "I_B_3",
+    "I_B_4",
+    "I_C_1",
+    "I_C_2",
+    "I_C_3",
+    "I_C_4"
+  ]
+}

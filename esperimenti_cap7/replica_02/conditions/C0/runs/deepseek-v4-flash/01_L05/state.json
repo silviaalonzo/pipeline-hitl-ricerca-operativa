@@ -1,0 +1,79 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "deepseek-v4-flash",
+  "problem_id": "L05",
+  "problem_sequence": 1,
+  "domain": "Assegnazione e qualificazione",
+  "difficulty": "Elevata",
+  "model_class": "IP binaria",
+  "created_at_utc": "2026-08-26T19:05:11.186755+00:00",
+  "updated_at_utc": "2026-08-26T21:49:31.102671+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": true,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-26T19:14:02.856838+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "length"
+      }
+    },
+    {
+      "number": 1,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_01",
+      "created_at_utc": "2026-08-26T19:17:31.684129+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false
+      }
+    }
+  ],
+  "interventions": [
+    {
+      "handoff_number": 1,
+      "stage": 2,
+      "failure_class": "revisione_di_assicurazione_post_riparazione",
+      "handoff_mode": "ASSURANCE_REVIEW",
+      "active_minutes": 20.0,
+      "action": "APPROVE",
+      "expert_instruction": "",
+      "correction_summary": "Revisione umana del modello e del codice completata senza rilevare errori; soluzione approvata senza modifiche.",
+      "semantic_principle": "",
+      "submitted_at_utc": "2026-08-26T21:49:09Z",
+      "memory_committed": false
+    }
+  ],
+  "memory_retrieval": {
+    "model": "deepseek-v4-flash",
+    "problem_id": "L05",
+    "retrieved_at_utc": "2026-08-26T19:05:11.186747+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0,
+    "retrieval_policy": "full_frozen_snapshot",
+    "condition": "C0"
+  },
+  "pending_handoff": null,
+  "chapter": 7,
+  "condition": "C0",
+  "memory_frozen": true,
+  "replicate": 2,
+  "memory_update_suppressed": true
+}

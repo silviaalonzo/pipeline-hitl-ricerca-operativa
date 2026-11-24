@@ -1,0 +1,240 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+
+- \(I=\{P1,P2,\ldots,P8\}\): insieme dei progetti.
+- \(D=\{P1,P3,P7\}\): insieme dei progetti digitali.
+
+**Parametri**
+
+Per ogni progetto \(i\in I\):
+
+- \(v_i\): valore del progetto;
+- \(b_i\): budget richiesto;
+- \(h_i\): personale richiesto.
+
+I vettori dei parametri, nell’ordine \(P1,\ldots,P8\), sono:
+
+\[
+v=(30,24,35,28,33,26,38,21),
+\]
+
+\[
+b=(20,18,27,24,22,19,30,15),
+\]
+
+\[
+h=(4,3,5,4,4,3,5,2).
+\]
+
+Le disponibilità complessive sono:
+
+\[
+B=100,\qquad H=18.
+\]
+
+**Variabili decisionali**
+
+\[
+x_i=
+\begin{cases}
+1 & \text{se il progetto } i \text{ viene selezionato},\\
+0 & \text{altrimenti},
+\end{cases}
+\qquad i\in I.
+\]
+
+Nel codice le variabili sono denominate \(x_{P1},\ldots,x_{P8}\).
+
+## 2. Formulazione matematica completa
+
+\[
+\max \quad \sum_{i\in I} v_i x_i
+\]
+
+ossia:
+
+\[
+\max \quad
+30x_{P1}+24x_{P2}+35x_{P3}+28x_{P4}
++33x_{P5}+26x_{P6}+38x_{P7}+21x_{P8}.
+\]
+
+Soggetto a:
+
+**Vincolo di budget**
+
+\[
+20x_{P1}+18x_{P2}+27x_{P3}+24x_{P4}
++22x_{P5}+19x_{P6}+30x_{P7}+15x_{P8}
+\leq 100.
+\]
+
+**Vincolo di personale**
+
+\[
+4x_{P1}+3x_{P2}+5x_{P3}+4x_{P4}
++4x_{P5}+3x_{P6}+5x_{P7}+2x_{P8}
+\leq 18.
+\]
+
+**Precedenza di \(P5\) rispetto a \(P2\)**
+
+\[
+x_{P5}\leq x_{P2}.
+\]
+
+**Precedenza di \(P7\) rispetto a \(P3\)**
+
+\[
+x_{P7}\leq x_{P3}.
+\]
+
+**Incompatibilità tra \(P4\) e \(P6\)**
+
+\[
+x_{P4}+x_{P6}\leq 1.
+\]
+
+**Selezione di almeno un progetto digitale**
+
+\[
+x_{P1}+x_{P3}+x_{P7}\geq 1.
+\]
+
+**Selezione di almeno tre progetti**
+
+\[
+\sum_{i\in I}x_i\geq 3.
+\]
+
+**Dominio**
+
+\[
+x_i\in\{0,1\}\qquad \forall i\in I.
+\]
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+projects = ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8"]
+
+value = {
+    "P1": 30, "P2": 24, "P3": 35, "P4": 28,
+    "P5": 33, "P6": 26, "P7": 38, "P8": 21
+}
+
+budget = {
+    "P1": 20, "P2": 18, "P3": 27, "P4": 24,
+    "P5": 22, "P6": 19, "P7": 30, "P8": 15
+}
+
+staff = {
+    "P1": 4, "P2": 3, "P3": 5, "P4": 4,
+    "P5": 4, "P6": 3, "P7": 5, "P8": 2
+}
+
+digital_projects = ["P1", "P3", "P7"]
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+with gp.Env(empty=True) as env:
+    env.setParam("OutputFlag", 0)
+    env.start()
+
+    with gp.Model("selezione_portafoglio_progetti", env=env) as model:
+        x = {
+            p: model.addVar(vtype=GRB.BINARY, name=f"x_{p}")
+            for p in projects
+        }
+
+        model.setObjective(
+            gp.quicksum(value[p] * x[p] for p in projects),
+            GRB.MAXIMIZE
+        )
+
+        model.addConstr(
+            gp.quicksum(budget[p] * x[p] for p in projects) <= 100,
+            name="budget"
+        )
+
+        model.addConstr(
+            gp.quicksum(staff[p] * x[p] for p in projects) <= 18,
+            name="personale"
+        )
+
+        model.addConstr(x["P5"] <= x["P2"], name="precedenza_P5_P2")
+        model.addConstr(x["P7"] <= x["P3"], name="precedenza_P7_P3")
+        model.addConstr(x["P4"] + x["P6"] <= 1, name="incompatibilita_P4_P6")
+
+        model.addConstr(
+            gp.quicksum(x[p] for p in digital_projects) >= 1,
+            name="almeno_un_digitale"
+        )
+
+        model.addConstr(
+            gp.quicksum(x[p] for p in projects) >= 3,
+            name="almeno_tre_progetti"
+        )
+
+        model.optimize()
+
+        solver_status = status_names.get(
+            model.Status, "STATUS_" + str(model.Status)
+        )
+
+        if model.Status == GRB.OPTIMAL:
+            result = {
+                "status": "OPTIMAL",
+                "objective": float(round(model.ObjVal, 10)),
+                "variables": {
+                    f"x_{p}": float(round(x[p].X))
+                    for p in projects
+                }
+            }
+        else:
+            result = {
+                "status": solver_status,
+                "objective": None,
+                "variables": {}
+            }
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato è **OPTIMAL** e il valore ottimo è:
+
+\[
+z^*=136.
+\]
+
+Esistono due portafogli ottimi:
+
+- \(P1,P2,P4,P5,P8\), quindi \(x_{P1}=x_{P2}=x_{P4}=x_{P5}=x_{P8}=1\);
+- \(P1,P2,P3,P6,P8\), quindi \(x_{P1}=x_{P2}=x_{P3}=x_{P6}=x_{P8}=1\).
+
+Entrambi impiegano 99 unità di budget e 17 unità di personale. Gurobi può restituire uno dei due portafogli equivalenti; la riga JSON riporta tutte le variabili, incluse quelle nulle.

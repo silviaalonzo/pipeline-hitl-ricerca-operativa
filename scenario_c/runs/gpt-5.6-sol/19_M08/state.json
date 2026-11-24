@@ -1,0 +1,63 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "gpt-5.6-sol",
+  "problem_id": "M08",
+  "problem_sequence": 19,
+  "domain": "Set covering",
+  "difficulty": "Media",
+  "model_class": "IP binaria",
+  "created_at_utc": "2026-08-24T18:36:34.506690+00:00",
+  "updated_at_utc": "2026-08-24T18:37:43.459807+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:37:43.458950+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "copertura delle dieci zone -> vincoli di copertura",
+              "doppia copertura di Z3 e Z7 -> requisiti r_Z3=r_Z7=2",
+              "apertura di al massimo cinque centri -> vincolo di cardinalità",
+              "minimizzazione dei costi di apertura -> funzione obiettivo",
+              "decisione di apertura dei centri -> variabili binarie x_j"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "gpt-5.6-sol",
+    "problem_id": "M08",
+    "retrieved_at_utc": "2026-08-24T18:36:34.506680+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

@@ -1,0 +1,102 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["10 zone -> insieme I={1,...,10}","centri e costi -> insieme J e parametri c_j","coperture della matrice -> parametri M_i per ogni zona","copertura singola -> vincoli sum_{j in M_i} x_j >= 1","doppia copertura Z3 e Z7 -> vincoli sum_{j in M_i} x_j >= 2 per i=3,7","massimo cinque centri -> vincolo sum_{j in J} x_j <= 5","minimizzare costo di apertura -> funzione obiettivo min sum c_j x_j"]}
+
+## Insiemi, parametri e variabili decisionali
+
+- **Insiemi**:  
+  \(I = \{1,\dots,10\}\) insieme delle zone;  
+  \(J = \{A,B,C,D,E,F,G,H\}\) insieme dei centri;  
+  \(M_i \subseteq J\) insieme dei centri che coprono la zona \(i\).
+
+- **Parametri**:  
+  \(c_j\) = costo di apertura del centro \(j\);  
+  \(r_i\) = livello di copertura richiesto per la zona \(i\), con \(r_3=r_7=2\) e \(r_i=1\) per le altre zone.
+
+- **Variabili decisionali**:  
+  \(x_j \in \{0,1\}\), dove \(x_j=1\) se il centro \(j\) viene aperto, \(0\) altrimenti.
+
+## Formulazione matematica
+
+\[
+\min \sum_{j \in J} c_j x_j
+\]
+
+soggetto a:
+
+\[
+\sum_{j \in M_i} x_j \ge r_i \qquad \forall i \in I
+\]
+
+\[
+\sum_{j \in J} x_j \le 5
+\]
+
+\[
+x_j \in \{0,1\} \qquad \forall j \in J
+\]
+
+## Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+import json
+
+zone = list(range(1, 11))
+centri = ["A", "B", "C", "D", "E", "F", "G", "H"]
+
+costi = {
+    "A": 24, "B": 20, "C": 27, "D": 22,
+    "E": 25, "F": 19, "G": 23, "H": 21
+}
+
+copertura = {
+    1: ["A", "C"],
+    2: ["A", "B"],
+    3: ["A", "B", "D"],
+    4: ["B", "E"],
+    5: ["B", "C", "F"],
+    6: ["C", "D", "G"],
+    7: ["D", "E", "H"],
+    8: ["E", "F", "H"],
+    9: ["F", "G"],
+    10: ["G", "H"]
+}
+
+richiesta = {i: 2 if i in (3, 7) else 1 for i in zone}
+
+m = gp.Model("copertura_centri")
+
+x = {j: m.addVar(vtype=gp.GRB.BINARY, name=f"x_{j}") for j in centri}
+
+m.setObjective(gp.quicksum(costi[j] * x[j] for j in centri), gp.GRB.MINIMIZE)
+
+for i in zone:
+    m.addConstr(
+        gp.quicksum(x[j] for j in copertura[i]) >= richiesta[i],
+        name=f"copertura_Z{i}"
+    )
+
+m.addConstr(gp.quicksum(x[j] for j in centri) <= 5, name="limite_centri")
+
+m.optimize()
+
+if m.status == gp.GRB.OPTIMAL:
+    sol = {
+        "status": "OPTIMAL",
+        "objective": m.ObjVal,
+        "variables": {v.VarName: v.X for v in m.getVars()}
+    }
+else:
+    sol = {
+        "status": m.status,
+        "objective": None,
+        "variables": {}
+    }
+
+print("SOLUTION_JSON=" + json.dumps(sol))
+```
+
+## Sintesi della soluzione
+
+Il solver termina con stato **OPTIMAL**. Il costo minimo di apertura è **106**.  
+I centri aperti sono **A, B, D, F, H**; i centri **C, E, G** restano chiusi.  
+La zona critica Z3 è coperta da A e D, la zona critica Z7 è coperta da D e H, e tutte le altre zone ricevono almeno una copertura. Il vincolo di aprire al massimo 5 centri è saturato.

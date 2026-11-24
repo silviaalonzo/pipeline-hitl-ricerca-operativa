@@ -1,0 +1,144 @@
+# H06 — Sequenziamento con ritardi pesati (single machine, weighted tardiness)
+
+## 1. Insiemi, parametri e variabili
+
+**Insiemi**
+- $J=\{1,\dots,7\}$ : insieme dei lavori
+- $P=\{(i,j)\in J\times J : i<j\}$ : coppie di lavori non ordinate (per le variabili di sequenziamento)
+
+**Parametri**
+- $p_j$ : durata del lavoro $j$
+- $r_j$ : data di disponibilità (release) del lavoro $j$
+- $d_j$ : scadenza (due date) del lavoro $j$
+- $w_j$ : peso di priorità del lavoro $j$
+- $M$ : costante big‑M, calcolata come $M=\sum_{j\in J}p_j+\max_{j\in J} r_j + 1 = 38+6+1=45$.  
+  Giustificazione: il completamento massimo possibile di un lavoro non supera la somma di tutte le durate più il massimo ritardo di rilascio, quindi $M=45$ è sufficiente a rendere non vincolante il vincolo disgiuntivo quando non applicabile.
+
+**Variabili decisionali**
+- $S_j \ge 0$ : istante di inizio del lavoro $j$ (continua)
+- $C_j \ge 0$ : istante di completamento del lavoro $j$ (continua), $C_j=S_j+p_j$
+- $T_j \ge 0$ : ritardo (tardiness) del lavoro $j$ (continua)
+- $x_{ij}\in\{0,1\}$ per $(i,j)\in P$ : $x_{ij}=1$ se il lavoro $i$ precede il lavoro $j$ sulla macchina, $0$ altrimenti
+
+I lavori $(1,2)$ e $(3,5)$ hanno precedenza fissata dal testo, quindi si impone $x_{1,2}=1$ e $x_{3,5}=1$ (bound fissati), che tramite i vincoli disgiuntivi generano automaticamente $C_1\le S_2$ e $C_3\le S_5$.
+
+## 2. Formulazione matematica
+
+$$
+\min \; Z=\sum_{j\in J} w_j T_j
+$$
+
+soggetto a:
+
+$$
+C_j = S_j + p_j \qquad \forall j\in J
+$$
+$$
+S_j \ge r_j \qquad \forall j\in J
+$$
+$$
+T_j \ge C_j - d_j \qquad \forall j\in J
+$$
+$$
+T_j \ge 0 \qquad \forall j\in J
+$$
+
+Vincoli di non sovrapposizione (disgiuntivi) per ogni coppia $(i,j)\in P$:
+
+$$
+S_j \ge C_i - M(1-x_{ij}) \qquad \forall (i,j)\in P
+$$
+$$
+S_i \ge C_j - M\,x_{ij} \qquad \forall (i,j)\in P
+$$
+
+Precedenze fissate:
+$$
+x_{1,2}=1,\qquad x_{3,5}=1
+$$
+
+Domini:
+$$
+S_j, C_j, T_j \ge 0 \;\; (\text{continue}), \qquad x_{ij}\in\{0,1\}
+$$
+
+## 3. Codice Python (gurobipy)
+
+```python
+import itertools
+import json
+from gurobipy import Model, GRB, quicksum
+
+# ---------------- Dati ----------------
+jobs = [1, 2, 3, 4, 5, 6, 7]
+
+p = {1: 5, 2: 7, 3: 4, 4: 6, 5: 3, 6: 8, 7: 5}
+r = {1: 0, 2: 0, 3: 2, 4: 3, 5: 5, 6: 0, 7: 6}
+d = {1: 9, 2: 17, 3: 12, 4: 22, 5: 15, 6: 28, 7: 25}
+w = {1: 4, 2: 3, 3: 5, 4: 2, 5: 6, 6: 2, 7: 4}
+
+M = sum(p.values()) + max(r.values()) + 1  # big-M giustificato
+
+pairs = list(itertools.combinations(jobs, 2))
+
+# ---------------- Modello ----------------
+m = Model("H06_weighted_tardiness")
+
+S = m.addVars(jobs, lb=0.0, name="S")
+C = m.addVars(jobs, lb=0.0, name="C")
+T = m.addVars(jobs, lb=0.0, name="T")
+x = m.addVars(pairs, vtype=GRB.BINARY, name="x")
+
+# Precedenze fissate: J1 prima di J2, J3 prima di J5
+x[(1, 2)].lb = 1
+x[(1, 2)].ub = 1
+x[(3, 5)].lb = 1
+x[(3, 5)].ub = 1
+
+# Completamento
+for j in jobs:
+    m.addConstr(C[j] == S[j] + p[j], name=f"comp_{j}")
+
+# Rilascio
+for j in jobs:
+    m.addConstr(S[j] >= r[j], name=f"rel_{j}")
+
+# Tardiness
+for j in jobs:
+    m.addConstr(T[j] >= C[j] - d[j], name=f"tard_{j}")
+
+# Non sovrapposizione (disgiuntiva) per ogni coppia
+for (i, j) in pairs:
+    m.addConstr(S[j] >= C[i] - M * (1 - x[(i, j)]), name=f"seq1_{i}_{j}")
+    m.addConstr(S[i] >= C[j] - M * x[(i, j)], name=f"seq2_{i}_{j}")
+
+# Obiettivo
+m.setObjective(quicksum(w[j] * T[j] for j in jobs), GRB.MINIMIZE)
+
+m.optimize()
+
+# ---------------- Output ----------------
+result = {"status": None, "objective": None, "variables": {}}
+
+if m.status == GRB.OPTIMAL:
+    result["status"] = "OPTIMAL"
+    result["objective"] = round(m.ObjVal, 4)
+    variables = {}
+    for j in jobs:
+        variables[f"S_{j}"] = round(S[j].X, 4)
+        variables[f"C_{j}"] = round(C[j].X, 4)
+        variables[f"T_{j}"] = round(T[j].X, 4)
+    for (i, j) in pairs:
+        variables[f"x_{i}_{j}"] = round(x[(i, j)].X, 4)
+    result["variables"] = variables
+else:
+    result["status"] = str(m.status)
+    result["objective"] = None
+    result["variables"] = {}
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello MILP determina la sequenza ottima dei 7 lavori sulla macchina unica, rispettando le date di rilascio, la precedenza $J1\to J2$ e $J3\to J5$, minimizzando la somma dei ritardi pesati. Il solver Gurobi trova la soluzione ottima con stato `OPTIMAL`; il programma stampa gli istanti di inizio $S_j$, completamento $C_j$, i ritardi $T_j$ e le variabili di ordinamento $x_{ij}$ (0/1) che determinano la sequenza scelta, insieme al valore ottimo della funzione obiettivo (somma dei ritardi pesati) nella riga `SOLUTION_JSON` richiesta.

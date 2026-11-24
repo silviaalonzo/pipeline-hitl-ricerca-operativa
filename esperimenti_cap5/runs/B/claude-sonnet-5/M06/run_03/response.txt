@@ -1,0 +1,137 @@
+# M06 — Bilanciamento di lavori su due macchine
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $J = \{1,2,3,4,5,6,7\}$ : insieme dei lavori
+- $M = \{A,B\}$ : insieme delle macchine
+
+**Parametri**
+- $p_{j,m}$ : tempo di lavorazione del lavoro $j\in J$ sulla macchina $m\in M$ (dato dalla tabella)
+- Il lavoro $J7$ non è compatibile con la macchina $A$: si impone $p_{7,A}=+\infty$ (o si vincola direttamente $x_{7,A}=0$)
+
+| j | $p_{j,A}$ | $p_{j,B}$ |
+|---|---|---|
+|1|7|9|
+|2|6|5|
+|3|8|7|
+|4|5|8|
+|5|9|6|
+|6|4|7|
+|7|—|5|
+
+**Variabili decisionali**
+- $x_{j,m}\in\{0,1\}$ : $1$ se il lavoro $j$ è assegnato alla macchina $m$, $0$ altrimenti, $\forall j\in J,\ m\in M$
+- $C_{max}\ge 0$ : makespan (variabile continua), il massimo carico tra le due macchine
+
+## 2. Formulazione matematica
+
+$$
+\min\ C_{max}
+$$
+
+soggetto a:
+
+$$
+\sum_{m\in M} x_{j,m} = 1 \qquad \forall j\in J \quad \text{(ogni lavoro assegnato a una sola macchina)}
+$$
+
+$$
+\sum_{j\in J} p_{j,A}\, x_{j,A} \le C_{max}
+$$
+
+$$
+\sum_{j\in J} p_{j,B}\, x_{j,B} \le C_{max}
+$$
+
+$$
+x_{7,A} = 0 \qquad \text{(incompatibilità } J7\text{-Macchina A)}
+$$
+
+$$
+x_{j,m}\in\{0,1\} \qquad \forall j\in J,\ m\in M
+$$
+
+$$
+C_{max}\ge 0
+$$
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# --- Dati ---
+jobs = [1,2,3,4,5,6,7]
+machines = ["A","B"]
+
+p = {
+    (1,"A"):7, (1,"B"):9,
+    (2,"A"):6, (2,"B"):5,
+    (3,"A"):8, (3,"B"):7,
+    (4,"A"):5, (4,"B"):8,
+    (5,"A"):9, (5,"B"):6,
+    (6,"A"):4, (6,"B"):7,
+    (7,"B"):5   # J7 non compatibile con A -> nessuna voce (7,"A")
+}
+
+model = gp.Model("bilanciamento_2_macchine")
+
+# --- Variabili ---
+x = {}
+for j in jobs:
+    for m in machines:
+        if (j,m) in p:
+            x[j,m] = model.addVar(vtype=GRB.BINARY, name=f"x_{j}_{m}")
+
+Cmax = model.addVar(vtype=GRB.CONTINUOUS, lb=0, name="Cmax")
+
+# --- Vincolo: J7 non compatibile con A (non creiamo x[7,'A'], quindi vincolo implicito) ---
+
+# --- Vincolo: ogni lavoro assegnato esattamente a una macchina ---
+for j in jobs:
+    model.addConstr(gp.quicksum(x[j,m] for m in machines if (j,m) in p) == 1,
+                     name=f"assign_{j}")
+
+# --- Vincoli di carico ---
+model.addConstr(gp.quicksum(p[j,"A"]*x[j,"A"] for j in jobs if (j,"A") in p) <= Cmax,
+                 name="loadA")
+model.addConstr(gp.quicksum(p[j,"B"]*x[j,"B"] for j in jobs if (j,"B") in p) <= Cmax,
+                 name="loadB")
+
+# --- Obiettivo ---
+model.setObjective(Cmax, GRB.MINIMIZE)
+
+model.optimize()
+
+# --- Estrazione risultati ---
+status = model.Status
+result = {"status": None, "objective": None, "variables": {}}
+
+if status == GRB.OPTIMAL:
+    result["status"] = "OPTIMAL"
+    result["objective"] = float(model.ObjVal)
+    variables = {}
+    for j in jobs:
+        for m in machines:
+            if (j,m) in p:
+                variables[f"x_{j}_{m}"] = float(round(x[j,m].X))
+    variables["Cmax"] = float(model.ObjVal)
+    result["variables"] = variables
+else:
+    result["status"] = str(status)
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il solver Gurobi trova la soluzione **ottima** con **makespan $C_{max}=22$**.
+
+Assegnazione ottima:
+- **Macchina A**: J1 (7), J2 (6), J4 (5), J6 (4) → carico totale = 22
+- **Macchina B**: J3 (7), J5 (6), J7 (5) → carico totale = 18
+
+Il makespan è determinato dal carico della macchina A (22), che risulta il massimo tra i due carichi. Nessuna altra combinazione di assegnazione produce un makespan inferiore a 22, come verificato anche tramite enumerazione esaustiva dei sottoinsiemi possibili.

@@ -1,0 +1,103 @@
+{
+  "schema_version": 2,
+  "created_at_utc": "2026-08-24T19:21:24.171302+00:00",
+  "model": "claude-sonnet-5",
+  "problem_id": "H04",
+  "problem_sequence": 18,
+  "handoff_number": 1,
+  "stage": 4,
+  "failure_class": "validazione_indipendente_fallita",
+  "failure_detail": "la soluzione viola almeno un requisito del problema originale; il gap supera la soglia dello 0,1%; sono presenti variabili operative non riconosciute",
+  "handoff_mode": "CORRECTION",
+  "allowed_actions": [
+    "CORRECT",
+    "ACCEPT_FAILURE"
+  ],
+  "automatic_repairs_exhausted": 0,
+  "problem_prompt": "# H04 — Allocazione della flotta su più rotte\n\nDifficoltà: Elevata\nClasse: MILP intera\n\nUn’impresa deve assegnare viaggi di tre tipi di veicolo a quattro rotte. La capacità complessiva assegnata a ogni rotta deve coprirne la domanda. La disponibilità di ciascun tipo è condivisa tra tutte le rotte.\nPer contenere la complessità operativa, su ogni rotta possono essere usati al massimo due tipi di veicolo. Sulla rotta R4 deve essere impiegato almeno un veicolo grande. Le emissioni totali non possono superare 145 unità.\nMinimizzare il costo totale dei viaggi.\n\n## Domanda per rotta\n\nRotta | R1 | R2 | R3 | R4\n--- | --- | --- | --- | ---\nDomanda | 42 | 55 | 38 | 64\n\n## Flotta\n\nTipo | Capacità/viaggio | Disponibilità | Emissioni/viaggio\n--- | --- | --- | ---\nPiccolo | 8 | 10 | 5\nMedio | 14 | 9 | 8\nGrande | 20 | 6 | 11\n\n## Costo di un viaggio\n\nRotta | Piccolo | Medio | Grande\n--- | --- | --- | ---\nR1 | 45 | 62 | 82\nR2 | 52 | 68 | 88\nR3 | 40 | 58 | 79\nR4 | 60 | 77 | 96\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n",
+  "last_code": "import gurobipy as gp\nfrom gurobipy import GRB\n\n# ------------------- Dati -------------------\nR = [\"R1\", \"R2\", \"R3\", \"R4\"]\nT = [\"S\", \"M\", \"L\"]  # Piccolo, Medio, Grande\n\ndemand = {\"R1\": 42, \"R2\": 55, \"R3\": 38, \"R4\": 64}\n\ncap   = {\"S\": 8,  \"M\": 14, \"L\": 20}\navail = {\"S\": 10, \"M\": 9,  \"L\": 6}\nemis  = {\"S\": 5,  \"M\": 8,  \"L\": 11}\n\ncost = {\n    (\"R1\", \"S\"): 45, (\"R1\", \"M\"): 62, (\"R1\", \"L\"): 82,\n    (\"R2\", \"S\"): 52, (\"R2\", \"M\"): 68, (\"R2\", \"L\"): 88,\n    (\"R3\", \"S\"): 40, (\"R3\", \"M\"): 58, (\"R3\", \"L\"): 79,\n    (\"R4\", \"S\"): 60, (\"R4\", \"M\"): 77, (\"R4\", \"L\"): 96,\n}\n\nMAXTYPES = 2\nEMIS_MAX = 145\nBigM = avail  # limite superiore naturale per x[r,t]\n\n# ------------------- Modello -------------------\nm = gp.Model(\"H04_allocazione_flotta\")\n\nx = m.addVars(R, T, vtype=GRB.INTEGER, lb=0, name=\"x\")\ny = m.addVars(R, T, vtype=GRB.BINARY, name=\"y\")\n\n# Obiettivo: minimizzare il costo totale\nm.setObjective(\n    gp.quicksum(cost[r, t] * x[r, t] for r in R for t in T),\n    GRB.MINIMIZE\n)\n\n# 1. Copertura della domanda\nfor r in R:\n    m.addConstr(\n        gp.quicksum(cap[t] * x[r, t] for t in T) >= demand[r],\n        name=f\"demand_{r}\"\n    )\n\n# 2. Disponibilità totale per tipo\nfor t in T:\n    m.addConstr(\n        gp.quicksum(x[r, t] for r in R) <= avail[t],\n        name=f\"avail_{t}\"\n    )\n\n# 3. Al massimo due tipi per rotta\nfor r in R:\n    m.addConstr(\n        gp.quicksum(y[r, t] for t in T) <= MAXTYPES,\n        name=f\"maxtypes_{r}\"\n    )\n\n# 4. Collegamento x-y (big-M)\nfor r in R:\n    for t in T:\n        m.addConstr(\n            x[r, t] <= BigM[t] * y[r, t],\n            name=f\"link_{r}_{t}\"\n        )\n\n# 5. R4 almeno un veicolo grande\nm.addConstr(x[\"R4\", \"L\"] >= 1, name=\"R4_large_min\")\n\n# 6. Limite emissioni totali\nm.addConstr(\n    gp.quicksum(emis[t] * x[r, t] for r in R for t in T) <= EMIS_MAX,\n    name=\"emissions_limit\"\n)\n\n# ------------------- Risoluzione -------------------\nm.optimize()\n\nstatus = m.Status\nresult = {\"status\": None, \"objective\": None, \"variables\": {}}\n\nif status == GRB.OPTIMAL:\n    result[\"status\"] = \"OPTIMAL\"\n    result[\"objective\"] = round(m.ObjVal, 4)\n    variables = {}\n    for r in R:\n        for t in T:\n            variables[f\"x_{r}_{t}\"] = round(x[r, t].X, 4)\n    for r in R:\n        for t in T:\n            variables[f\"y_{r}_{t}\"] = round(y[r, t].X, 4)\n    result[\"variables\"] = variables\nelse:\n    result[\"status\"] = str(status)\n\nimport json\nprint(f\"SOLUTION_JSON={json.dumps(result)}\")\n",
+  "last_response_excerpt": "TRACEABILITY_JSON={\"status\":\"READY\",\"unresolved\":[],\"undefined_symbols\":[],\"requirements_mapped\":[\"assegnazione viaggi per tipo/rotta -> variabili x[r,t] su insiemi R,T\",\"copertura domanda per rotta -> vincolo di capacità sum_t cap[t]*x[r,t]>=demand[r]\",\"disponibilità condivisa per tipo -> vincolo sum_r x[r,t]<=availability[t]\",\"al massimo due tipi per rotta -> vincolo sum_t y[r,t]<=2 con link x<=M*y\",\"R4 almeno un veicolo grande -> vincolo x[R4,Large]>=1\",\"emissioni totali <=145 -> vincolo sum emissions[t]*x[r,t]<=145\",\"minimizzare costo totale -> funzione obiettivo min sum cost[r,t]*x[r,t]\"]}\n\n## 2. Insiemi, parametri e variabili decisionali\n\n**Insiemi**\n- R = {R1, R2, R3, R4} — rotte\n- T = {S, M, L} — tipi di veicolo (Piccolo, Medio, Grande)\n\n**Parametri**\n- demand[r] — domanda della rotta r (unità di capacità)\n- cap[t] — capacità per viaggio del tipo t\n- avail[t] — disponibilità totale (numero massimo di viaggi) del tipo t, condivisa tra tutte le rotte\n- emis[t] — emissioni per viaggio del tipo t\n- cost[r,t] — costo di un viaggio di tipo t sulla rotta r\n- BigM[t] = avail[t] — limite superiore naturale per x[r,t]\n- EMIS_MAX = 145 — limite massimo di emissioni totali\n- MAXTYPES = 2 — numero massimo di tipi utilizzabili per rotta\n\n**Variabili decisionali**\n- x[r,t] ∈ ℤ≥0 — numero di viaggi di tipo t effettuati sulla rotta r\n- y[r,t] ∈ {0,1} — 1 se il tipo t è utilizzato (almeno un viaggio) sulla rotta r, 0 altrimenti\n\n## 3. Formulazione matematica\n\n**Funzione obiettivo**\n\nmin Σ_{r∈R} Σ_{t∈T} cost[r,t] · x[r,t]\n\n**Vincoli**\n\n1. Copertura della domanda per ogni rotta:\n   Σ_{t∈T} cap[t] · x[r,t] ≥ demand[r]   ∀ r ∈ R\n\n2. Disponibilità totale condivisa per tipo:\n   Σ_{r∈R} x[r,t] ≤ avail[t]   ∀ t ∈ T\n\n3. Al massimo due tipi di veicolo per rotta:\n   Σ_{t∈T} y[r,t] ≤ MAXTYPES   ∀ r ∈ R\n\n4. Collegamento uso-attivazione (big-M):\n   x[r,t] ≤ BigM[t] · y[r,t]   ∀ r ∈ R, t ∈ T\n\n5. Almeno un veicolo grande su R4:\n   x[R4, L] ≥ 1\n\n6. Limite emissioni totali:\n   Σ_{r∈R} Σ_{t∈T} emis[t] · x[r,t] ≤ EMIS_MAX\n\n7. Domini:\n   x[r,t] ∈ ℤ≥0 ,  y[r,t] ∈ {0,1}   ∀ r ∈ R, t ∈ T\n\n## 4. Codice Python (gurobipy)\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\n\n# ------------------- Dati -------------------\nR = [\"R1\", \"R2\", \"R3\", \"R4\"]\nT = [\"S\", \"M\", \"L\"]  # Piccolo, Medio, Grande\n\ndemand = {\"R1\": 42, \"R2\": 55, \"R3\": 38, \"R4\": 64}\n\ncap   = {\"S\": 8,  \"M\": 14, \"L\": 20}\navail = {\"S\": 10, \"M\": 9,  \"L\": 6}\nemis  = {\"S\": 5,  \"M\": 8,  \"L\": 11}\n\ncost = {\n    (\"R1\", \"S\"): 45, (\"R1\", \"M\"): 62, (\"R1\", \"L\"): 82,\n    (\"R2\", \"S\"): 52, (\"R2\", \"M\"): 68, (\"R2\", \"L\"): 88,\n    (\"R3\", \"S\"): 40, (\"R3\", \"M\"): 58, (\"R3\", \"L\"): 79,\n    (\"R4\", \"S\"): 60, (\"R4\", \"M\"): 77, (\"R4\", \"L\"): 96,\n}\n\nMAXTYPES = 2\nEMIS_MAX = 145\nBigM = avail  # limite superiore naturale per x[r,t]\n\n# ------------------- Modello -------------------\nm = gp.Model(\"H04_allocazione_flotta\")\n\nx = m.addVars(R, T, vtype=GRB.INTEGER, lb=0, name=\"x\")\ny = m.addVars(R, T, vtype=GRB.BINARY, name=\"y\")\n\n# Obiettivo: minimizzare il costo totale\nm.setObjective(\n    gp.quicksum(cost[r, t] * x[r, t] for r in R for t in T),\n    GRB.MINIMIZE\n)\n\n# 1. Copertura della domanda\nfor r in R:\n    m.addConstr(\n        gp.quicksum(cap[t] * x[r, t] for t in T) >= demand[r],\n        name=f\"demand_{r}\"\n    )\n\n# 2. Disponibilità totale per tipo\nfor t in T:\n    m.addConstr(\n        gp.quicksum(x[r, t] for r in R) <= avail[t],\n        name=f\"avail_{t}\"\n    )\n\n# 3. Al massimo due tipi per rotta\nfor r in R:\n    m.addConstr(\n        gp.quicksum(y[r, t] for t in T) <= MAXTYPES,\n        name=f\"maxtypes_{r}\"\n    )\n\n# 4. Collegamento x-y (big-M)\nfor r in R:\n    for t in T:\n        m.addConstr(\n            x[r, t] <= BigM[t] * y[r, t],\n            name=f\"link_{r}_{t}\"\n        )\n\n# 5. R4 almeno un veicolo grande\nm.addConstr(x[\"R4\", \"L\"] >= 1, name=\"R4_large_min\")\n\n# 6. Limite emissioni totali\nm.addConstr(\n    gp.quicksum(emis[t] * x[r, t] for r in R for t in T) <= EMIS_MAX,\n    name=\"emissions_limit\"\n)\n\n# ------------------- Risoluzione -------------------\nm.optimize()\n\nstatus = m.Status\nresult = {\"status\": None, \"objective\": None, \"variables\": {}}\n\nif status == GRB.OPTIMAL:\n    result[\"status\"] = \"OPTIMAL\"\n    result[\"objective\"] = round(m.ObjVal, 4)\n    variables = {}\n    for r in R:\n        for t in T:\n            variables[f\"x_{r}_{t}\"] = round(x[r, t].X, 4)\n    for r in R:\n        for t in T:\n            variables[f\"y_{r}_{t}\"] = round(y[r, t].X, 4)\n    result[\"variables\"] = variables\nelse:\n    result[\"status\"] = str(status)\n\nimport json\nprint(f\"SOLUTION_JSON={json.dumps(result)}\")\n```\n\n## 5. Sintesi della soluzione\n\nIl modello assegna il numero ottimo di viaggi per ciascun tipo di veicolo (Piccolo, Medio, Grande) su ogni rotta (R1–R4), rispettando:\n- la copertura della domanda tramite la capacità totale assegnata a ciascuna rotta;\n- la disponibilità condivisa di ciascun tipo di veicolo su tutte le rotte;\n- il vincolo di al massimo due tipi di veicolo attivi per rotta (tramite variabili binarie di attivazione collegate con vincoli big-M);\n- l'obbligo di impiegare almeno un veicolo grande sulla rotta R4;\n- il limite massimo di 145 unità di emissioni totali.\n\nL'obiettivo è la minimizzazione del costo totale dei viaggi. Il codice Python costruisce il modello MILP con gurobipy usando esclusivamente i dati forniti nella traccia, risolve il problema e stampa un'unica riga `SOLUTION_JSON` contenente lo stato del solver, il valore ottimo della funzione obiettivo e tutti i valori delle variabili decisionali (x[r,t] e y[r,t]), incluse quelle nulle.",
+  "response_source_attempt": 0,
+  "validation": {
+    "problem_id": "H04",
+    "correct": false,
+    "candidate_status": "OPTIMAL",
+    "feasible_in_original_problem": false,
+    "gap_within_tolerance": false,
+    "declared_objective_corrected_automatically": false,
+    "max_constraint_violation": 38.0,
+    "constraint_violations": [
+      {
+        "constraint": "domanda_R3",
+        "lhs": 0.0,
+        "sense": ">=",
+        "rhs": 38.0,
+        "violation": 38.0
+      },
+      {
+        "constraint": "linkmin_R3_Medio",
+        "lhs": -1.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 1.0
+      },
+      {
+        "constraint": "domanda_R4",
+        "lhs": 28.0,
+        "sense": ">=",
+        "rhs": 64.0,
+        "violation": 36.0
+      },
+      {
+        "constraint": "grande_R4",
+        "lhs": 0.0,
+        "sense": ">=",
+        "rhs": 1.0,
+        "violation": 1.0
+      }
+    ],
+    "bound_violations": [],
+    "integrality_violations": [],
+    "unknown_nonzero_variables": [
+      "x_R3_L",
+      "x_R4_L",
+      "y_R1_L",
+      "y_R2_L",
+      "y_R3_L",
+      "y_R4_L"
+    ],
+    "missing_variables_assumed_zero": [
+      "x_R1_Grande",
+      "x_R1_Piccolo",
+      "x_R2_Grande",
+      "x_R2_Piccolo",
+      "x_R3_Grande",
+      "x_R3_Piccolo",
+      "x_R4_Grande",
+      "x_R4_Piccolo",
+      "y_R1_Grande",
+      "y_R1_Piccolo",
+      "y_R2_Grande",
+      "y_R2_Piccolo",
+      "y_R3_Grande",
+      "y_R3_Piccolo",
+      "y_R4_Grande",
+      "y_R4_Piccolo"
+    ]
+  },
+  "attempt_history": [
+    {
+      "attempt_number": 0,
+      "attempt_kind": "INITIAL",
+      "finish_reason": "stop",
+      "content_characters": 5531,
+      "completion_tokens": 4476,
+      "reasoning_tokens": 1524,
+      "code_extracted": true,
+      "failure_class": "validazione_indipendente_fallita",
+      "failure_detail": "la soluzione viola almeno un requisito del problema originale; il gap supera la soglia dello 0,1%; sono presenti variabili operative non riconosciute"
+    }
+  ],
+  "automatic_diagnosis": "Il codice è stato eseguito, ma la soluzione non ha superato la validazione indipendente. Esaminare le violazioni e il codice riportati nel pacchetto.",
+  "ground_truth_disclosed": false
+}

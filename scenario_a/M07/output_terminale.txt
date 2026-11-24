@@ -1,0 +1,61 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 12 rows, 8 columns and 32 nonzeros (Min)
+Model fingerprint: 0x14a6290d
+Model has 8 linear objective coefficients
+Variable types: 0 continuous, 8 integer (4 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+02]
+  Objective range  [9e+00, 1e+02]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [2e+00, 6e+02]
+
+Presolve removed 2 rows and 1 columns
+Presolve time: 0.00s
+Presolved: 10 rows, 7 columns, 27 nonzeros
+Variable types: 0 continuous, 7 integer (4 binary)
+Found heuristic solution: objective 2175.0000000
+Found heuristic solution: objective 2145.0000000
+Found heuristic solution: objective 2055.0000000
+
+Root relaxation: objective 2.046818e+03, 6 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0 infeasible    0      2055.00000 2055.00000  0.00%     -    0s
+
+Explored 1 nodes (6 simplex iterations) in 0.00 seconds (0.00 work units)
+Thread count was 8 (of 8 available processors)
+
+Solution count 3: 2055 2145 2175 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 2.055000000000e+03, best bound 2.055000000000e+03, gap 0.0000%
+
+======================================================================
+RISULTATO M07 - Selezione dei fornitori con qualita' minima
+======================================================================
+Stato finale Gurobi      : OPTIMAL (codice 2)
+Tempo di esecuzione Gurobi: 0.0015 s
+Valore funzione obiettivo : 2055
+
+Decisioni non nulle:
+    fornitore A: x = 80   delta = 1   (CV 11, CF 80, ordine min. 20)
+    fornitore B: x = 100   delta = 1   (CV 10, CF 95, ordine min. 25)
+
+Verifica requisiti:
+    unita' acquistate  = 180 (richieste 180)
+    fornitori attivati = 2 (richiesti >= 2)
+    emissioni totali   = 640 (ammesse <= 650)
+    qualita' come da formulazione (sulle delta) = 186 (richiesta >= 92)
+    qualita' media ponderata sulle quantita'    = 92.6667
+
+File soluzione scritto: /Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_a/M07/M07.sol
+======================================================================

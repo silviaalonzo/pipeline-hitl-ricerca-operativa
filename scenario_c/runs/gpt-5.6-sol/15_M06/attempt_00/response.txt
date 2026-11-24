@@ -1,0 +1,209 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["assegnazione integrale dei lavori -> variabili binarie x[j,m]","ogni lavoro su una sola macchina -> vincoli di assegnazione","tempi dipendenti dalla macchina -> parametri p[j,m]","J7 incompatibile con A -> arco (J7,A) escluso dall'insieme E","esecuzione sequenziale -> carico macchina pari alla somma dei tempi assegnati","minimizzazione del makespan -> variabile C_max e obiettivo min C_max"]}
+
+## Insiemi, parametri e variabili decisionali
+
+### Insiemi
+
+- Lavori:
+  \[
+  J=\{J1,J2,J3,J4,J5,J6,J7\}.
+  \]
+
+- Macchine:
+  \[
+  M=\{A,B\}.
+  \]
+
+- Coppie lavoro-macchina compatibili:
+  \[
+  \begin{aligned}
+  E=\{&(J1,A),(J1,B),(J2,A),(J2,B),(J3,A),(J3,B),\\
+      &(J4,A),(J4,B),(J5,A),(J5,B),(J6,A),(J6,B),(J7,B)\}.
+  \end{aligned}
+  \]
+  La coppia \((J7,A)\) non appartiene a \(E\).
+
+- Macchine compatibili con il lavoro \(j\):
+  \[
+  M_j=\{m\in M:(j,m)\in E\}.
+  \]
+
+### Parametri
+
+Per ogni \((j,m)\in E\), \(p_{jm}\) è il tempo di lavorazione:
+
+\[
+\begin{array}{c|cc}
+j & p_{jA} & p_{jB}\\ \hline
+J1&7&9\\
+J2&6&5\\
+J3&8&7\\
+J4&5&8\\
+J5&9&6\\
+J6&4&7\\
+J7&-&5
+\end{array}
+\]
+
+### Variabili decisionali
+
+\[
+x_{jm}=
+\begin{cases}
+1 & \text{se il lavoro }j\text{ è assegnato alla macchina }m,\\
+0 & \text{altrimenti},
+\end{cases}
+\qquad (j,m)\in E.
+\]
+
+\[
+C_{\max}\ge 0
+\]
+
+è il makespan, ossia il massimo carico delle due macchine.
+
+## Formulazione matematica completa
+
+\[
+\min \quad C_{\max}
+\]
+
+soggetto a:
+
+### Assegnazione univoca
+
+\[
+\sum_{m\in M_j}x_{jm}=1
+\qquad \forall j\in J.
+\]
+
+### Definizione del makespan
+
+\[
+\sum_{j:(j,m)\in E}p_{jm}x_{jm}\le C_{\max}
+\qquad \forall m\in M.
+\]
+
+### Dominio
+
+\[
+x_{jm}\in\{0,1\}
+\qquad \forall (j,m)\in E,
+\]
+
+\[
+C_{\max}\ge 0.
+\]
+
+Non sono necessarie variabili di sequenziamento: tutti i lavori sono disponibili all’inizio, non sono indicati tempi di setup e, su ogni macchina, il completamento dell’ultimo lavoro coincide con la somma dei tempi dei lavori assegnati.
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+jobs = ["J1", "J2", "J3", "J4", "J5", "J6", "J7"]
+machines = ["A", "B"]
+
+# Sono incluse esclusivamente le coppie compatibili.
+p = {
+    ("J1", "A"): 7, ("J1", "B"): 9,
+    ("J2", "A"): 6, ("J2", "B"): 5,
+    ("J3", "A"): 8, ("J3", "B"): 7,
+    ("J4", "A"): 5, ("J4", "B"): 8,
+    ("J5", "A"): 9, ("J5", "B"): 6,
+    ("J6", "A"): 4, ("J6", "B"): 7,
+    ("J7", "B"): 5
+}
+
+arcs = list(p.keys())
+
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+model = gp.Model("M06_bilanciamento_due_macchine", env=env)
+model.Params.OutputFlag = 0
+
+x = model.addVars(arcs, vtype=GRB.BINARY, name="x")
+C_max = model.addVar(lb=0.0, vtype=GRB.CONTINUOUS, name="C_max")
+
+for j in jobs:
+    model.addConstr(
+        gp.quicksum(x[j, m] for m in machines if (j, m) in p) == 1,
+        name=f"assegnazione[{j}]"
+    )
+
+for m in machines:
+    model.addConstr(
+        gp.quicksum(p[j, m] * x[j, m] for j in jobs if (j, m) in p) <= C_max,
+        name=f"carico[{m}]"
+    )
+
+model.setObjective(C_max, GRB.MINIMIZE)
+model.optimize()
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+solver_status = status_names.get(model.Status, f"STATUS_{model.Status}")
+
+if model.Status == GRB.OPTIMAL:
+    variables = {}
+    for j, m in arcs:
+        value = float(x[j, m].X)
+        if abs(value - round(value)) <= 1e-6:
+            value = float(round(value))
+        variables[f"x[{j},{m}]"] = value
+
+    c_value = float(C_max.X)
+    if abs(c_value - round(c_value)) <= 1e-6:
+        c_value = float(round(c_value))
+    variables["C_max"] = c_value
+
+    result = {
+        "status": "OPTIMAL",
+        "objective": float(model.ObjVal),
+        "variables": variables
+    }
+else:
+    result = {
+        "status": solver_status,
+        "objective": None,
+        "variables": {}
+    }
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## Sintesi della soluzione
+
+Lo stato ottimo è **OPTIMAL** e il makespan minimo è:
+
+\[
+C_{\max}^*=22.
+\]
+
+L’assegnazione ottima è:
+
+- Macchina \(A\): \(J1,J2,J4,J6\), con carico \(7+6+5+4=22\);
+- Macchina \(B\): \(J3,J5,J7\), con carico \(7+6+5=18\).
+
+Le decisioni binarie non nulle sono quindi \(x_{J1,A}\), \(x_{J2,A}\), \(x_{J3,B}\), \(x_{J4,A}\), \(x_{J5,B}\), \(x_{J6,A}\) e \(x_{J7,B}\), tutte pari a \(1\).

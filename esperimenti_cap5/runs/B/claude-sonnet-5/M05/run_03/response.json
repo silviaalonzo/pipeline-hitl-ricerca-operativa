@@ -1,0 +1,64 @@
+{
+  "id": "gen-1786362311-JUk7jDOttETPBkBOfRWa",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "# 1. Insiemi, parametri e variabili decisionali\n\n**Insiemi**\n- $I = \\{1,2,\\dots,8\\}$: insieme dei progetti.\n- $D = \\{1,3,7\\} \\subset I$: sottoinsieme dei progetti \"digitali\".\n\n**Parametri**\n- $v_i$: valore del progetto $i \\in I$.\n- $b_i$: budget richiesto dal progetto $i \\in I$.\n- $p_i$: personale richiesto dal progetto $i \\in I$.\n- $B = 100$: budget disponibile.\n- $P = 18$: personale disponibile.\n\n| i | v_i | b_i | p_i |\n|---|-----|-----|-----|\n| 1 | 30 | 20 | 4 |\n| 2 | 24 | 18 | 3 |\n| 3 | 35 | 27 | 5 |\n| 4 | 28 | 24 | 4 |\n| 5 | 33 | 22 | 4 |\n| 6 | 26 | 19 | 3 |\n| 7 | 38 | 30 | 5 |\n| 8 | 21 | 15 | 2 |\n\n**Variabili decisionali**\n- $x_i \\in \\{0,1\\}$ per ogni $i \\in I$: $x_i = 1$ se il progetto $i$ viene selezionato, $0$ altrimenti.\n\n# 2. Formulazione matematica\n\n**Funzione obiettivo**\n\n$$\\max \\; Z = \\sum_{i \\in I} v_i x_i$$\n\n**Vincoli**\n\nBudget:\n$$\\sum_{i \\in I} b_i x_i \\le B$$\n\nPersonale:\n$$\\sum_{i \\in I} p_i x_i \\le P$$\n\nDipendenza P5 richiede P2:\n$$x_5 \\le x_2$$\n\nDipendenza P7 richiede P3:\n$$x_7 \\le x_3$$\n\nIncompatibilità P4 e P6:\n$$x_4 + x_6 \\le 1$$\n\nAlmeno un progetto digitale tra P1, P3, P7:\n$$x_1 + x_3 + x_7 \\ge 1$$\n\nAlmeno tre progetti complessivi:\n$$\\sum_{i \\in I} x_i \\ge 3$$\n\nDominio:\n$$x_i \\in \\{0,1\\} \\quad \\forall i \\in I$$\n\n# 3. Codice Python con gurobipy\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\n# Dati\nprogetti = [1,2,3,4,5,6,7,8]\nvalore = {1:30, 2:24, 3:35, 4:28, 5:33, 6:26, 7:38, 8:21}\nbudget = {1:20, 2:18, 3:27, 4:24, 5:22, 6:19, 7:30, 8:15}\npersonale = {1:4, 2:3, 3:5, 4:4, 5:4, 6:3, 7:5, 8:2}\n\nB_max = 100\nP_max = 18\ndigitali = [1,3,7]\n\n# Modello\nm = gp.Model(\"Selezione_Portafoglio_Progetti\")\n\n# Variabili\nx = m.addVars(progetti, vtype=GRB.BINARY, name=\"x\")\n\n# Obiettivo\nm.setObjective(gp.quicksum(valore[i]*x[i] for i in progetti), GRB.MAXIMIZE)\n\n# Vincoli\nm.addConstr(gp.quicksum(budget[i]*x[i] for i in progetti) <= B_max, name=\"Budget\")\nm.addConstr(gp.quicksum(personale[i]*x[i] for i in progetti) <= P_max, name=\"Personale\")\n\nm.addConstr(x[5] <= x[2], name=\"P5_richiede_P2\")\nm.addConstr(x[7] <= x[3], name=\"P7_richiede_P3\")\nm.addConstr(x[4] + x[6] <= 1, name=\"P4_P6_incompatibili\")\nm.addConstr(x[1] + x[3] + x[7] >= 1, name=\"Almeno_un_digitale\")\nm.addConstr(gp.quicksum(x[i] for i in progetti) >= 3, name=\"Almeno_tre_progetti\")\n\n# Risoluzione\nm.optimize()\n\n# Output risultati\nstatus = m.Status\nresult = {\"status\": None, \"objective\": None, \"variables\": {}}\n\nif status == GRB.OPTIMAL:\n    result[\"status\"] = \"OPTIMAL\"\n    result[\"objective\"] = round(m.ObjVal, 2)\n    for i in progetti:\n        result[\"variables\"][f\"x_{i}\"] = round(x[i].X, 2)\nelse:\n    result[\"status\"] = str(status)\n    result[\"objective\"] = None\n    result[\"variables\"] = {}\n\nprint(\"SOLUTION_JSON=\" + json.dumps(result))\n```\n\n# 4. Sintesi della soluzione\n\nIl modello IP binario seleziona il sottoinsieme di progetti che massimizza il valore complessivo rispettando i vincoli di budget (≤100), personale (≤18 unità), le dipendenze logiche (P5→P2, P7→P3), l'incompatibilità P4-P6, il requisito di almeno un progetto digitale (P1, P3 o P7) e la cardinalità minima di 3 progetti.\n\nRisolvendo con Gurobi, il solver individua la combinazione ottima di progetti che:\n- Rispetta tutti i vincoli di risorsa e logici;\n- Massimizza il valore totale del portafoglio.\n\nLo stato del solver, il valore ottimo della funzione obiettivo e le decisioni $x_i$ (0 o 1) per ciascun progetto vengono riportati nella riga `SOLUTION_JSON` stampata a console, che indica esplicitamente quali progetti risultano selezionati (valore 1) e quali esclusi (valore 0) nella soluzione ottima.",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": null
+      },
+      "native_finish_reason": "end_turn"
+    }
+  ],
+  "created": 1786362311,
+  "model": "anthropic/claude-sonnet-5",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 1985,
+    "prompt_tokens": 950,
+    "total_tokens": 2935,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.02175,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.02175,
+      "upstream_inference_prompt_cost": 0.0019,
+      "upstream_inference_completions_cost": 0.01985
+    }
+  },
+  "provider": "Anthropic",
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "anthropic/claude-sonnet-5",
+    "required_provider": "anthropic",
+    "allow_fallbacks": false,
+    "require_parameters": true
+  },
+  "_experiment": {
+    "elapsed_seconds": 18.98844145799967,
+    "completed_at_utc": "2026-08-10T11:45:28.846058+00:00"
+  }
+}

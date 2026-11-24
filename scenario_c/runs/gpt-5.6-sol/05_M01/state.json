@@ -1,0 +1,64 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "gpt-5.6-sol",
+  "problem_id": "M01",
+  "problem_sequence": 5,
+  "domain": "Localizzazione e assegnazione",
+  "difficulty": "Media",
+  "model_class": "IP binaria",
+  "created_at_utc": "2026-08-24T18:07:54.122208+00:00",
+  "updated_at_utc": "2026-08-24T18:08:55.214177+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:08:55.213383+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "aprire esattamente due centri -> vincolo sum_i y_i = 2",
+              "assegnare ogni zona a un solo centro -> vincolo sum_i x_ji = 1",
+              "assegnare solo a centri aperti -> vincoli x_ji <= y_i",
+              "rispettare la capacità dei siti -> vincoli sum_j x_ji <= q_i y_i",
+              "minimizzare costi fissi e di servizio -> funzione obiettivo",
+              "decisioni binarie -> domini y_i e x_ji binari"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "gpt-5.6-sol",
+    "problem_id": "M01",
+    "retrieved_at_utc": "2026-08-24T18:07:54.122200+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

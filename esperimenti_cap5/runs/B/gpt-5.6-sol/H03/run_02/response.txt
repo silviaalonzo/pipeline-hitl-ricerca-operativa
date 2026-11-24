@@ -1,0 +1,324 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+### Insiemi
+
+- Dipendenti:
+  \[
+  I=\{\mathrm{E1},\ldots,\mathrm{E8}\}.
+  \]
+- Giorni ordinati:
+  \[
+  D=(\mathrm{Lun},\mathrm{Mar},\mathrm{Mer},\mathrm{Gio},
+  \mathrm{Ven},\mathrm{Sab},\mathrm{Dom}).
+  \]
+- Dipendenti senior:
+  \[
+  S=\{\mathrm{E1},\mathrm{E2},\mathrm{E3}\}.
+  \]
+- Specialisti:
+  \[
+  P=\{\mathrm{E7},\mathrm{E8}\}.
+  \]
+- Giorni che richiedono uno specialista:
+  \[
+  D_P=\{\mathrm{Gio},\mathrm{Ven}\}.
+  \]
+- Fine settimana:
+  \[
+  D_W=\{\mathrm{Sab},\mathrm{Dom}\}.
+  \]
+
+### Parametri
+
+- Domanda giornaliera:
+  \[
+  (r_d)_{d\in D}=(4,3,4,4,5,3,3).
+  \]
+- \(c_{id}\): costo dell'assegnazione del dipendente \(i\) al giorno \(d\), secondo la tabella.
+- \(a_{id}\in\{0,1\}\): disponibilità, pari a 1 se \(i\) è disponibile nel giorno \(d\), 0 altrimenti.
+
+Le indisponibilità sono:
+\[
+(\mathrm{E1},\mathrm{Dom}),\ 
+(\mathrm{E2},\mathrm{Sab}),\ 
+(\mathrm{E4},\mathrm{Mar}),\ 
+(\mathrm{E5},\mathrm{Gio}),\ 
+(\mathrm{E6},\mathrm{Lun}),\ 
+(\mathrm{E7},\mathrm{Dom}).
+\]
+
+### Variabili decisionali
+
+Per ogni \(i\in I\) e \(d\in D\):
+\[
+x_{id}=
+\begin{cases}
+1 & \text{se il dipendente }i\text{ lavora nel giorno }d,\\
+0 & \text{altrimenti.}
+\end{cases}
+\]
+
+---
+
+## 2. Formulazione matematica completa
+
+### Funzione obiettivo
+
+Minimizzare il costo settimanale:
+
+\[
+\min \quad
+\sum_{i\in I}\sum_{d\in D:\,a_{id}=1} c_{id}x_{id}.
+\]
+
+### Copertura della domanda
+
+\[
+\sum_{i\in I}x_{id}\ge r_d
+\qquad \forall d\in D.
+\]
+
+### Presenza giornaliera di almeno un senior
+
+\[
+\sum_{i\in S}x_{id}\ge 1
+\qquad \forall d\in D.
+\]
+
+### Numero minimo e massimo di giorni lavorati
+
+\[
+3\le \sum_{d\in D}x_{id}\le 5
+\qquad \forall i\in I.
+\]
+
+### Divieto di lavorare quattro giorni consecutivi
+
+Indicizzando i giorni da 1 a 7:
+
+\[
+\sum_{h=k}^{k+3}x_{ih}\le 3
+\qquad
+\forall i\in I,\quad k=1,\ldots,4.
+\]
+
+### Presenza degli specialisti giovedì e venerdì
+
+\[
+\sum_{i\in P}x_{id}\ge 1
+\qquad \forall d\in D_P.
+\]
+
+### Limitazione di E1 ed E2 nel fine settimana
+
+\[
+x_{i,\mathrm{Sab}}+x_{i,\mathrm{Dom}}\le 1
+\qquad \forall i\in\{\mathrm{E1},\mathrm{E2}\}.
+\]
+
+### Indisponibilità
+
+\[
+x_{id}\le a_{id}
+\qquad \forall i\in I,\ d\in D.
+\]
+
+### Dominio
+
+\[
+x_{id}\in\{0,1\}
+\qquad \forall i\in I,\ d\in D.
+\]
+
+---
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+employees = ["E1", "E2", "E3", "E4", "E5", "E6", "E7", "E8"]
+days = ["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"]
+
+demand = {
+    "Lun": 4, "Mar": 3, "Mer": 4, "Gio": 4,
+    "Ven": 5, "Sab": 3, "Dom": 3
+}
+
+raw_costs = {
+    "E1": {"Lun": 9, "Mar": 9, "Mer": 10, "Gio": 9, "Ven": 11, "Sab": 14, "Dom": None},
+    "E2": {"Lun": 10, "Mar": 9, "Mer": 9, "Gio": 10, "Ven": 10, "Sab": None, "Dom": 14},
+    "E3": {"Lun": 9, "Mar": 10, "Mer": 9, "Gio": 9, "Ven": 12, "Sab": 12, "Dom": 13},
+    "E4": {"Lun": 7, "Mar": None, "Mer": 7, "Gio": 8, "Ven": 8, "Sab": 11, "Dom": 11},
+    "E5": {"Lun": 8, "Mar": 7, "Mer": 8, "Gio": None, "Ven": 9, "Sab": 10, "Dom": 12},
+    "E6": {"Lun": None, "Mar": 8, "Mer": 8, "Gio": 7, "Ven": 8, "Sab": 12, "Dom": 10},
+    "E7": {"Lun": 8, "Mar": 8, "Mer": 7, "Gio": 9, "Ven": 7, "Sab": 11, "Dom": None},
+    "E8": {"Lun": 9, "Mar": 7, "Mer": 8, "Gio": 8, "Ven": 7, "Sab": 10, "Dom": 11}
+}
+
+availability = {
+    (i, d): int(raw_costs[i][d] is not None)
+    for i in employees
+    for d in days
+}
+
+seniors = ["E1", "E2", "E3"]
+specialists = ["E7", "E8"]
+specialist_days = ["Gio", "Ven"]
+weekend_limited = ["E1", "E2"]
+
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+model = gp.Model("H03_turnazione_settimanale", env=env)
+
+x = model.addVars(
+    employees,
+    days,
+    vtype=GRB.BINARY,
+    name="x"
+)
+
+model.setObjective(
+    gp.quicksum(
+        raw_costs[i][d] * x[i, d]
+        for i in employees
+        for d in days
+        if raw_costs[i][d] is not None
+    ),
+    GRB.MINIMIZE
+)
+
+model.addConstrs(
+    (
+        gp.quicksum(x[i, d] for i in employees) >= demand[d]
+        for d in days
+    ),
+    name="domanda"
+)
+
+model.addConstrs(
+    (
+        gp.quicksum(x[i, d] for i in seniors) >= 1
+        for d in days
+    ),
+    name="senior"
+)
+
+model.addConstrs(
+    (
+        gp.quicksum(x[i, d] for d in days) >= 3
+        for i in employees
+    ),
+    name="min_giorni"
+)
+
+model.addConstrs(
+    (
+        gp.quicksum(x[i, d] for d in days) <= 5
+        for i in employees
+    ),
+    name="max_giorni"
+)
+
+model.addConstrs(
+    (
+        gp.quicksum(x[i, days[k + h]] for h in range(4)) <= 3
+        for i in employees
+        for k in range(len(days) - 3)
+    ),
+    name="no_quattro_consecutivi"
+)
+
+model.addConstrs(
+    (
+        gp.quicksum(x[i, d] for i in specialists) >= 1
+        for d in specialist_days
+    ),
+    name="specialista"
+)
+
+model.addConstrs(
+    (
+        x[i, "Sab"] + x[i, "Dom"] <= 1
+        for i in weekend_limited
+    ),
+    name="limite_weekend"
+)
+
+model.addConstrs(
+    (
+        x[i, d] <= availability[i, d]
+        for i in employees
+        for d in days
+    ),
+    name="disponibilita"
+)
+
+model.optimize()
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+status = status_names.get(model.Status, "STATUS_" + str(model.Status))
+
+if model.Status == GRB.OPTIMAL:
+    objective = float(round(model.ObjVal, 10))
+    variables = {
+        x[i, d].VarName: float(round(x[i, d].X, 10))
+        for i in employees
+        for d in days
+    }
+else:
+    objective = None
+    variables = {}
+
+result = {
+    "status": status,
+    "objective": objective,
+    "variables": variables
+}
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato è **OPTIMAL** e il costo minimo settimanale è:
+
+\[
+\boxed{227}.
+\]
+
+Una soluzione ottima è:
+
+- **E1:** Lun, Mar, Gio
+- **E2:** Mar, Mer, Ven
+- **E3:** Lun, Sab, Dom
+- **E4:** Lun, Mer, Gio, Ven, Dom
+- **E5:** Mar, Mer, Sab
+- **E6:** Gio, Ven, Dom
+- **E7:** Lun, Mer, Ven
+- **E8:** Gio, Ven, Sab
+
+Le coperture giornaliere sono esattamente \(4,3,4,4,5,3,3\). Ogni giorno è presente almeno un senior; E8 copre il requisito specialistico del giovedì, mentre E7 ed E8 lo coprono il venerdì.

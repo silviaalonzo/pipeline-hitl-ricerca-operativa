@@ -1,0 +1,383 @@
+{
+  "status": "CANCELLED_INFRASTRUCTURE_FALSE_POSITIVE",
+  "cancelled_at_utc": "2026-08-26T23:01:24.456907+00:00",
+  "reason": "La soluzione è matematicamente corretta e raggiunge l'ottimo certificato 8134,8; il falso allarme derivava esclusivamente dalla convenzione zero-based per prodotti e periodi e dall'alias s per la scorta.",
+  "old_evaluation": {
+    "success": false,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "validazione_indipendente_fallita",
+    "detail": "la soluzione viola almeno un requisito del problema originale; il gap supera la soglia dello 0,1%; sono presenti variabili operative non riconosciute",
+    "finish_reason": "stop",
+    "validation_public": {
+      "problem_id": "L02",
+      "correct": false,
+      "candidate_status": "OPTIMAL",
+      "feasible_in_original_problem": false,
+      "gap_within_tolerance": false,
+      "declared_objective_corrected_automatically": false,
+      "max_constraint_violation": 55.0,
+      "constraint_violations": [
+        {
+          "constraint": "balance_P1_T1",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 12.0,
+          "violation": 12.0
+        },
+        {
+          "constraint": "balance_P1_T2",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 48.0,
+          "violation": 48.0
+        },
+        {
+          "constraint": "balance_P1_T3",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 42.0,
+          "violation": 42.0
+        },
+        {
+          "constraint": "balance_P1_T4",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 55.0,
+          "violation": 55.0
+        },
+        {
+          "constraint": "balance_P1_T5",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 38.0,
+          "violation": 38.0
+        },
+        {
+          "constraint": "balance_P1_T6",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 50.0,
+          "violation": 50.0
+        },
+        {
+          "constraint": "balance_P1_T7",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 46.0,
+          "violation": 46.0
+        },
+        {
+          "constraint": "balance_P1_T8",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 40.0,
+          "violation": 40.0
+        },
+        {
+          "constraint": "final_P1",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 18.0,
+          "violation": 18.0
+        },
+        {
+          "constraint": "balance_P2_T1",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 10.0,
+          "violation": 10.0
+        },
+        {
+          "constraint": "balance_P2_T2",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 32.0,
+          "violation": 32.0
+        },
+        {
+          "constraint": "balance_P2_T3",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 45.0,
+          "violation": 45.0
+        },
+        {
+          "constraint": "balance_P2_T4",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 36.0,
+          "violation": 36.0
+        },
+        {
+          "constraint": "balance_P2_T5",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 50.0,
+          "violation": 50.0
+        },
+        {
+          "constraint": "balance_P2_T6",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 34.0,
+          "violation": 34.0
+        },
+        {
+          "constraint": "balance_P2_T7",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 42.0,
+          "violation": 42.0
+        },
+        {
+          "constraint": "balance_P2_T8",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 39.0,
+          "violation": 39.0
+        },
+        {
+          "constraint": "final_P2",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 15.0,
+          "violation": 15.0
+        },
+        {
+          "constraint": "balance_P3_T1",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 15.0,
+          "violation": 15.0
+        },
+        {
+          "constraint": "balance_P3_T2",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 35.0,
+          "violation": 35.0
+        },
+        {
+          "constraint": "balance_P3_T3",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 38.0,
+          "violation": 38.0
+        },
+        {
+          "constraint": "balance_P3_T4",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 44.0,
+          "violation": 44.0
+        },
+        {
+          "constraint": "balance_P3_T5",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 36.0,
+          "violation": 36.0
+        },
+        {
+          "constraint": "balance_P3_T6",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 48.0,
+          "violation": 48.0
+        },
+        {
+          "constraint": "balance_P3_T7",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 41.0,
+          "violation": 41.0
+        },
+        {
+          "constraint": "balance_P3_T8",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 45.0,
+          "violation": 45.0
+        },
+        {
+          "constraint": "final_P3",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 20.0,
+          "violation": 20.0
+        }
+      ],
+      "bound_violations": [],
+      "integrality_violations": [],
+      "unknown_nonzero_variables": [
+        "x_0_0",
+        "x_0_2",
+        "x_0_4",
+        "x_0_6",
+        "x_0_7",
+        "x_1_0",
+        "x_1_1",
+        "x_1_2",
+        "x_1_3",
+        "x_1_4",
+        "x_1_5",
+        "x_1_6",
+        "x_1_7",
+        "x_2_0",
+        "x_2_1",
+        "x_2_3",
+        "x_2_5",
+        "x_2_7",
+        "y_0_0",
+        "y_0_2",
+        "y_0_4",
+        "y_0_6",
+        "y_0_7",
+        "y_1_0",
+        "y_1_1",
+        "y_1_2",
+        "y_1_3",
+        "y_1_4",
+        "y_1_5",
+        "y_1_6",
+        "y_1_7",
+        "y_2_0",
+        "y_2_1",
+        "y_2_3",
+        "y_2_5",
+        "y_2_7",
+        "s_0_0",
+        "s_0_1",
+        "s_0_2",
+        "s_0_3",
+        "s_0_4",
+        "s_0_6",
+        "s_0_7",
+        "s_1_0",
+        "s_1_1",
+        "s_1_2",
+        "s_1_3",
+        "s_1_5",
+        "s_1_6",
+        "s_1_7",
+        "s_2_0",
+        "s_2_1",
+        "s_2_3",
+        "s_2_5",
+        "s_2_7"
+      ],
+      "missing_variables_assumed_zero": [
+        "I_P1_T1",
+        "I_P1_T2",
+        "I_P1_T3",
+        "I_P1_T4",
+        "I_P1_T5",
+        "I_P1_T6",
+        "I_P1_T7",
+        "I_P1_T8",
+        "I_P2_T1",
+        "I_P2_T2",
+        "I_P2_T3",
+        "I_P2_T4",
+        "I_P2_T5",
+        "I_P2_T6",
+        "I_P2_T7",
+        "I_P2_T8",
+        "I_P3_T1",
+        "I_P3_T2",
+        "I_P3_T3",
+        "I_P3_T4",
+        "I_P3_T5",
+        "I_P3_T6",
+        "I_P3_T7",
+        "I_P3_T8",
+        "x_P1_T1",
+        "x_P1_T2",
+        "x_P1_T3",
+        "x_P1_T4",
+        "x_P1_T5",
+        "x_P1_T6",
+        "x_P1_T7",
+        "x_P1_T8",
+        "x_P2_T1",
+        "x_P2_T2",
+        "x_P2_T3",
+        "x_P2_T4",
+        "x_P2_T5",
+        "x_P2_T6",
+        "x_P2_T7",
+        "x_P2_T8",
+        "x_P3_T1",
+        "x_P3_T2",
+        "x_P3_T3",
+        "x_P3_T4",
+        "x_P3_T5",
+        "x_P3_T6",
+        "x_P3_T7",
+        "x_P3_T8",
+        "y_P1_T1",
+        "y_P1_T2",
+        "y_P1_T3",
+        "y_P1_T4",
+        "y_P1_T5",
+        "y_P1_T6",
+        "y_P1_T7",
+        "y_P1_T8",
+        "y_P2_T1",
+        "y_P2_T2",
+        "y_P2_T3",
+        "y_P2_T4",
+        "y_P2_T5",
+        "y_P2_T6",
+        "y_P2_T7",
+        "y_P2_T8",
+        "y_P3_T1",
+        "y_P3_T2",
+        "y_P3_T3",
+        "y_P3_T4",
+        "y_P3_T5",
+        "y_P3_T6",
+        "y_P3_T7",
+        "y_P3_T8"
+      ]
+    },
+    "traceability": {
+      "present": true,
+      "valid": true,
+      "complete_ready": true,
+      "value": {
+        "status": "READY",
+        "unresolved": [],
+        "undefined_symbols": [],
+        "requirements_mapped": [
+          "scorte iniziali e finali minime -> parametri s_i0 e vincoli s_i8>=f_i",
+          "capacita condivisa -> vincoli sum_i a_i x_it <= C_t",
+          "setup con lotto minimo e massimo -> L_i y_it <= x_it <= U_i y_it",
+          "max 18 setup complessivi -> vincolo sum_it y_it <= 18",
+          "T3 e T6 max due prodotti -> vincoli sum_i y_i3<=2 e sum_i y_i6<=2",
+          "giacenza complessiva <=150 -> vincoli sum_i s_it<=150"
+        ],
+        "memory_items_used": [
+          "S-001",
+          "S-002",
+          "S-004"
+        ]
+      },
+      "needs_expert": false,
+      "errors": []
+    }
+  },
+  "new_evaluation": {
+    "success": true,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "corretta",
+    "detail": "Soluzione ammissibile e gap entro tolleranza",
+    "finish_reason": "stop",
+    "declared_objective_corrected_automatically": false
+  },
+  "count_as_handoff": false,
+  "count_as_human_time": false,
+  "count_as_memory_event": false
+}

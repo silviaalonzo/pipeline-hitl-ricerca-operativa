@@ -1,0 +1,104 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "deepseek-v4-flash",
+  "problem_id": "H03",
+  "problem_sequence": 2,
+  "domain": "Workforce scheduling",
+  "difficulty": "Elevata",
+  "model_class": "IP binaria",
+  "created_at_utc": "2026-08-24T19:35:39.390663+00:00",
+  "updated_at_utc": "2026-08-24T19:52:07.275143+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T19:39:18.379795+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "length"
+      }
+    },
+    {
+      "number": 1,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_01",
+      "created_at_utc": "2026-08-24T19:42:32.949008+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "length"
+      }
+    },
+    {
+      "number": 2,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_02",
+      "created_at_utc": "2026-08-24T19:45:27.312727+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false
+      }
+    },
+    {
+      "number": 3,
+      "kind": "EXPERT_DIRECT_CODE",
+      "directory": "attempt_03",
+      "created_at_utc": "2026-08-24T19:52:07.273769+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "expert_direct_artifact",
+        "source_sha256": "c4bbeeb5a20d7b4c7726963983244ec3bb7673d57d62adbc168a7089efe3a5c2",
+        "candidate_source": "H03.sol"
+      }
+    }
+  ],
+  "interventions": [
+    {
+      "handoff_number": 1,
+      "stage": 2,
+      "failure_class": "revisione_di_assicurazione_post_riparazione",
+      "active_minutes": 20.0,
+      "action": "CORRECT",
+      "correction_mode": "DIRECT_CODE",
+      "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+      "correction_summary": "Durante la revisione dello Stadio 2, l’esperto ha corretto il vincolo sul fine settimana separando il limite di E1 da quello di E2 e ha fornito il modello completo con domanda, seniority, riposi, specialisti e indisponibilità.",
+      "semantic_principle": "Quando un requisito si applica individualmente a più soggetti, formulare un vincolo separato per ciascun soggetto anziché aggregarli in un unico limite complessivo.",
+      "expert_artifact_source": "/Users/silviaalonzo/.codex/attachments/ebce34d7-c722-4917-a96c-4389c41a1519/pasted-text.txt",
+      "expert_artifact_sha256": "c4bbeeb5a20d7b4c7726963983244ec3bb7673d57d62adbc168a7089efe3a5c2",
+      "submitted_at_utc": "2026-08-24T19:52:07.273769+00:00",
+      "memory_committed": true
+    }
+  ],
+  "memory_retrieval": {
+    "model": "deepseek-v4-flash",
+    "problem_id": "H03",
+    "retrieved_at_utc": "2026-08-24T19:35:39.390653+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

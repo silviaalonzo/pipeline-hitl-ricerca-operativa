@@ -1,0 +1,9 @@
+{
+  "status": "SUBMITTED",
+  "action": "APPROVE",
+  "active_minutes": 10.0,
+  "expert_instruction": "",
+  "correction_summary": "L’esperto ha riesaminato variabili, funzione obiettivo, vincoli di budget, personale e rischio, dipendenze, incompatibilità, requisiti di selezione e linearizzazione delle sinergie, approvando senza modifiche il modello prodotto dopo la riparazione automatica.",
+  "semantic_principle": "",
+  "submitted_at_utc": "2026-08-24T20:28:52.694200+00:00"
+}

@@ -1,0 +1,8 @@
+{
+  "success": false,
+  "repairable": true,
+  "stage": 3,
+  "failure_class": "errore_di_esecuzione",
+  "detail": "Traceback (most recent call last):\n  File \"/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/20_H10/attempt_02/generated.py\", line 43, in <module>\n    gp.quicksum(cost[a][k] * x[a, k] for a in ARCS for k in PRODUCTS)\n  File \"src/gurobipy/_helpers.pyx\", line 41, in gurobipy._helpers.quicksum\n  File \"/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/20_H10/attempt_02/generated.py\", line 43, in <genexpr>\n    gp.quicksum(cost[a][k] * x[a, k] for a in ARCS for k in PRODUCTS)\n                             ~^^^^^^\nKeyError: (('S', 'A'), 'K1')",
+  "finish_reason": "stop"
+}

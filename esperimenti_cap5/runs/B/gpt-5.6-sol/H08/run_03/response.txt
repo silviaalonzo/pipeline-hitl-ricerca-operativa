@@ -1,0 +1,334 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+### Insiemi
+
+- Stazioni:
+  \[
+  S=\{A,B,C,D,E,F,G,H\}.
+  \]
+- Stazioni Ovest ed Est:
+  \[
+  S^O=\{A,B,C,D\},\qquad S^E=\{E,F,G,H\}.
+  \]
+- Zone:
+  \[
+  Z=\{Z1,\ldots,Z12\}.
+  \]
+- Zone critiche:
+  \[
+  Z^C=\{Z3,Z8,Z11\}.
+  \]
+- \(R_z\subseteq S\): insieme delle stazioni che possono raggiungere la zona \(z\).
+- Archi di assegnazione ammissibili:
+  \[
+  \mathcal A=\{(z,i):z\in Z,\ i\in R_z\}.
+  \]
+
+### Parametri
+
+- \(f_i\): costo fisso della stazione \(i\).
+- \(c_i\): capacità della stazione \(i\).
+- \(d_z\): domanda della zona \(z\).
+- \(t_{zi}\): tempo di percorrenza tra la zona \(z\) e la stazione raggiungibile \(i\).
+
+I costi e le capacità sono:
+
+\[
+\begin{array}{c|rrrrrrrr}
+i&A&B&C&D&E&F&G&H\\ \hline
+f_i&35&32&40&30&38&33&36&31\\
+c_i&42&44&46&40&45&43&44&42
+\end{array}
+\]
+
+Le domande sono:
+
+\[
+(d_{Z1},\ldots,d_{Z12})=(8,7,10,6,9,8,7,11,6,9,8,7).
+\]
+
+Gli insiemi \(R_z\) e i relativi tempi sono quelli riportati nella traccia, ad esempio
+\(R_{Z1}=\{A,B\}\), con \(t_{Z1,A}=3\) e \(t_{Z1,B}=5\).
+
+### Variabili decisionali
+
+- Apertura delle stazioni:
+  \[
+  y_i=
+  \begin{cases}
+  1 & \text{se la stazione }i\text{ è aperta},\\
+  0 & \text{altrimenti}.
+  \end{cases}
+  \]
+- Assegnazione delle zone:
+  \[
+  x_{zi}=
+  \begin{cases}
+  1 & \text{se la zona }z\text{ è assegnata alla stazione }i,\\
+  0 & \text{altrimenti},
+  \end{cases}
+  \qquad (z,i)\in\mathcal A.
+  \]
+
+---
+
+## 2. Formulazione matematica completa
+
+### Funzione obiettivo
+
+Minimizzazione dei costi fissi e dei costi domanda-tempo:
+
+\[
+\min\quad
+\sum_{i\in S} f_i y_i+
+\sum_{(z,i)\in\mathcal A}d_z t_{zi}x_{zi}.
+\]
+
+### Vincoli
+
+Apertura di esattamente quattro stazioni:
+
+\[
+\sum_{i\in S}y_i=4.
+\]
+
+Assegnazione di ogni zona a una sola stazione raggiungibile:
+
+\[
+\sum_{i\in R_z}x_{zi}=1
+\qquad \forall z\in Z.
+\]
+
+Una zona può essere assegnata soltanto a una stazione aperta:
+
+\[
+x_{zi}\leq y_i
+\qquad \forall (z,i)\in\mathcal A.
+\]
+
+Rispetto della capacità di ogni stazione:
+
+\[
+\sum_{\substack{z\in Z:\\i\in R_z}}d_zx_{zi}
+\leq c_i y_i
+\qquad \forall i\in S.
+\]
+
+Apertura di almeno una stazione Ovest:
+
+\[
+\sum_{i\in S^O}y_i\geq 1.
+\]
+
+Apertura di almeno una stazione Est:
+
+\[
+\sum_{i\in S^E}y_i\geq 1.
+\]
+
+Backup per ogni zona critica:
+
+\[
+\sum_{i\in R_z}y_i\geq 2
+\qquad \forall z\in Z^C.
+\]
+
+Domini:
+
+\[
+y_i\in\{0,1\}\qquad \forall i\in S,
+\]
+
+\[
+x_{zi}\in\{0,1\}\qquad \forall (z,i)\in\mathcal A.
+\]
+
+---
+
+## 3. Codice Python eseguibile con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+stations = ["A", "B", "C", "D", "E", "F", "G", "H"]
+zones = ["Z1", "Z2", "Z3", "Z4", "Z5", "Z6",
+         "Z7", "Z8", "Z9", "Z10", "Z11", "Z12"]
+
+west = ["A", "B", "C", "D"]
+east = ["E", "F", "G", "H"]
+critical = ["Z3", "Z8", "Z11"]
+
+fixed_cost = {
+    "A": 35, "B": 32, "C": 40, "D": 30,
+    "E": 38, "F": 33, "G": 36, "H": 31
+}
+
+capacity = {
+    "A": 42, "B": 44, "C": 46, "D": 40,
+    "E": 45, "F": 43, "G": 44, "H": 42
+}
+
+demand = {
+    "Z1": 8, "Z2": 7, "Z3": 10, "Z4": 6,
+    "Z5": 9, "Z6": 8, "Z7": 7, "Z8": 11,
+    "Z9": 6, "Z10": 9, "Z11": 8, "Z12": 7
+}
+
+times = {
+    "Z1": {"A": 3, "B": 5},
+    "Z2": {"A": 6, "B": 8, "C": 10},
+    "Z3": {"B": 11, "C": 4, "D": 6},
+    "Z4": {"C": 7, "D": 9},
+    "Z5": {"A": 6, "D": 3, "E": 5},
+    "Z6": {"B": 11, "E": 8, "F": 10},
+    "Z7": {"C": 7, "F": 4, "G": 6, "H": 8},
+    "Z8": {"D": 3, "G": 9, "H": 11},
+    "Z9": {"E": 8, "F": 10, "H": 5},
+    "Z10": {"F": 4, "G": 6, "H": 8},
+    "Z11": {"A": 6, "E": 5, "H": 11},
+    "Z12": {"B": 11, "G": 3, "H": 5}
+}
+
+arcs = [(z, i) for z in zones for i in times[z]]
+
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+model = gp.Model("H08_rete_emergenza", env=env)
+model.Params.OutputFlag = 0
+
+y = {
+    i: model.addVar(vtype=GRB.BINARY, name="y_" + i)
+    for i in stations
+}
+
+x = {
+    (z, i): model.addVar(vtype=GRB.BINARY, name="x_" + z + "_" + i)
+    for z, i in arcs
+}
+
+model.setObjective(
+    gp.quicksum(fixed_cost[i] * y[i] for i in stations)
+    + gp.quicksum(
+        demand[z] * times[z][i] * x[z, i]
+        for z, i in arcs
+    ),
+    GRB.MINIMIZE
+)
+
+model.addConstr(
+    gp.quicksum(y[i] for i in stations) == 4,
+    name="exactly_four_stations"
+)
+
+for z in zones:
+    model.addConstr(
+        gp.quicksum(x[z, i] for i in times[z]) == 1,
+        name="assignment_" + z
+    )
+
+for z, i in arcs:
+    model.addConstr(
+        x[z, i] <= y[i],
+        name="open_link_" + z + "_" + i
+    )
+
+for i in stations:
+    model.addConstr(
+        gp.quicksum(
+            demand[z] * x[z, i]
+            for z in zones if (z, i) in x
+        ) <= capacity[i] * y[i],
+        name="capacity_" + i
+    )
+
+model.addConstr(
+    gp.quicksum(y[i] for i in west) >= 1,
+    name="west_station"
+)
+
+model.addConstr(
+    gp.quicksum(y[i] for i in east) >= 1,
+    name="east_station"
+)
+
+for z in critical:
+    model.addConstr(
+        gp.quicksum(y[i] for i in times[z]) >= 2,
+        name="backup_" + z
+    )
+
+model.optimize()
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+status = status_names.get(model.Status, "UNKNOWN")
+payload = {
+    "status": status,
+    "objective": None,
+    "variables": {}
+}
+
+if model.Status == GRB.OPTIMAL:
+    values = {}
+    for i in stations:
+        values["y_" + i] = float(round(y[i].X))
+    for z, i in arcs:
+        values["x_" + z + "_" + i] = float(round(x[z, i].X))
+
+    payload["objective"] = float(round(model.ObjVal, 10))
+    payload["variables"] = values
+
+model.dispose()
+env.dispose()
+
+print("SOLUTION_JSON=" + json.dumps(payload, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato è **OPTIMAL** e il valore ottimo è:
+
+\[
+\boxed{697}.
+\]
+
+Vengono aperte le stazioni:
+
+\[
+\boxed{A,\ B,\ D,\ H}.
+\]
+
+Le assegnazioni non nulle sono:
+
+\[
+\begin{aligned}
+&A:\ Z1,Z2,Z11,\\
+&B:\ Z6,\\
+&D:\ Z3,Z4,Z5,Z8,\\
+&H:\ Z7,Z9,Z10,Z12.
+\end{aligned}
+\]
+
+I carichi sono rispettivamente \(23,8,36,29\), tutti entro capacità. Il costo fisso è \(128\), mentre il costo domanda-tempo è \(569\). Le zone critiche hanno ciascuna due stazioni aperte raggiungibili: \(Z3\) da \(B,D\), \(Z8\) da \(D,H\), e \(Z11\) da \(A,H\).

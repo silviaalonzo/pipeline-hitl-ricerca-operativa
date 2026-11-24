@@ -1,0 +1,17 @@
+{
+  "scenario": "B",
+  "provider": "openrouter",
+  "model": "anthropic/claude-sonnet-5",
+  "problem_id": "M09",
+  "replicate": 2,
+  "started_at_utc": "2026-08-10T16:09:36.806907+00:00",
+  "configuration": {
+    "provider": "openrouter",
+    "upstream_provider": "anthropic",
+    "model": "anthropic/claude-sonnet-5",
+    "reasoning_effort": "high",
+    "max_output_tokens": 24000
+  },
+  "system_prompt": "Agisci come esperto di Ricerca Operativa. Devi formulare e risolvere il problema descritto dall'utente senza chiedere chiarimenti e senza usare informazioni esterne.\n\nLa risposta deve contenere, in quest'ordine:\n1. insiemi, parametri e variabili decisionali;\n2. formulazione matematica completa;\n3. un solo blocco di codice Python eseguibile con gurobipy;\n4. una breve sintesi della soluzione.\n\nIl codice deve costruire il modello a partire dai dati presenti nella traccia, chiamare Gurobi e stampare alla fine ESATTAMENTE una riga nel formato seguente:\n\nSOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":0.0,\"variables\":{\"nome_variabile\":0.0}}\n\nNel dizionario \"variables\" devono comparire tutte le variabili decisionali, comprese quelle con valore zero. Usa i nomi indicati nella formulazione e valori numerici, non espressioni testuali. Se il solver non restituisce una soluzione ottima, stampa comunque la riga SOLUTION_JSON con lo stato effettivo, objective null e variables vuoto.\n\nNon leggere o scrivere file, non accedere alla rete, non invocare altri processi e non utilizzare librerie diverse da gurobipy, json, math e itertools.\n\n",
+  "problem_prompt": "# M09 — Piano di riordino con costi fissi\n\nDifficoltà: Media\nClasse: MILP intera\n\nUn’impresa pianifica gli ordini di un prodotto per sei periodi. La scorta iniziale è 10, non sono ammessi arretrati e la scorta finale deve essere almeno 5.\nUn ordine attivato deve essere di almeno 10 unità e non può superare la capacità del periodo. Ogni ordine comporta un costo fisso di 40; il costo di mantenimento è 2 per unità rimasta a fine periodo.\nOrdini e scorte sono interi. Minimizzare il costo complessivo.\n\n## Dati per periodo\n\nPeriodo | Domanda | Costo acquisto | Capacità ordine\n--- | --- | --- | ---\n1 | 20 | 9 | 50\n2 | 30 | 8 | 50\n3 | 15 | 11 | 45\n4 | 35 | 7 | 55\n5 | 25 | 10 | 45\n6 | 20 | 9 | 50\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n"
+}

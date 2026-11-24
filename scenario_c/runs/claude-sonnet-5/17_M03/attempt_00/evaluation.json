@@ -1,0 +1,28 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "Ogni turno richiede esattamente una persona -> vincolo di copertura sum_e x[e,s]=1",
+        "Ogni dipendente al massimo due turni -> vincolo sum_s x[e,s]<=2",
+        "Non più di un turno notturno per dipendente -> vincolo sum_{s in N} x[e,s]<=1",
+        "Indisponibilità (celle con —) -> esclusione delle variabili x[e,s] corrispondenti",
+        "Minimizzare il costo complessivo -> funzione obiettivo min sum c[e,s]*x[e,s]"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

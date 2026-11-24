@@ -1,0 +1,65 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 19 rows, 18 columns and 42 nonzeros (Min)
+Model fingerprint: 0xcdc45676
+Model has 18 linear objective coefficients
+Variable types: 0 continuous, 18 integer (6 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 6e+01]
+  Objective range  [2e+00, 4e+01]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [5e+00, 4e+01]
+
+Found heuristic solution: objective 1705.0000000
+Presolve removed 9 rows and 7 columns
+Presolve time: 0.00s
+Presolved: 10 rows, 11 columns, 27 nonzeros
+Variable types: 0 continuous, 11 integer (5 binary)
+
+Root relaxation: objective 1.350444e+03, 4 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0 1350.44444    0    2 1705.00000 1350.44444  20.8%     -    0s
+H    0     0                    1395.0000000 1350.44444  3.19%     -    0s
+H    0     0                    1370.0000000 1350.44444  1.43%     -    0s
+     0     0 1350.44444    0    2 1370.00000 1350.44444  1.43%     -    0s
+
+Explored 1 nodes (4 simplex iterations) in 0.00 seconds (0.00 work units)
+Thread count was 8 (of 8 available processors)
+
+Solution count 3: 1370 1395 1705 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 1.370000000000e+03, best bound 1.370000000000e+03, gap 0.0000%
+
+======================================================================
+RISULTATO M09 - Piano di riordino con costi fissi
+======================================================================
+Stato finale Gurobi      : OPTIMAL (codice 2)
+Tempo di esecuzione Gurobi: 0.0022 s
+Valore funzione obiettivo : 1370
+
+Piano ottenuto:
+     per.   domanda  ordine x   delta  scorta y  capacita
+        1        20        10       1         0        50
+        2        30        50       1        20        50
+        3        15         0      -0         5        45
+        4        35        55       1        25        55
+        5        25         0      -0        -0        45
+        6        20        25       1         5        50
+
+Composizione del costo:
+    costo di acquisto     = 1100
+    costi fissi di ordine = 160  (4 ordini)
+    costo di mantenimento = 110
+
+File soluzione scritto: /Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_a/M09/M09.sol
+======================================================================

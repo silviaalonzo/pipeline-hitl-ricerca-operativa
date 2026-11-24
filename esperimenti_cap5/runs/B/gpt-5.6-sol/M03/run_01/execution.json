@@ -1,0 +1,7 @@
+{
+  "returncode": 0,
+  "timed_out": false,
+  "elapsed_seconds": 0.06840212499992049,
+  "stdout": "Set parameter Username\nSet parameter LicenseID to value 2852205\nAcademic license - for non-commercial use only - expires 2027-08-08\nSOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":49.0,\"variables\":{\"x_Ana_M1\":0.0,\"x_Ana_M2\":1.0,\"x_Ana_P1\":0.0,\"x_Ana_P2\":0.0,\"x_Bruno_M1\":1.0,\"x_Bruno_M2\":0.0,\"x_Bruno_P1\":1.0,\"x_Bruno_P2\":0.0,\"x_Carla_M2\":0.0,\"x_Carla_P1\":0.0,\"x_Carla_P2\":0.0,\"x_Carla_N1\":0.0,\"x_Carla_N2\":0.0,\"x_Diego_M1\":0.0,\"x_Diego_P1\":0.0,\"x_Diego_P2\":0.0,\"x_Diego_N1\":1.0,\"x_Diego_N2\":0.0,\"x_Elena_M1\":0.0,\"x_Elena_M2\":0.0,\"x_Elena_P1\":0.0,\"x_Elena_P2\":0.0,\"x_Elena_N1\":0.0,\"x_Elena_N2\":1.0,\"x_Fabio_M1\":0.0,\"x_Fabio_M2\":0.0,\"x_Fabio_P1\":0.0,\"x_Fabio_P2\":1.0}}\n",
+  "stderr": ""
+}

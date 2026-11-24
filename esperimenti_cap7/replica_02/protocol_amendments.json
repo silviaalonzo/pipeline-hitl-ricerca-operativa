@@ -1,0 +1,56 @@
+[
+  {
+    "recorded_at_utc": "2026-08-26T22:00:13.331150+00:00",
+    "replicate": 2,
+    "condition": "C0",
+    "problem_id": "L04",
+    "reason": "La soluzione è matematicamente corretta e raggiunge l'ottimo certificato 9077,6; il falso allarme derivava esclusivamente dalla convenzione temporale Python 0-5 e dagli alias setup/straordinario/attiva_straordinario.",
+    "action": "alias_normalization_and_false_handoff_cancellation",
+    "count_as_handoff": false,
+    "count_as_human_time": false,
+    "run_dir": "conditions/C0/runs/deepseek-v4-flash/02_L04"
+  },
+  {
+    "recorded_at_utc": "2026-08-26T22:17:01.440512+00:00",
+    "replicate": 2,
+    "condition": "Cmem",
+    "problem_id": "L04",
+    "reason": "Dopo la riparazione automatica il modello matematico e la soluzione sono corretti e raggiungono l'ottimo certificato 9077,6; il falso allarme derivava esclusivamente dagli alias Prod e OTact.",
+    "action": "alias_normalization_and_false_handoff_cancellation",
+    "count_as_handoff": false,
+    "count_as_human_time": false,
+    "run_dir": "conditions/Cmem/runs/deepseek-v4-flash/02_L04"
+  },
+  {
+    "recorded_at_utc": "2026-08-26T22:30:33.222431+00:00",
+    "replicate": 2,
+    "condition": "C0",
+    "problem_id": "L03",
+    "reason": "La soluzione è matematicamente corretta e raggiunge l'ottimo certificato 2770; il falso allarme derivava esclusivamente dall'alias a_Si per la binaria di attivazione del fornitore, equivalente alla variabile canonica y_Si.",
+    "action": "alias_normalization_and_false_handoff_cancellation",
+    "count_as_handoff": false,
+    "count_as_human_time": false,
+    "run_dir": "conditions/C0/runs/deepseek-v4-flash/03_L03"
+  },
+  {
+    "recorded_at_utc": "2026-08-26T23:01:24.456907+00:00",
+    "replicate": 2,
+    "condition": "Cmem",
+    "problem_id": "L02",
+    "reason": "La soluzione è matematicamente corretta e raggiunge l'ottimo certificato 8134,8; il falso allarme derivava esclusivamente dalla convenzione zero-based per prodotti e periodi e dall'alias s per la scorta.",
+    "action": "alias_normalization_and_false_handoff_cancellation",
+    "count_as_handoff": false,
+    "count_as_human_time": false,
+    "run_dir": "conditions/Cmem/runs/deepseek-v4-flash/04_L02"
+  },
+  {
+    "recorded_at_utc": "2026-08-27T10:52:32.939933+00:00",
+    "replicate": 2,
+    "condition": "Cmem",
+    "problem_id": "L04",
+    "reason": "L'annullamento del falso handoff sugli alias aveva finalizzato direttamente una soluzione ottenuta dopo riparazione automatica, saltando la revisione di assicurazione prevista per i problemi di difficoltà elevata.",
+    "action": "restore_required_stage_2_assurance_review",
+    "previous_final_preserved_as": "final_pre_assurance.json",
+    "handoff_dir": "conditions/Cmem/runs/deepseek-v4-flash/02_L04/handoffs/handoff_02"
+  }
+]

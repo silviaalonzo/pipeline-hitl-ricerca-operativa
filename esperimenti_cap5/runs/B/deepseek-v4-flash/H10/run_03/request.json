@@ -1,0 +1,17 @@
+{
+  "scenario": "B",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "problem_id": "H10",
+  "replicate": 3,
+  "started_at_utc": "2026-08-10T15:09:50.926602+00:00",
+  "configuration": {
+    "provider": "openrouter",
+    "upstream_provider": "deepseek",
+    "model": "deepseek/deepseek-v4-flash",
+    "reasoning_effort": "high",
+    "max_output_tokens": 24000
+  },
+  "system_prompt": "Agisci come esperto di Ricerca Operativa. Devi formulare e risolvere il problema descritto dall'utente senza chiedere chiarimenti e senza usare informazioni esterne.\n\nLa risposta deve contenere, in quest'ordine:\n1. insiemi, parametri e variabili decisionali;\n2. formulazione matematica completa;\n3. un solo blocco di codice Python eseguibile con gurobipy;\n4. una breve sintesi della soluzione.\n\nIl codice deve costruire il modello a partire dai dati presenti nella traccia, chiamare Gurobi e stampare alla fine ESATTAMENTE una riga nel formato seguente:\n\nSOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":0.0,\"variables\":{\"nome_variabile\":0.0}}\n\nNel dizionario \"variables\" devono comparire tutte le variabili decisionali, comprese quelle con valore zero. Usa i nomi indicati nella formulazione e valori numerici, non espressioni testuali. Se il solver non restituisce una soluzione ottima, stampa comunque la riga SOLUTION_JSON con lo stato effettivo, objective null e variables vuoto.\n\nNon leggere o scrivere file, non accedere alla rete, non invocare altri processi e non utilizzare librerie diverse da gurobipy, json, math e itertools.\n\n",
+  "problem_prompt": "# H10 — Rete multi-prodotto con capacità condivise\n\nDifficoltà: Elevata\nClasse: MILP intera\n\nUna rete deve trasportare due prodotti K1 e K2 da S a T, rispettivamente per 28 e 22 unità. Gli archi attivati condividono la capacità tra i due prodotti.\nPer resilienza devono essere attivati entrambi gli archi in uscita da S. Per limiti gestionali possono essere attivati al massimo sette archi complessivi. I costi unitari dipendono dal prodotto.\nI flussi sono interi. Minimizzare costi fissi e costi di flusso rispettando conservazione e capacità condivise.\n\n## Archi e costi fissi\n\nArco | Costo fisso | Capacità\n--- | --- | ---\nS→A | 55 | 35\nS→B | 50 | 35\nA→B | 18 | 15\nA→C | 38 | 30\nB→C | 22 | 25\nB→D | 35 | 25\nC→D | 20 | 20\nC→T | 48 | 35\nD→T | 44 | 35\n\n## Costi unitari per prodotto\n\nArco | K1 | K2\n--- | --- | ---\nS→A | 2 | 3\nS→B | 3 | 2\nA→B | 1 | 2\nA→C | 2 | 3\nB→C | 2 | 1\nB→D | 3 | 2\nC→D | 1 | 2\nC→T | 3 | 2\nD→T | 2 | 3\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n"
+}

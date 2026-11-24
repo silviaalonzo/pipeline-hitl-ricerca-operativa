@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "inviare 40 unità da S a T -> vincolo di bilancio di flusso ai nodi S e T (domanda=40)",
+        "costo fisso di attivazione arco -> variabile binaria y_ij e termine f_ij*y_ij nell'obiettivo",
+        "costo per unità di trasporto -> variabile continua/intera x_ij e termine c_ij*x_ij nell'obiettivo",
+        "capacità dell'arco -> vincolo x_ij <= u_ij * y_ij",
+        "flusso intero -> dominio delle variabili x_ij (INTEGER)",
+        "conservazione del flusso nei nodi intermedi A,B,C -> vincoli di bilancio nodale (inflow=outflow)"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

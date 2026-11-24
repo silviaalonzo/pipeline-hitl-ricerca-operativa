@@ -1,0 +1,82 @@
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# ---------------- Dati ----------------
+sites = ["A", "B", "C", "D"]
+zones = ["Z1", "Z2", "Z3", "Z4", "Z5", "Z6"]
+
+fixed_cost = {"A": 38, "B": 42, "C": 35, "D": 46}
+capacity   = {"A": 2,  "B": 3,  "C": 2,  "D": 3}
+
+assign_cost = {
+    ("Z1", "A"): 8,  ("Z1", "B"): 14, ("Z1", "C"): 11, ("Z1", "D"): 17,
+    ("Z2", "A"): 10, ("Z2", "B"): 9,  ("Z2", "C"): 13, ("Z2", "D"): 15,
+    ("Z3", "A"): 12, ("Z3", "B"): 8,  ("Z3", "C"): 14, ("Z3", "D"): 10,
+    ("Z4", "A"): 15, ("Z4", "B"): 11, ("Z4", "C"): 9,  ("Z4", "D"): 7,
+    ("Z5", "A"): 9,  ("Z5", "B"): 13, ("Z5", "C"): 8,  ("Z5", "D"): 14,
+    ("Z6", "A"): 14, ("Z6", "B"): 10, ("Z6", "C"): 7,  ("Z6", "D"): 9,
+}
+
+p = 2  # numero di centri da aprire
+
+# ---------------- Modello ----------------
+model = gp.Model("Localizzazione_centri_assistenza")
+model.setParam("OutputFlag", 0)
+
+y = model.addVars(sites, vtype=GRB.BINARY, name="y")
+x = model.addVars(zones, sites, vtype=GRB.BINARY, name="x")
+
+# Funzione obiettivo
+model.setObjective(
+    gp.quicksum(fixed_cost[i] * y[i] for i in sites) +
+    gp.quicksum(assign_cost[(j, i)] * x[j, i] for j in zones for i in sites),
+    GRB.MINIMIZE
+)
+
+# Vincolo: numero esatto di centri aperti
+model.addConstr(gp.quicksum(y[i] for i in sites) == p, name="num_centri")
+
+# Vincolo: ogni zona assegnata a un solo centro
+for j in zones:
+    model.addConstr(gp.quicksum(x[j, i] for i in sites) == 1, name=f"assegna_{j}")
+
+# Vincolo: capacità dei siti
+for i in sites:
+    model.addConstr(
+        gp.quicksum(x[j, i] for j in zones) <= capacity[i] * y[i],
+        name=f"capacita_{i}"
+    )
+
+model.optimize()
+
+# ---------------- Output ----------------
+result = {"status": None, "objective": None, "variables": {}}
+
+if model.Status == GRB.OPTIMAL:
+    result["status"] = "OPTIMAL"
+    result["objective"] = round(model.ObjVal, 4)
+    variables = {}
+    for i in sites:
+        variables[f"y_{i}"] = round(y[i].X, 4)
+    for j in zones:
+        for i in sites:
+            variables[f"x_{j}_{i}"] = round(x[j, i].X, 4)
+    result["variables"] = variables
+
+    # Stampa leggibile delle decisioni non nulle
+    print("Stato solver:", model.Status, "-> OPTIMAL")
+    print("Valore ottimo (obiettivo):", model.ObjVal, "k€")
+    print("Siti aperti:")
+    for i in sites:
+        if y[i].X > 0.5:
+            print(f"  - {i} (costo fisso {fixed_cost[i]})")
+    print("Assegnazioni zona -> sito:")
+    for j in zones:
+        for i in sites:
+            if x[j, i].X > 0.5:
+                print(f"  - {j} -> {i} (costo {assign_cost[(j,i)]})")
+else:
+    result["status"] = str(model.Status)
+
+print("SOLUTION_JSON=" + json.dumps(result))

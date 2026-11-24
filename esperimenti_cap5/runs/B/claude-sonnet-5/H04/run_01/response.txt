@@ -1,0 +1,144 @@
+# Formulazione del problema
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi:**
+- $R = \{R1, R2, R3, R4\}$: insieme delle rotte
+- $T = \{P, M, G\}$: insieme dei tipi di veicolo (Piccolo, Medio, Grande)
+
+**Parametri:**
+- $d_r$: domanda della rotta $r \in R$ (42, 55, 38, 64)
+- $cap_t$: capacità per viaggio del tipo $t \in T$ (8, 14, 20)
+- $disp_t$: disponibilità totale del tipo $t \in T$ (10, 9, 6)
+- $em_t$: emissioni per viaggio del tipo $t \in T$ (5, 8, 11)
+- $c_{r,t}$: costo di un viaggio con tipo $t$ sulla rotta $r$ (matrice dei costi)
+- $E_{max} = 145$: limite massimo di emissioni totali
+- $K = 2$: numero massimo di tipi di veicolo utilizzabili per rotta
+
+**Variabili decisionali:**
+- $x_{r,t} \in \mathbb{Z}_{\ge 0}$: numero di viaggi del tipo $t$ sulla rotta $r$
+- $y_{r,t} \in \{0,1\}$: 1 se il tipo $t$ viene utilizzato (almeno un viaggio) sulla rotta $r$, 0 altrimenti
+
+## 2. Formulazione matematica completa
+
+**Funzione obiettivo:**
+$$\min Z = \sum_{r \in R} \sum_{t \in T} c_{r,t} \, x_{r,t}$$
+
+**Vincoli:**
+
+1. **Copertura della domanda per ogni rotta:**
+$$\sum_{t \in T} cap_t \, x_{r,t} \ge d_r \qquad \forall r \in R$$
+
+2. **Disponibilità flotta per tipo (condivisa su tutte le rotte):**
+$$\sum_{r \in R} x_{r,t} \le disp_t \qquad \forall t \in T$$
+
+3. **Limite di emissioni totali:**
+$$\sum_{r \in R} \sum_{t \in T} em_t \, x_{r,t} \le E_{max}$$
+
+4. **Al massimo 2 tipi di veicolo per rotta (linking):**
+$$x_{r,t} \le M_{r,t} \, y_{r,t} \qquad \forall r \in R, t \in T$$
+$$\sum_{t \in T} y_{r,t} \le 2 \qquad \forall r \in R$$
+
+dove $M_{r,t} = \lceil d_r / cap_t \rceil$ è un big-M valido (numero massimo di viaggi utili di quel tipo su quella rotta).
+
+5. **Vincolo veicolo grande su R4:**
+$$x_{R4,G} \ge 1$$
+
+6. **Dominio delle variabili:**
+$$x_{r,t} \in \mathbb{Z}_{\ge 0}, \quad y_{r,t} \in \{0,1\} \qquad \forall r \in R, t \in T$$
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+import math
+
+# Insiemi
+R = ["R1", "R2", "R3", "R4"]
+T = ["P", "M", "G"]
+
+# Parametri
+demand = {"R1": 42, "R2": 55, "R3": 38, "R4": 64}
+cap = {"P": 8, "M": 14, "G": 20}
+disp = {"P": 10, "M": 9, "G": 6}
+em = {"P": 5, "M": 8, "G": 11}
+
+cost = {
+    ("R1", "P"): 45, ("R1", "M"): 62, ("R1", "G"): 82,
+    ("R2", "P"): 52, ("R2", "M"): 68, ("R2", "G"): 88,
+    ("R3", "P"): 40, ("R3", "M"): 58, ("R3", "G"): 79,
+    ("R4", "P"): 60, ("R4", "M"): 77, ("R4", "G"): 96,
+}
+
+E_max = 145
+K = 2
+
+# Big-M per ogni (r,t): numero massimo di viaggi utili
+M_rt = {(r, t): math.ceil(demand[r] / cap[t]) for r in R for t in T}
+
+# Modello
+model = gp.Model("Allocazione_Flotta")
+
+x = model.addVars(R, T, vtype=GRB.INTEGER, lb=0, name="x")
+y = model.addVars(R, T, vtype=GRB.BINARY, name="y")
+
+# Funzione obiettivo
+model.setObjective(gp.quicksum(cost[r, t] * x[r, t] for r in R for t in T), GRB.MINIMIZE)
+
+# Vincolo 1: copertura domanda
+for r in R:
+    model.addConstr(gp.quicksum(cap[t] * x[r, t] for t in T) >= demand[r], name=f"dom_{r}")
+
+# Vincolo 2: disponibilità flotta
+for t in T:
+    model.addConstr(gp.quicksum(x[r, t] for r in R) <= disp[t], name=f"disp_{t}")
+
+# Vincolo 3: emissioni totali
+model.addConstr(gp.quicksum(em[t] * x[r, t] for r in R for t in T) <= E_max, name="emissioni")
+
+# Vincolo 4: linking x-y e massimo 2 tipi per rotta
+for r in R:
+    for t in T:
+        model.addConstr(x[r, t] <= M_rt[r, t] * y[r, t], name=f"link_{r}_{t}")
+    model.addConstr(gp.quicksum(y[r, t] for t in T) <= K, name=f"maxtipi_{r}")
+
+# Vincolo 5: almeno un veicolo grande su R4
+model.addConstr(x["R4", "G"] >= 1, name="grande_R4")
+
+# Risoluzione
+model.optimize()
+
+# Estrazione risultati
+result = {"status": None, "objective": None, "variables": {}}
+
+if model.status == GRB.OPTIMAL:
+    result["status"] = "OPTIMAL"
+    result["objective"] = round(model.objVal, 4)
+    variables = {}
+    for r in R:
+        for t in T:
+            variables[f"x_{r}_{t}"] = round(x[r, t].X, 4)
+    for r in R:
+        for t in T:
+            variables[f"y_{r}_{t}"] = round(y[r, t].X, 4)
+    result["variables"] = variables
+else:
+    result["status"] = str(model.status)
+    result["objective"] = None
+    result["variables"] = {}
+
+print(f"SOLUTION_JSON={json.dumps(result)}")
+```
+
+## 4. Sintesi della soluzione
+
+Il modello alloca i viaggi dei tre tipi di veicolo (Piccolo, Medio, Grande) alle quattro rotte, minimizzando il costo totale, rispettando:
+- la copertura della domanda su ogni rotta,
+- la disponibilità limitata e condivisa di ciascun tipo di veicolo,
+- il vincolo che ogni rotta usi al massimo 2 tipi di veicolo,
+- l'obbligo di almeno un veicolo grande su R4,
+- il limite massimo di 145 unità di emissioni totali.
+
+Il solver Gurobi risolve il problema MILP e determina l'assegnazione ottimale $x_{r,t}$ (numero di viaggi per tipo/rotta) e le variabili binarie $y_{r,t}$ che indicano quali tipi vengono attivati su ciascuna rotta. Lo stato, il valore della funzione obiettivo (costo minimo totale) e tutte le variabili (incluse quelle nulle) vengono riportati nel formato JSON richiesto, eseguendo direttamente lo script sopra.

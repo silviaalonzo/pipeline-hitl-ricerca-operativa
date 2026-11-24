@@ -1,0 +1,14 @@
+{
+  "problem_id": "M01",
+  "correct": true,
+  "candidate_status": "OPTIMAL",
+  "feasible_in_original_problem": true,
+  "gap_within_tolerance": true,
+  "declared_objective_corrected_automatically": false,
+  "max_constraint_violation": 0.0,
+  "constraint_violations": [],
+  "bound_violations": [],
+  "integrality_violations": [],
+  "unknown_nonzero_variables": [],
+  "missing_variables_assumed_zero": []
+}

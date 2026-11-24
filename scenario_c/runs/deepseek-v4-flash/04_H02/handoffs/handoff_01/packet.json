@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "created_at_utc": "2026-08-24T20:11:35.091853+00:00",
+  "model": "deepseek-v4-flash",
+  "problem_id": "H02",
+  "problem_sequence": 4,
+  "handoff_number": 1,
+  "stage": 3,
+  "failure_class": "output_troncato_o_senza_codice",
+  "failure_detail": "Atteso un solo blocco Python, trovati 0",
+  "handoff_mode": "CORRECTION",
+  "allowed_actions": [
+    "CORRECT",
+    "ACCEPT_FAILURE"
+  ],
+  "automatic_repairs_exhausted": 3,
+  "problem_prompt": "# H02 — Produzione multi-periodo con setup e scorte\n\nDifficoltà: Elevata\nClasse: MILP intera\n\nUn impianto pianifica la produzione di tre articoli per quattro periodi. La domanda deve essere soddisfatta senza arretrati mediante produzione corrente e scorte provenienti dal periodo precedente. Le scorte iniziali sono 0 unità di A, 0 di B e 6 di C.\nL’avvio di un articolo in un periodo comporta un setup. Si possono attivare al massimo due articoli per periodo, la scorta totale non può superare 20 unità e tutte le scorte finali devono essere nulle.\nLa capacità è espressa in ore. Produzione e scorte sono quantità intere. Minimizzare costi di produzione, setup e mantenimento.\n\n## Domande per periodo\n\nProdotto | T1 | T2 | T3 | T4\n--- | --- | --- | --- | ---\nA | 8 | 12 | 10 | 14\nB | 10 | 8 | 14 | 12\nC | 6 | 9 | 7 | 11\n\n## Costi unitari di produzione\n\nProdotto | T1 | T2 | T3 | T4\n--- | --- | --- | --- | ---\nA | 9 | 11 | 10 | 12\nB | 8 | 9 | 11 | 10\nC | 13 | 12 | 14 | 11\n\n## Parametri per prodotto\n\nProdotto | Setup | Holding | Ore/unità | Lotto min.\n--- | --- | --- | --- | ---\nA | 45 | 2 | 2 | 4\nB | 40 | 3 | 3 | 4\nC | 50 | 2 | 4 | 3\n\n## Capacità\n\nPeriodo | T1 | T2 | T3 | T4\n--- | --- | --- | --- | ---\nOre | 90 | 95 | 90 | 100\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n",
+  "last_code": "",
+  "last_response_excerpt": "```python\nimport gurobipy as gp\nimport json\n\nproducts = [\"A\", \"B\", \"C\"]\nperiods = [1, 2, 3, 4]\n\ndemand = {\n    \"A\": [8, 12, 10, 14],\n    \"B\": [10, 8, 14, 12],\n    \"C\": [6, 9, 7, 11],\n}\n\nprod_cost = {\n    \"A\": [9, 11, 10, 12],\n    \"B\": [8, 9, 11, 10],\n    \"C\": [13, 12, 14, 11],\n}\n\nsetup_cost = {\"A\": 45, \"B\": 40, \"C\": 50}\nholding_cost = {\"A\": 2, \"B\": 3, \"C\": 2}\nhours_per_unit = {\"A\": 2, \"B\": 3, \"C\": 4}\nmin_lot = {\"A\": 4, \"B\": 4, \"C\": 3}",
+  "response_source_attempt": 3,
+  "validation": null,
+  "attempt_history": [
+    {
+      "attempt_number": 0,
+      "attempt_kind": "INITIAL",
+      "finish_reason": "length",
+      "content_characters": 0,
+      "completion_tokens": 24000,
+      "reasoning_tokens": 24000,
+      "code_extracted": false,
+      "failure_class": "output_troncato_o_senza_codice",
+      "failure_detail": "Atteso un solo blocco Python, trovati 0"
+    },
+    {
+      "attempt_number": 1,
+      "attempt_kind": "AUTO_REPAIR",
+      "finish_reason": "length",
+      "content_characters": 0,
+      "completion_tokens": 24000,
+      "reasoning_tokens": 24000,
+      "code_extracted": false,
+      "failure_class": "output_troncato_o_senza_codice",
+      "failure_detail": "Atteso un solo blocco Python, trovati 0"
+    },
+    {
+      "attempt_number": 2,
+      "attempt_kind": "AUTO_REPAIR",
+      "finish_reason": "length",
+      "content_characters": 0,
+      "completion_tokens": 24000,
+      "reasoning_tokens": 24000,
+      "code_extracted": false,
+      "failure_class": "output_troncato_o_senza_codice",
+      "failure_detail": "Atteso un solo blocco Python, trovati 0"
+    },
+    {
+      "attempt_number": 3,
+      "attempt_kind": "AUTO_REPAIR",
+      "finish_reason": "length",
+      "content_characters": 439,
+      "completion_tokens": 24000,
+      "reasoning_tokens": 23768,
+      "code_extracted": false,
+      "failure_class": "output_troncato_o_senza_codice",
+      "failure_detail": "Atteso un solo blocco Python, trovati 0"
+    }
+  ],
+  "automatic_diagnosis": "Atteso un solo blocco Python, trovati 0",
+  "ground_truth_disclosed": false
+}

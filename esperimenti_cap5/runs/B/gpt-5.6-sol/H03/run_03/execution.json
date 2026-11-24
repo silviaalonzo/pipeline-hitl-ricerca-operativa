@@ -1,0 +1,7 @@
+{
+  "returncode": 0,
+  "timed_out": false,
+  "elapsed_seconds": 0.07515945900013321,
+  "stdout": "SOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":227.0,\"variables\":{\"x_E1_Lun\":1.0,\"x_E1_Mar\":1.0,\"x_E1_Mer\":0.0,\"x_E1_Gio\":1.0,\"x_E1_Ven\":0.0,\"x_E1_Sab\":0.0,\"x_E1_Dom\":0.0,\"x_E2_Lun\":0.0,\"x_E2_Mar\":1.0,\"x_E2_Mer\":1.0,\"x_E2_Gio\":0.0,\"x_E2_Ven\":1.0,\"x_E2_Sab\":0.0,\"x_E2_Dom\":0.0,\"x_E3_Lun\":0.0,\"x_E3_Mar\":0.0,\"x_E3_Mer\":0.0,\"x_E3_Gio\":1.0,\"x_E3_Ven\":0.0,\"x_E3_Sab\":1.0,\"x_E3_Dom\":1.0,\"x_E4_Lun\":1.0,\"x_E4_Mar\":0.0,\"x_E4_Mer\":1.0,\"x_E4_Gio\":0.0,\"x_E4_Ven\":1.0,\"x_E4_Sab\":0.0,\"x_E4_Dom\":1.0,\"x_E5_Lun\":1.0,\"x_E5_Mar\":0.0,\"x_E5_Mer\":1.0,\"x_E5_Gio\":0.0,\"x_E5_Ven\":0.0,\"x_E5_Sab\":1.0,\"x_E5_Dom\":0.0,\"x_E6_Lun\":0.0,\"x_E6_Mar\":0.0,\"x_E6_Mer\":0.0,\"x_E6_Gio\":1.0,\"x_E6_Ven\":1.0,\"x_E6_Sab\":0.0,\"x_E6_Dom\":1.0,\"x_E7_Lun\":1.0,\"x_E7_Mar\":0.0,\"x_E7_Mer\":1.0,\"x_E7_Gio\":0.0,\"x_E7_Ven\":1.0,\"x_E7_Sab\":0.0,\"x_E7_Dom\":0.0,\"x_E8_Lun\":0.0,\"x_E8_Mar\":1.0,\"x_E8_Mer\":0.0,\"x_E8_Gio\":1.0,\"x_E8_Ven\":1.0,\"x_E8_Sab\":1.0,\"x_E8_Dom\":0.0}}\n",
+  "stderr": ""
+}

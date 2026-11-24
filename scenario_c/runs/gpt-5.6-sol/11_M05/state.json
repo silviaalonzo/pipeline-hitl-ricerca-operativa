@@ -1,0 +1,66 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "gpt-5.6-sol",
+  "problem_id": "M05",
+  "problem_sequence": 11,
+  "domain": "Project portfolio",
+  "difficulty": "Media",
+  "model_class": "IP binaria",
+  "created_at_utc": "2026-08-24T18:19:12.706838+00:00",
+  "updated_at_utc": "2026-08-24T18:20:31.849465+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:20:31.848782+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "massimizzare il valore complessivo -> funzione obiettivo max somma dei valori",
+              "budget massimo 100 -> vincolo somma dei budget <= 100",
+              "personale massimo 18 -> vincolo somma del personale <= 18",
+              "P5 richiede P2 -> vincolo x_P5 <= x_P2",
+              "P7 richiede P3 -> vincolo x_P7 <= x_P3",
+              "P4 e P6 incompatibili -> vincolo x_P4 + x_P6 <= 1",
+              "almeno un progetto digitale -> vincolo x_P1 + x_P3 + x_P7 >= 1",
+              "almeno tre progetti -> vincolo somma x_i >= 3"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "gpt-5.6-sol",
+    "problem_id": "M05",
+    "retrieved_at_utc": "2026-08-24T18:19:12.706830+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

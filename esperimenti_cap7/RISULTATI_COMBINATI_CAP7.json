@@ -1,0 +1,1275 @@
+{
+  "schema_version": 1,
+  "chapter": 7,
+  "experiment": "ablation_memoria_due_repliche",
+  "observations": 20,
+  "rows": [
+    {
+      "global_order": 1,
+      "pair_sequence": 1,
+      "problem_id": "L01",
+      "source_problem": "H03",
+      "target_principle_id": "S-001",
+      "condition": "C0",
+      "correct_recertified": true,
+      "known_optimum": 394.0,
+      "verified_objective": 394.0,
+      "relative_gap": 0.0,
+      "attempts": 2,
+      "automatic_repairs": 1,
+      "handoffs": 1,
+      "handoff_stages": [
+        2
+      ],
+      "human_minutes": 20.0,
+      "interventions": [
+        {
+          "handoff_number": 1,
+          "stage": 2,
+          "failure_class": "revisione_di_assicurazione_post_riparazione",
+          "handoff_mode": "ASSURANCE_REVIEW",
+          "active_minutes": 20.0,
+          "action": "APPROVE",
+          "expert_instruction": "",
+          "correction_summary": "Revisione umana del modello e del codice completata senza rilevare errori; soluzione approvata senza modifiche.",
+          "semantic_principle": "",
+          "submitted_at_utc": "2026-08-26T17:20:41Z",
+          "memory_committed": false
+        }
+      ],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 1,
+      "approval_minutes": 20.0,
+      "memory_items_reported_used": null,
+      "target_principle_reported_used": null,
+      "alias_count": 0,
+      "api_calls": 2,
+      "prompt_tokens": 3670,
+      "completion_tokens": 93447,
+      "reasoning_tokens": 90530,
+      "total_tokens": 97117,
+      "api_cost_usd": 0.062373364,
+      "api_elapsed_seconds": 777.163497624002,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "length": 1,
+        "stop": 1
+      },
+      "replicate": 1
+    },
+    {
+      "global_order": 2,
+      "pair_sequence": 1,
+      "problem_id": "L01",
+      "source_problem": "H03",
+      "target_principle_id": "S-001",
+      "condition": "Cmem",
+      "correct_recertified": true,
+      "known_optimum": 394.0,
+      "verified_objective": 394.0,
+      "relative_gap": 0.0,
+      "attempts": 1,
+      "automatic_repairs": 0,
+      "handoffs": 0,
+      "handoff_stages": [],
+      "human_minutes": 0.0,
+      "interventions": [],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 0,
+      "approval_minutes": 0,
+      "memory_items_reported_used": [
+        "S-001"
+      ],
+      "target_principle_reported_used": true,
+      "alias_count": 0,
+      "api_calls": 1,
+      "prompt_tokens": 2782,
+      "completion_tokens": 61578,
+      "reasoning_tokens": 58528,
+      "total_tokens": 64360,
+      "api_cost_usd": 0.041144464,
+      "api_elapsed_seconds": 499.3266898749989,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "stop": 1
+      },
+      "replicate": 1
+    },
+    {
+      "global_order": 3,
+      "pair_sequence": 2,
+      "problem_id": "L02",
+      "source_problem": "H02",
+      "target_principle_id": "S-002",
+      "condition": "Cmem",
+      "correct_recertified": true,
+      "known_optimum": 8134.799999999998,
+      "verified_objective": 8134.799999999998,
+      "relative_gap": 0.0,
+      "attempts": 1,
+      "automatic_repairs": 0,
+      "handoffs": 0,
+      "handoff_stages": [],
+      "human_minutes": 0.0,
+      "interventions": [],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 0,
+      "approval_minutes": 0,
+      "memory_items_reported_used": [
+        "S-001",
+        "S-002",
+        "S-004"
+      ],
+      "target_principle_reported_used": true,
+      "alias_count": 0,
+      "api_calls": 1,
+      "prompt_tokens": 2359,
+      "completion_tokens": 14411,
+      "reasoning_tokens": 11657,
+      "total_tokens": 16770,
+      "api_cost_usd": 0.009921184,
+      "api_elapsed_seconds": 111.85332470899993,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "stop": 1
+      },
+      "replicate": 1
+    },
+    {
+      "global_order": 4,
+      "pair_sequence": 2,
+      "problem_id": "L02",
+      "source_problem": "H02",
+      "target_principle_id": "S-002",
+      "condition": "C0",
+      "correct_recertified": true,
+      "known_optimum": 8134.799999999998,
+      "verified_objective": 8134.799999999998,
+      "relative_gap": 0.0,
+      "attempts": 1,
+      "automatic_repairs": 0,
+      "handoffs": 0,
+      "handoff_stages": [],
+      "human_minutes": 0.0,
+      "interventions": [],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 0,
+      "approval_minutes": 0,
+      "memory_items_reported_used": [],
+      "target_principle_reported_used": false,
+      "alias_count": 72,
+      "api_calls": 1,
+      "prompt_tokens": 1520,
+      "completion_tokens": 32893,
+      "reasoning_tokens": 30143,
+      "total_tokens": 34413,
+      "api_cost_usd": 0.021934724,
+      "api_elapsed_seconds": 285.2239054170004,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "stop": 1
+      },
+      "replicate": 1
+    },
+    {
+      "global_order": 5,
+      "pair_sequence": 3,
+      "problem_id": "L03",
+      "source_problem": "H07",
+      "target_principle_id": "S-003",
+      "condition": "C0",
+      "correct_recertified": true,
+      "known_optimum": 2770.0,
+      "verified_objective": 2770.0,
+      "relative_gap": 0.0,
+      "attempts": 1,
+      "automatic_repairs": 0,
+      "handoffs": 0,
+      "handoff_stages": [],
+      "human_minutes": 0.0,
+      "interventions": [],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 0,
+      "approval_minutes": 0,
+      "memory_items_reported_used": [],
+      "target_principle_reported_used": false,
+      "alias_count": 0,
+      "api_calls": 1,
+      "prompt_tokens": 1647,
+      "completion_tokens": 44087,
+      "reasoning_tokens": 40972,
+      "total_tokens": 45734,
+      "api_cost_usd": 0.029350704,
+      "api_elapsed_seconds": 358.15630108299956,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "stop": 1
+      },
+      "replicate": 1
+    },
+    {
+      "global_order": 6,
+      "pair_sequence": 3,
+      "problem_id": "L03",
+      "source_problem": "H07",
+      "target_principle_id": "S-003",
+      "condition": "Cmem",
+      "correct_recertified": true,
+      "known_optimum": 2770.0,
+      "verified_objective": 2770.0,
+      "relative_gap": 0.0,
+      "attempts": 1,
+      "automatic_repairs": 0,
+      "handoffs": 0,
+      "handoff_stages": [],
+      "human_minutes": 0.0,
+      "interventions": [],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 0,
+      "approval_minutes": 0,
+      "memory_items_reported_used": [
+        "S-001",
+        "S-003",
+        "H07-H01"
+      ],
+      "target_principle_reported_used": true,
+      "alias_count": 41,
+      "api_calls": 1,
+      "prompt_tokens": 2486,
+      "completion_tokens": 63319,
+      "reasoning_tokens": 60355,
+      "total_tokens": 65805,
+      "api_cost_usd": 0.042010292,
+      "api_elapsed_seconds": 545.3029928329997,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "stop": 1
+      },
+      "replicate": 1
+    },
+    {
+      "global_order": 7,
+      "pair_sequence": 4,
+      "problem_id": "L04",
+      "source_problem": "H09",
+      "target_principle_id": "S-004",
+      "condition": "Cmem",
+      "correct_recertified": true,
+      "known_optimum": 9077.6,
+      "verified_objective": 9077.6,
+      "relative_gap": 0.0,
+      "attempts": 1,
+      "automatic_repairs": 0,
+      "handoffs": 0,
+      "handoff_stages": [],
+      "human_minutes": 0.0,
+      "interventions": [],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 0,
+      "approval_minutes": 0,
+      "memory_items_reported_used": [
+        "S-001",
+        "S-002",
+        "S-004",
+        "H09-H01"
+      ],
+      "target_principle_reported_used": true,
+      "alias_count": 36,
+      "api_calls": 1,
+      "prompt_tokens": 2473,
+      "completion_tokens": 28594,
+      "reasoning_tokens": 25489,
+      "total_tokens": 31067,
+      "api_cost_usd": 0.019307044,
+      "api_elapsed_seconds": 250.99388579200058,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "stop": 1
+      },
+      "replicate": 1
+    },
+    {
+      "global_order": 8,
+      "pair_sequence": 4,
+      "problem_id": "L04",
+      "source_problem": "H09",
+      "target_principle_id": "S-004",
+      "condition": "C0",
+      "correct_recertified": true,
+      "known_optimum": 9077.6,
+      "verified_objective": 9077.6,
+      "relative_gap": 0.0,
+      "attempts": 1,
+      "automatic_repairs": 0,
+      "handoffs": 0,
+      "handoff_stages": [],
+      "human_minutes": 0.0,
+      "interventions": [],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 0,
+      "approval_minutes": 0,
+      "memory_items_reported_used": [],
+      "target_principle_reported_used": false,
+      "alias_count": 102,
+      "api_calls": 1,
+      "prompt_tokens": 1634,
+      "completion_tokens": 23067,
+      "reasoning_tokens": 19914,
+      "total_tokens": 24701,
+      "api_cost_usd": 0.015474644,
+      "api_elapsed_seconds": 213.48261658299998,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "stop": 1
+      },
+      "replicate": 1
+    },
+    {
+      "global_order": 9,
+      "pair_sequence": 5,
+      "problem_id": "L05",
+      "source_problem": "M03",
+      "target_principle_id": "S-005",
+      "condition": "C0",
+      "correct_recertified": true,
+      "known_optimum": 371.0,
+      "verified_objective": 371.0,
+      "relative_gap": 0.0,
+      "attempts": 1,
+      "automatic_repairs": 0,
+      "handoffs": 0,
+      "handoff_stages": [],
+      "human_minutes": 0.0,
+      "interventions": [],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 0,
+      "approval_minutes": 0,
+      "memory_items_reported_used": [],
+      "target_principle_reported_used": false,
+      "alias_count": 0,
+      "api_calls": 1,
+      "prompt_tokens": 2317,
+      "completion_tokens": 21828,
+      "reasoning_tokens": 18512,
+      "total_tokens": 24145,
+      "api_cost_usd": 0.014807164,
+      "api_elapsed_seconds": 171.448906874999,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "stop": 1
+      },
+      "replicate": 1
+    },
+    {
+      "global_order": 10,
+      "pair_sequence": 5,
+      "problem_id": "L05",
+      "source_problem": "M03",
+      "target_principle_id": "S-005",
+      "condition": "Cmem",
+      "correct_recertified": true,
+      "known_optimum": 371.0,
+      "verified_objective": 371.0,
+      "relative_gap": 0.0,
+      "attempts": 1,
+      "automatic_repairs": 0,
+      "handoffs": 0,
+      "handoff_stages": [],
+      "human_minutes": 0.0,
+      "interventions": [],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 0,
+      "approval_minutes": 0,
+      "memory_items_reported_used": [
+        "S-001",
+        "S-003",
+        "S-005"
+      ],
+      "target_principle_reported_used": true,
+      "alias_count": 0,
+      "api_calls": 1,
+      "prompt_tokens": 3156,
+      "completion_tokens": 46354,
+      "reasoning_tokens": 42607,
+      "total_tokens": 49510,
+      "api_cost_usd": 0.031178904,
+      "api_elapsed_seconds": 370.0833703750013,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "stop": 1
+      },
+      "replicate": 1
+    },
+    {
+      "replicate": 2,
+      "global_order": 1,
+      "pair_sequence": 1,
+      "problem_id": "L05",
+      "source_problem": "M03",
+      "target_principle_id": "S-005",
+      "condition": "Cmem",
+      "correct_recertified": true,
+      "known_optimum": 371.0,
+      "verified_objective": 371.0,
+      "relative_gap": 0.0,
+      "attempts": 1,
+      "automatic_repairs": 0,
+      "handoffs": 0,
+      "handoff_stages": [],
+      "human_minutes": 0.0,
+      "interventions": [],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 0,
+      "approval_minutes": 0,
+      "memory_items_reported_used": [
+        "S-001",
+        "S-003",
+        "S-005"
+      ],
+      "target_principle_reported_used": true,
+      "alias_count": 0,
+      "api_calls": 1,
+      "prompt_tokens": 3156,
+      "completion_tokens": 48354,
+      "reasoning_tokens": 45332,
+      "total_tokens": 51510,
+      "api_cost_usd": 0.031953624,
+      "api_elapsed_seconds": 382.52610916699996,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "stop": 1
+      }
+    },
+    {
+      "replicate": 2,
+      "global_order": 2,
+      "pair_sequence": 1,
+      "problem_id": "L05",
+      "source_problem": "M03",
+      "target_principle_id": "S-005",
+      "condition": "C0",
+      "correct_recertified": true,
+      "known_optimum": 371.0,
+      "verified_objective": 371.0,
+      "relative_gap": 0.0,
+      "attempts": 2,
+      "automatic_repairs": 1,
+      "handoffs": 1,
+      "handoff_stages": [
+        2
+      ],
+      "human_minutes": 20.0,
+      "interventions": [
+        {
+          "handoff_number": 1,
+          "stage": 2,
+          "failure_class": "revisione_di_assicurazione_post_riparazione",
+          "handoff_mode": "ASSURANCE_REVIEW",
+          "active_minutes": 20.0,
+          "action": "APPROVE",
+          "expert_instruction": "",
+          "correction_summary": "Revisione umana del modello e del codice completata senza rilevare errori; soluzione approvata senza modifiche.",
+          "semantic_principle": "",
+          "submitted_at_utc": "2026-08-26T21:49:09Z",
+          "memory_committed": false
+        }
+      ],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 1,
+      "approval_minutes": 20.0,
+      "memory_items_reported_used": null,
+      "target_principle_reported_used": null,
+      "alias_count": 0,
+      "api_calls": 2,
+      "prompt_tokens": 4418,
+      "completion_tokens": 90745,
+      "reasoning_tokens": 88625,
+      "total_tokens": 95163,
+      "api_cost_usd": 0.06031838,
+      "api_elapsed_seconds": 740.2394842909998,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "length": 1,
+        "stop": 1
+      }
+    },
+    {
+      "replicate": 2,
+      "global_order": 3,
+      "pair_sequence": 2,
+      "problem_id": "L04",
+      "source_problem": "H09",
+      "target_principle_id": "S-004",
+      "condition": "C0",
+      "correct_recertified": true,
+      "known_optimum": 9077.6,
+      "verified_objective": 9077.6,
+      "relative_gap": 0.0,
+      "attempts": 1,
+      "automatic_repairs": 0,
+      "handoffs": 0,
+      "handoff_stages": [],
+      "human_minutes": 0.0,
+      "interventions": [],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 0,
+      "approval_minutes": 0,
+      "memory_items_reported_used": [],
+      "target_principle_reported_used": false,
+      "alias_count": 102,
+      "api_calls": 1,
+      "prompt_tokens": 1634,
+      "completion_tokens": 46116,
+      "reasoning_tokens": 43397,
+      "total_tokens": 47750,
+      "api_cost_usd": 0.030468872,
+      "api_elapsed_seconds": 398.4672182079994,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "stop": 1
+      }
+    },
+    {
+      "replicate": 2,
+      "global_order": 4,
+      "pair_sequence": 2,
+      "problem_id": "L04",
+      "source_problem": "H09",
+      "target_principle_id": "S-004",
+      "condition": "Cmem",
+      "correct_recertified": true,
+      "known_optimum": 9077.6,
+      "verified_objective": 9077.6,
+      "relative_gap": 0.0,
+      "attempts": 2,
+      "automatic_repairs": 1,
+      "handoffs": 1,
+      "handoff_stages": [
+        2
+      ],
+      "human_minutes": 20.0,
+      "interventions": [
+        {
+          "handoff_number": 2,
+          "stage": 2,
+          "failure_class": "revisione_di_assicurazione_post_riparazione",
+          "handoff_mode": "ASSURANCE_REVIEW",
+          "active_minutes": 20.0,
+          "action": "APPROVE",
+          "expert_instruction": "",
+          "correction_summary": "Revisione di assicurazione del modello e del codice dopo una riparazione automatica; la formulazione è stata approvata senza modifiche.",
+          "semantic_principle": "",
+          "submitted_at_utc": "2026-08-27T10:56:10.308484+00:00",
+          "memory_committed": false
+        }
+      ],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 1,
+      "approval_minutes": 20.0,
+      "memory_items_reported_used": null,
+      "target_principle_reported_used": null,
+      "alias_count": 102,
+      "api_calls": 2,
+      "prompt_tokens": 4730,
+      "completion_tokens": 98858,
+      "reasoning_tokens": 96869,
+      "total_tokens": 103588,
+      "api_cost_usd": 0.065714336,
+      "api_elapsed_seconds": 928.5016486249988,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "length": 1,
+        "stop": 1
+      }
+    },
+    {
+      "replicate": 2,
+      "global_order": 5,
+      "pair_sequence": 3,
+      "problem_id": "L03",
+      "source_problem": "H07",
+      "target_principle_id": "S-003",
+      "condition": "Cmem",
+      "correct_recertified": true,
+      "known_optimum": 2770.0,
+      "verified_objective": 2770.0,
+      "relative_gap": 0.0,
+      "attempts": 1,
+      "automatic_repairs": 0,
+      "handoffs": 0,
+      "handoff_stages": [],
+      "human_minutes": 0.0,
+      "interventions": [],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 0,
+      "approval_minutes": 0,
+      "memory_items_reported_used": [
+        "S-003",
+        "H07-H01"
+      ],
+      "target_principle_reported_used": true,
+      "alias_count": 41,
+      "api_calls": 1,
+      "prompt_tokens": 2486,
+      "completion_tokens": 33857,
+      "reasoning_tokens": 30535,
+      "total_tokens": 36343,
+      "api_cost_usd": 0.022374524,
+      "api_elapsed_seconds": 265.03799812500074,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "stop": 1
+      }
+    },
+    {
+      "replicate": 2,
+      "global_order": 6,
+      "pair_sequence": 3,
+      "problem_id": "L03",
+      "source_problem": "H07",
+      "target_principle_id": "S-003",
+      "condition": "C0",
+      "correct_recertified": true,
+      "known_optimum": 2770.0,
+      "verified_objective": 2770.0,
+      "relative_gap": 0.0,
+      "attempts": 1,
+      "automatic_repairs": 0,
+      "handoffs": 0,
+      "handoff_stages": [],
+      "human_minutes": 0.0,
+      "interventions": [],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 0,
+      "approval_minutes": 0,
+      "memory_items_reported_used": [],
+      "target_principle_reported_used": false,
+      "alias_count": 41,
+      "api_calls": 1,
+      "prompt_tokens": 1647,
+      "completion_tokens": 52040,
+      "reasoning_tokens": 48895,
+      "total_tokens": 53687,
+      "api_cost_usd": 0.034381572,
+      "api_elapsed_seconds": 434.287305834001,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "stop": 1
+      }
+    },
+    {
+      "replicate": 2,
+      "global_order": 7,
+      "pair_sequence": 4,
+      "problem_id": "L02",
+      "source_problem": "H02",
+      "target_principle_id": "S-002",
+      "condition": "C0",
+      "correct_recertified": true,
+      "known_optimum": 8134.799999999998,
+      "verified_objective": 8134.799999999998,
+      "relative_gap": 0.0,
+      "attempts": 2,
+      "automatic_repairs": 1,
+      "handoffs": 1,
+      "handoff_stages": [
+        2
+      ],
+      "human_minutes": 20.0,
+      "interventions": [
+        {
+          "handoff_number": 1,
+          "stage": 2,
+          "failure_class": "revisione_di_assicurazione_post_riparazione",
+          "handoff_mode": "ASSURANCE_REVIEW",
+          "active_minutes": 20.0,
+          "action": "APPROVE",
+          "expert_instruction": "",
+          "correction_summary": "Revisione di assicurazione del modello e del codice dopo una riparazione automatica; la formulazione è stata approvata senza modifiche.",
+          "semantic_principle": "",
+          "submitted_at_utc": "2026-08-26T22:51:43.192323+00:00",
+          "memory_committed": false
+        }
+      ],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 1,
+      "approval_minutes": 20.0,
+      "memory_items_reported_used": null,
+      "target_principle_reported_used": null,
+      "alias_count": 24,
+      "api_calls": 2,
+      "prompt_tokens": 2824,
+      "completion_tokens": 111974,
+      "reasoning_tokens": 110707,
+      "total_tokens": 114798,
+      "api_cost_usd": 0.07416968800000001,
+      "api_elapsed_seconds": 990.4946392919956,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "length": 1,
+        "stop": 1
+      }
+    },
+    {
+      "replicate": 2,
+      "global_order": 8,
+      "pair_sequence": 4,
+      "problem_id": "L02",
+      "source_problem": "H02",
+      "target_principle_id": "S-002",
+      "condition": "Cmem",
+      "correct_recertified": true,
+      "known_optimum": 8134.799999999998,
+      "verified_objective": 8134.799999999998,
+      "relative_gap": 0.0,
+      "attempts": 1,
+      "automatic_repairs": 0,
+      "handoffs": 0,
+      "handoff_stages": [],
+      "human_minutes": 0.0,
+      "interventions": [],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 0,
+      "approval_minutes": 0,
+      "memory_items_reported_used": [
+        "S-001",
+        "S-002",
+        "S-004"
+      ],
+      "target_principle_reported_used": true,
+      "alias_count": 72,
+      "api_calls": 1,
+      "prompt_tokens": 2359,
+      "completion_tokens": 53427,
+      "reasoning_tokens": 51276,
+      "total_tokens": 55786,
+      "api_cost_usd": 0.035290048,
+      "api_elapsed_seconds": 475.23740675000226,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "stop": 1
+      }
+    },
+    {
+      "replicate": 2,
+      "global_order": 9,
+      "pair_sequence": 5,
+      "problem_id": "L01",
+      "source_problem": "H03",
+      "target_principle_id": "S-001",
+      "condition": "Cmem",
+      "correct_recertified": true,
+      "known_optimum": 394.0,
+      "verified_objective": 394.0,
+      "relative_gap": 0.0,
+      "attempts": 1,
+      "automatic_repairs": 0,
+      "handoffs": 0,
+      "handoff_stages": [],
+      "human_minutes": 0.0,
+      "interventions": [],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 0,
+      "approval_minutes": 0,
+      "memory_items_reported_used": [
+        "S-001"
+      ],
+      "target_principle_reported_used": true,
+      "alias_count": 136,
+      "api_calls": 1,
+      "prompt_tokens": 2782,
+      "completion_tokens": 60898,
+      "reasoning_tokens": 58022,
+      "total_tokens": 63680,
+      "api_cost_usd": 0.040232176,
+      "api_elapsed_seconds": 485.93397354099943,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "stop": 1
+      }
+    },
+    {
+      "replicate": 2,
+      "global_order": 10,
+      "pair_sequence": 5,
+      "problem_id": "L01",
+      "source_problem": "H03",
+      "target_principle_id": "S-001",
+      "condition": "C0",
+      "correct_recertified": true,
+      "known_optimum": 394.0,
+      "verified_objective": 394.0,
+      "relative_gap": 0.0,
+      "attempts": 2,
+      "automatic_repairs": 1,
+      "handoffs": 1,
+      "handoff_stages": [
+        2
+      ],
+      "human_minutes": 10.0,
+      "interventions": [
+        {
+          "handoff_number": 1,
+          "stage": 2,
+          "failure_class": "revisione_di_assicurazione_post_riparazione",
+          "handoff_mode": "ASSURANCE_REVIEW",
+          "active_minutes": 10.0,
+          "action": "APPROVE",
+          "expert_instruction": "",
+          "correction_summary": "Revisione di assicurazione del modello e del codice dopo una riparazione automatica; la formulazione è stata approvata senza modifiche.",
+          "semantic_principle": "",
+          "submitted_at_utc": "2026-08-26T23:23:53.049582+00:00",
+          "memory_committed": false
+        }
+      ],
+      "correction_handoffs": 0,
+      "correction_minutes": 0,
+      "approval_handoffs": 1,
+      "approval_minutes": 10.0,
+      "memory_items_reported_used": null,
+      "target_principle_reported_used": null,
+      "alias_count": 0,
+      "api_calls": 2,
+      "prompt_tokens": 3670,
+      "completion_tokens": 92641,
+      "reasoning_tokens": 90765,
+      "total_tokens": 96311,
+      "api_cost_usd": 0.061187068,
+      "api_elapsed_seconds": 734.5752199589988,
+      "providers": [
+        "DeepSeek"
+      ],
+      "actual_models": [
+        "deepseek/deepseek-v4-flash-0731"
+      ],
+      "finish_reasons": {
+        "length": 1,
+        "stop": 1
+      }
+    }
+  ],
+  "aggregates": {
+    "C0": {
+      "condition": "C0",
+      "observations": 10,
+      "correct": 10,
+      "accuracy": 1.0,
+      "automatic_repairs": 4,
+      "handoffs": 4,
+      "problems_with_handoff": 4,
+      "human_minutes": 70.0,
+      "correction_minutes": 0,
+      "approval_minutes": 70.0,
+      "api_calls": 14,
+      "api_cost_usd": 0.40446618000000006,
+      "api_elapsed_seconds": 5103.539095165996
+    },
+    "Cmem": {
+      "condition": "Cmem",
+      "observations": 10,
+      "correct": 10,
+      "accuracy": 1.0,
+      "automatic_repairs": 1,
+      "handoffs": 1,
+      "problems_with_handoff": 1,
+      "human_minutes": 20.0,
+      "correction_minutes": 0,
+      "approval_minutes": 20.0,
+      "api_calls": 11,
+      "api_cost_usd": 0.339126596,
+      "api_elapsed_seconds": 4314.797399792002
+    }
+  },
+  "paired_observations": [
+    {
+      "replicate": 1,
+      "problem_id": "L01",
+      "accuracy_equal": true,
+      "human_minutes_C0": 20.0,
+      "human_minutes_Cmem": 0.0,
+      "human_minutes_saved": 20.0,
+      "repairs_C0": 1,
+      "repairs_Cmem": 0,
+      "repairs_avoided": 1,
+      "handoffs_C0": 1,
+      "handoffs_Cmem": 0,
+      "handoffs_avoided": 1,
+      "elapsed_seconds_C0": 777.163497624002,
+      "elapsed_seconds_Cmem": 499.3266898749989,
+      "elapsed_seconds_saved": 277.8368077490031,
+      "api_cost_C0": 0.062373364,
+      "api_cost_Cmem": 0.041144464,
+      "target_principle_reported_used_Cmem": true,
+      "outcome": "vantaggio_memoria"
+    },
+    {
+      "replicate": 1,
+      "problem_id": "L02",
+      "accuracy_equal": true,
+      "human_minutes_C0": 0.0,
+      "human_minutes_Cmem": 0.0,
+      "human_minutes_saved": 0.0,
+      "repairs_C0": 0,
+      "repairs_Cmem": 0,
+      "repairs_avoided": 0,
+      "handoffs_C0": 0,
+      "handoffs_Cmem": 0,
+      "handoffs_avoided": 0,
+      "elapsed_seconds_C0": 285.2239054170004,
+      "elapsed_seconds_Cmem": 111.85332470899993,
+      "elapsed_seconds_saved": 173.3705807080005,
+      "api_cost_C0": 0.021934724,
+      "api_cost_Cmem": 0.009921184,
+      "target_principle_reported_used_Cmem": true,
+      "outcome": "nessuna_differenza"
+    },
+    {
+      "replicate": 1,
+      "problem_id": "L03",
+      "accuracy_equal": true,
+      "human_minutes_C0": 0.0,
+      "human_minutes_Cmem": 0.0,
+      "human_minutes_saved": 0.0,
+      "repairs_C0": 0,
+      "repairs_Cmem": 0,
+      "repairs_avoided": 0,
+      "handoffs_C0": 0,
+      "handoffs_Cmem": 0,
+      "handoffs_avoided": 0,
+      "elapsed_seconds_C0": 358.15630108299956,
+      "elapsed_seconds_Cmem": 545.3029928329997,
+      "elapsed_seconds_saved": -187.14669175000017,
+      "api_cost_C0": 0.029350704,
+      "api_cost_Cmem": 0.042010292,
+      "target_principle_reported_used_Cmem": true,
+      "outcome": "nessuna_differenza"
+    },
+    {
+      "replicate": 1,
+      "problem_id": "L04",
+      "accuracy_equal": true,
+      "human_minutes_C0": 0.0,
+      "human_minutes_Cmem": 0.0,
+      "human_minutes_saved": 0.0,
+      "repairs_C0": 0,
+      "repairs_Cmem": 0,
+      "repairs_avoided": 0,
+      "handoffs_C0": 0,
+      "handoffs_Cmem": 0,
+      "handoffs_avoided": 0,
+      "elapsed_seconds_C0": 213.48261658299998,
+      "elapsed_seconds_Cmem": 250.99388579200058,
+      "elapsed_seconds_saved": -37.5112692090006,
+      "api_cost_C0": 0.015474644,
+      "api_cost_Cmem": 0.019307044,
+      "target_principle_reported_used_Cmem": true,
+      "outcome": "nessuna_differenza"
+    },
+    {
+      "replicate": 1,
+      "problem_id": "L05",
+      "accuracy_equal": true,
+      "human_minutes_C0": 0.0,
+      "human_minutes_Cmem": 0.0,
+      "human_minutes_saved": 0.0,
+      "repairs_C0": 0,
+      "repairs_Cmem": 0,
+      "repairs_avoided": 0,
+      "handoffs_C0": 0,
+      "handoffs_Cmem": 0,
+      "handoffs_avoided": 0,
+      "elapsed_seconds_C0": 171.448906874999,
+      "elapsed_seconds_Cmem": 370.0833703750013,
+      "elapsed_seconds_saved": -198.6344635000023,
+      "api_cost_C0": 0.014807164,
+      "api_cost_Cmem": 0.031178904,
+      "target_principle_reported_used_Cmem": true,
+      "outcome": "nessuna_differenza"
+    },
+    {
+      "replicate": 2,
+      "problem_id": "L01",
+      "accuracy_equal": true,
+      "human_minutes_C0": 10.0,
+      "human_minutes_Cmem": 0.0,
+      "human_minutes_saved": 10.0,
+      "repairs_C0": 1,
+      "repairs_Cmem": 0,
+      "repairs_avoided": 1,
+      "handoffs_C0": 1,
+      "handoffs_Cmem": 0,
+      "handoffs_avoided": 1,
+      "elapsed_seconds_C0": 734.5752199589988,
+      "elapsed_seconds_Cmem": 485.93397354099943,
+      "elapsed_seconds_saved": 248.64124641799935,
+      "api_cost_C0": 0.061187068,
+      "api_cost_Cmem": 0.040232176,
+      "target_principle_reported_used_Cmem": true,
+      "outcome": "vantaggio_memoria"
+    },
+    {
+      "replicate": 2,
+      "problem_id": "L02",
+      "accuracy_equal": true,
+      "human_minutes_C0": 20.0,
+      "human_minutes_Cmem": 0.0,
+      "human_minutes_saved": 20.0,
+      "repairs_C0": 1,
+      "repairs_Cmem": 0,
+      "repairs_avoided": 1,
+      "handoffs_C0": 1,
+      "handoffs_Cmem": 0,
+      "handoffs_avoided": 1,
+      "elapsed_seconds_C0": 990.4946392919956,
+      "elapsed_seconds_Cmem": 475.23740675000226,
+      "elapsed_seconds_saved": 515.2572325419933,
+      "api_cost_C0": 0.07416968800000001,
+      "api_cost_Cmem": 0.035290048,
+      "target_principle_reported_used_Cmem": true,
+      "outcome": "vantaggio_memoria"
+    },
+    {
+      "replicate": 2,
+      "problem_id": "L03",
+      "accuracy_equal": true,
+      "human_minutes_C0": 0.0,
+      "human_minutes_Cmem": 0.0,
+      "human_minutes_saved": 0.0,
+      "repairs_C0": 0,
+      "repairs_Cmem": 0,
+      "repairs_avoided": 0,
+      "handoffs_C0": 0,
+      "handoffs_Cmem": 0,
+      "handoffs_avoided": 0,
+      "elapsed_seconds_C0": 434.287305834001,
+      "elapsed_seconds_Cmem": 265.03799812500074,
+      "elapsed_seconds_saved": 169.24930770900028,
+      "api_cost_C0": 0.034381572,
+      "api_cost_Cmem": 0.022374524,
+      "target_principle_reported_used_Cmem": true,
+      "outcome": "nessuna_differenza"
+    },
+    {
+      "replicate": 2,
+      "problem_id": "L04",
+      "accuracy_equal": true,
+      "human_minutes_C0": 0.0,
+      "human_minutes_Cmem": 20.0,
+      "human_minutes_saved": -20.0,
+      "repairs_C0": 0,
+      "repairs_Cmem": 1,
+      "repairs_avoided": -1,
+      "handoffs_C0": 0,
+      "handoffs_Cmem": 1,
+      "handoffs_avoided": -1,
+      "elapsed_seconds_C0": 398.4672182079994,
+      "elapsed_seconds_Cmem": 928.5016486249988,
+      "elapsed_seconds_saved": -530.0344304169994,
+      "api_cost_C0": 0.030468872,
+      "api_cost_Cmem": 0.065714336,
+      "target_principle_reported_used_Cmem": null,
+      "outcome": "svantaggio_memoria"
+    },
+    {
+      "replicate": 2,
+      "problem_id": "L05",
+      "accuracy_equal": true,
+      "human_minutes_C0": 20.0,
+      "human_minutes_Cmem": 0.0,
+      "human_minutes_saved": 20.0,
+      "repairs_C0": 1,
+      "repairs_Cmem": 0,
+      "repairs_avoided": 1,
+      "handoffs_C0": 1,
+      "handoffs_Cmem": 0,
+      "handoffs_avoided": 1,
+      "elapsed_seconds_C0": 740.2394842909998,
+      "elapsed_seconds_Cmem": 382.52610916699996,
+      "elapsed_seconds_saved": 357.71337512399987,
+      "api_cost_C0": 0.06031838,
+      "api_cost_Cmem": 0.031953624,
+      "target_principle_reported_used_Cmem": true,
+      "outcome": "vantaggio_memoria"
+    }
+  ],
+  "by_problem": [
+    {
+      "problem_id": "L01",
+      "replicates": 2,
+      "replicates_with_memory_advantage": 2,
+      "replicates_with_memory_disadvantage": 0,
+      "human_minutes_saved_total": 30.0,
+      "repairs_avoided_total": 2,
+      "handoffs_avoided_total": 2
+    },
+    {
+      "problem_id": "L02",
+      "replicates": 2,
+      "replicates_with_memory_advantage": 1,
+      "replicates_with_memory_disadvantage": 0,
+      "human_minutes_saved_total": 20.0,
+      "repairs_avoided_total": 1,
+      "handoffs_avoided_total": 1
+    },
+    {
+      "problem_id": "L03",
+      "replicates": 2,
+      "replicates_with_memory_advantage": 0,
+      "replicates_with_memory_disadvantage": 0,
+      "human_minutes_saved_total": 0.0,
+      "repairs_avoided_total": 0,
+      "handoffs_avoided_total": 0
+    },
+    {
+      "problem_id": "L04",
+      "replicates": 2,
+      "replicates_with_memory_advantage": 0,
+      "replicates_with_memory_disadvantage": 1,
+      "human_minutes_saved_total": -20.0,
+      "repairs_avoided_total": -1,
+      "handoffs_avoided_total": -1
+    },
+    {
+      "problem_id": "L05",
+      "replicates": 2,
+      "replicates_with_memory_advantage": 1,
+      "replicates_with_memory_disadvantage": 0,
+      "human_minutes_saved_total": 20.0,
+      "repairs_avoided_total": 1,
+      "handoffs_avoided_total": 1
+    }
+  ],
+  "comparison": {
+    "accuracy_preserved": true,
+    "human_minutes_saved": 50.0,
+    "automatic_repairs_avoided": 3,
+    "handoffs_avoided": 3,
+    "api_calls_avoided": 3,
+    "api_cost_saved_usd": 0.06533958400000006,
+    "elapsed_seconds_saved": 788.7416953739939,
+    "paired_observations_with_memory_advantage": 4,
+    "paired_observations_with_memory_disadvantage": 1,
+    "paired_observations_without_difference": 5,
+    "problem_families_with_memory_advantage": [
+      "L01",
+      "L02",
+      "L05"
+    ],
+    "strict_correction_minutes_saved": 0,
+    "h5_assessment": "supporto_operativo_parziale_e_replication_robustness"
+  }
+}

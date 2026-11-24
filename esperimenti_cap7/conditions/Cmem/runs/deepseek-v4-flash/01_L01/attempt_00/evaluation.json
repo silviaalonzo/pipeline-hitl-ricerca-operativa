@@ -1,0 +1,36 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "Ogni rotta affidata a un solo veicolo -> sum_i x_ij = 1 per ogni rotta j",
+        "Veicolo usato solo se attivato -> x_ij <= y_i",
+        "Capacità complessiva di carico -> sum_j load_j x_ij <= capacity_i y_i",
+        "Numero massimo di rotte -> sum_j x_ij <= max_routes_i y_i",
+        "Al massimo sette veicoli -> sum_i y_i <= 7",
+        "Almeno due elettrici attivi -> sum_{i in E} y_i >= 2",
+        "Limite elettrici su rotte lunghe -> sum_{j in L} x_ij <= 1",
+        "Limite diesel su rotte centro -> sum_{j in C} x_ij <= 2",
+        "Limite emissioni -> sum_i sum_j dist_j emission_i x_ij <= 1050",
+        "Minimizzare costi fissi e di assegnazione -> min sum_i f_i y_i + sum_i sum_j c_ij x_ij"
+      ],
+      "memory_items_used": [
+        "S-001"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

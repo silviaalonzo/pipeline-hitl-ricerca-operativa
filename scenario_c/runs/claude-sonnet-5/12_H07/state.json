@@ -1,0 +1,111 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "claude-sonnet-5",
+  "problem_id": "H07",
+  "problem_sequence": 12,
+  "domain": "Procurement",
+  "difficulty": "Elevata",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-24T18:48:16.786859+00:00",
+  "updated_at_utc": "2026-08-24T19:06:04.318659+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:49:10.506171+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "soluzione_non_leggibile",
+        "detail": "Expecting property name enclosed in double quotes: line 1 column 53 (char 52)",
+        "finish_reason": "stop",
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "Acquisto esatto di 80/70/60 unità -> vincoli di domanda sum_i x[i,k]=demand[k]",
+              "Almeno due fornitori per componente con minimo 10 unità -> vincoli sum_i z[i,k]>=2 e x[i,k]>=10*z[i,k]",
+              "Capacità complessiva sui tre componenti -> vincolo sum_k x[i,k]<=cap[i]*y[i]",
+              "Qualità media >=95 per componente -> vincolo sum_i qual[i,k]*x[i,k]>=95*demand[k]",
+              "Al massimo 4 fornitori attivi e almeno uno tra A e B -> vincoli sum_i y[i]<=4 e y[A]+y[B]>=1",
+              "Rischio totale <=580 -> vincolo sum risk[i]*x[i,k]<=580",
+              "Minimizzare costi acquisto e attivazione -> funzione obiettivo con costi unitari e costi fissi"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    },
+    {
+      "number": 1,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_01",
+      "created_at_utc": "2026-08-24T18:49:24.525181+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false
+      }
+    },
+    {
+      "number": 2,
+      "kind": "EXPERT_DIRECT_CODE",
+      "directory": "attempt_02",
+      "created_at_utc": "2026-08-24T19:06:04.316916+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "expert_direct_artifact",
+        "source_sha256": "e9d411cfcd2be8e06610db5241e96f914c1a8c3be0e6c149d1a7d3af6284ff85",
+        "candidate_source": "stdout:SOLUTION_JSON"
+      }
+    }
+  ],
+  "interventions": [
+    {
+      "handoff_number": 1,
+      "stage": 2,
+      "failure_class": "revisione_di_assicurazione_post_riparazione",
+      "active_minutes": 20.0,
+      "action": "CORRECT",
+      "correction_mode": "DIRECT_CODE",
+      "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+      "correction_summary": "Durante la revisione dello Stadio 2, l'esperto ha sostituito l'artefatto automatico con un codice completo e autonomo che definisce esplicitamente le sole coppie fornitore-componente disponibili, i legami quantità-uso-attivazione e tutti i controlli richiesti dalla traccia.",
+      "semantic_principle": "Nei problemi di approvvigionamento con celle non disponibili, creare variabili soltanto per le coppie ammesse e collegare esplicitamente quantità, uso della coppia e attivazione del fornitore.",
+      "expert_artifact_source": "/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/12_H07/handoffs/handoff_01/expert_code_H07.py",
+      "expert_artifact_sha256": "e9d411cfcd2be8e06610db5241e96f914c1a8c3be0e6c149d1a7d3af6284ff85",
+      "submitted_at_utc": "2026-08-24T19:06:04.316916+00:00",
+      "memory_committed": true
+    }
+  ],
+  "memory_retrieval": {
+    "model": "claude-sonnet-5",
+    "problem_id": "H07",
+    "retrieved_at_utc": "2026-08-24T18:48:16.786847+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

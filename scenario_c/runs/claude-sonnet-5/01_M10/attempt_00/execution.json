@@ -1,0 +1,7 @@
+{
+  "returncode": 0,
+  "timed_out": false,
+  "elapsed_seconds": 0.09555941700091353,
+  "stdout": "Set parameter Username\nSet parameter LicenseID to value 2852205\nAcademic license - for non-commercial use only - expires 2027-08-08\nSOLUTION_JSON={\"status\": \"OPTIMAL\", \"objective\": 443.0, \"variables\": {\"x_SA\": 25.0, \"y_SA\": 1.0, \"x_SB\": 15.0, \"y_SB\": 1.0, \"x_AB\": -0.0, \"y_AB\": -0.0, \"x_AC\": 25.0, \"y_AC\": 1.0, \"x_BC\": 0.0, \"y_BC\": -0.0, \"x_BT\": 15.0, \"y_BT\": 1.0, \"x_CT\": 25.0, \"y_CT\": 1.0}}\n",
+  "stderr": ""
+}

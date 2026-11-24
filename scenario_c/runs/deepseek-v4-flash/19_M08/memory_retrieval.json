@@ -1,0 +1,71 @@
+{
+  "model": "deepseek-v4-flash",
+  "problem_id": "M08",
+  "retrieved_at_utc": "2026-08-24T22:20:23.313491+00:00",
+  "semantic": [
+    {
+      "id": "S-005",
+      "created_at_utc": "2026-08-24T22:11:39.350533+00:00",
+      "source_episode": "M03-H01",
+      "principle": "Nei problemi di assegnazione con celle non disponibili, mantenere una variabile binaria per ogni coppia e imporre esplicitamente a zero le combinazioni vietate, oppure creare variabili soltanto per le coppie ammesse; in entrambi i casi la copertura deve essere imposta su ciascun turno.",
+      "tags": [
+        "Workforce scheduling",
+        "IP binaria",
+        "stadio-3",
+        "output_troncato_o_senza_codice"
+      ]
+    },
+    {
+      "id": "S-001",
+      "created_at_utc": "2026-08-24T19:52:07.274566+00:00",
+      "source_episode": "H03-H01",
+      "principle": "Quando un requisito si applica individualmente a più soggetti, formulare un vincolo separato per ciascun soggetto anziché aggregarli in un unico limite complessivo.",
+      "tags": [
+        "Workforce scheduling",
+        "IP binaria",
+        "stadio-2",
+        "revisione_di_assicurazione_post_riparazione"
+      ]
+    }
+  ],
+  "episodic": [
+    {
+      "id": "M03-H01",
+      "created_at_utc": "2026-08-24T22:11:39.350524+00:00",
+      "problem_id": "M03",
+      "domain": "Workforce scheduling",
+      "model_class": "IP binaria",
+      "stage": 3,
+      "failure_class": "output_troncato_o_senza_codice",
+      "correction_summary": "Dopo tre riparazioni automatiche concluse senza codice completo, l’esperto ha fornito un modello eseguibile che copre esattamente ogni turno, limita a due i turni per dipendente e a uno i notturni e rappresenta esplicitamente tutte le indisponibilità.",
+      "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+      "active_minutes": 10.0,
+      "tags": [
+        "Workforce scheduling",
+        "IP binaria",
+        "stadio-3",
+        "output_troncato_o_senza_codice"
+      ]
+    },
+    {
+      "id": "H03-H01",
+      "created_at_utc": "2026-08-24T19:52:07.274558+00:00",
+      "problem_id": "H03",
+      "domain": "Workforce scheduling",
+      "model_class": "IP binaria",
+      "stage": 2,
+      "failure_class": "revisione_di_assicurazione_post_riparazione",
+      "correction_summary": "Durante la revisione dello Stadio 2, l’esperto ha corretto il vincolo sul fine settimana separando il limite di E1 da quello di E2 e ha fornito il modello completo con domanda, seniority, riposi, specialisti e indisponibilità.",
+      "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+      "active_minutes": 20.0,
+      "tags": [
+        "Workforce scheduling",
+        "IP binaria",
+        "stadio-2",
+        "revisione_di_assicurazione_post_riparazione"
+      ]
+    }
+  ],
+  "semantic_count_total": 5,
+  "episodic_count_total": 5
+}

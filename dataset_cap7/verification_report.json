@@ -1,0 +1,48 @@
+{
+  "certified": true,
+  "dataset_version": "definitivo_v2",
+  "solver": "Gurobi 13.0.2",
+  "problem_count": 5,
+  "problems": [
+    {
+      "id": "L01",
+      "status": "OPTIMAL",
+      "objective": 394.0,
+      "mip_gap": 0.0,
+      "variables": 136,
+      "constraints": 43
+    },
+    {
+      "id": "L02",
+      "status": "OPTIMAL",
+      "objective": 8134.799999999998,
+      "mip_gap": 0.0,
+      "variables": 72,
+      "constraints": 94
+    },
+    {
+      "id": "L03",
+      "status": "OPTIMAL",
+      "objective": 2770.0,
+      "mip_gap": 0.0,
+      "variables": 74,
+      "constraints": 134
+    },
+    {
+      "id": "L04",
+      "status": "OPTIMAL",
+      "objective": 9077.6,
+      "mip_gap": 0.0,
+      "variables": 102,
+      "constraints": 126
+    },
+    {
+      "id": "L05",
+      "status": "OPTIMAL",
+      "objective": 371.0,
+      "mip_gap": 0.0,
+      "variables": 190,
+      "constraints": 83
+    }
+  ]
+}

@@ -1,0 +1,73 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "deepseek-v4-flash",
+  "problem_id": "L03",
+  "problem_sequence": 3,
+  "domain": "Procurement",
+  "difficulty": "Elevata",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-26T17:35:51.119129+00:00",
+  "updated_at_utc": "2026-08-26T17:41:49.454011+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-26T17:41:49.452834+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "domanda esatta -> sum_i x_ij = D_j",
+              "attivazione fornitore e capacità -> sum_j x_ij <= cap_i y_i",
+              "lotto minimo -> x_ij >= l_j z_ij",
+              "minimo/massimo fornitori per componente -> 2 <= sum_i z_ij <= 3",
+              "max 6 fornitori e almeno uno tra S1/S2 -> sum_i y_i <= 6, y_S1+y_S2 >= 1",
+              "qualità media >= 95 -> sum_i q_ij x_ij >= 95 D_j",
+              "rischio totale <= 1300 -> sum_i r_i x_ij <= 1300",
+              "costi fissi e di acquisto -> min sum_i f_i y_i + sum_ij c_ij x_ij"
+            ],
+            "memory_items_used": []
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "deepseek-v4-flash",
+    "problem_id": "L03",
+    "retrieved_at_utc": "2026-08-26T17:35:51.119121+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0,
+    "retrieval_policy": "full_frozen_snapshot",
+    "condition": "C0"
+  },
+  "pending_handoff": null,
+  "chapter": 7,
+  "condition": "C0",
+  "memory_frozen": true,
+  "memory_update_suppressed": true
+}

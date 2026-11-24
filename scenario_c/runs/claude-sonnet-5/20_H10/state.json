@@ -1,0 +1,171 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "claude-sonnet-5",
+  "problem_id": "H10",
+  "problem_sequence": 20,
+  "domain": "Network design",
+  "difficulty": "Elevata",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-24T19:22:56.232980+00:00",
+  "updated_at_utc": "2026-08-24T19:30:58.913802+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T19:23:30.349370+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "errore_di_esecuzione",
+        "detail": "Traceback (most recent call last):\n  File \"/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/20_H10/attempt_00/generated.py\", line 42, in <module>\n    gp.quicksum(cost[a][k] * x[a, k] for a in ARCS for k in PRODUCTS)\n  File \"src/gurobipy/_helpers.pyx\", line 41, in gurobipy._helpers.quicksum\n  File \"/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/20_H10/attempt_00/generated.py\", line 42, in <genexpr>\n    gp.quicksum(cost[a][k] * x[a, k] for a in ARCS for k in PRODUCTS)\n                             ~^^^^^^\nKeyError: (('S', 'A'), 'K1')",
+        "finish_reason": "stop",
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "Trasporto di 28 unità di K1 e 22 di K2 da S a T -> vincoli di conservazione del flusso con domanda per prodotto k",
+              "Archi condividono la capacità tra i due prodotti -> vincolo di capacità congiunta sum_k x[a,k] <= cap[a]*y[a]",
+              "Entrambi gli archi in uscita da S devono essere attivati -> vincoli y[S,A]=1, y[S,B]=1",
+              "Al massimo sette archi attivabili complessivamente -> vincolo sum_a y[a] <= 7",
+              "Costi unitari dipendenti dal prodotto -> parametro cost[a,k] nella funzione obiettivo",
+              "Flussi interi -> dominio intero delle variabili x[a,k]",
+              "Minimizzare costi fissi e di flusso -> funzione obiettivo con termini fixed[a]*y[a] + cost[a,k]*x[a,k]"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    },
+    {
+      "number": 1,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_01",
+      "created_at_utc": "2026-08-24T19:23:41.414794+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "errore_di_esecuzione",
+        "detail": "Traceback (most recent call last):\n  File \"/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/20_H10/attempt_01/generated.py\", line 43, in <module>\n    gp.quicksum(cost[a][k] * x[a, k] for a in ARCS for k in PRODUCTS)\n  File \"src/gurobipy/_helpers.pyx\", line 41, in gurobipy._helpers.quicksum\n  File \"/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/20_H10/attempt_01/generated.py\", line 43, in <genexpr>\n    gp.quicksum(cost[a][k] * x[a, k] for a in ARCS for k in PRODUCTS)\n                             ~^^^^^^\nKeyError: (('S', 'A'), 'K1')",
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "number": 2,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_02",
+      "created_at_utc": "2026-08-24T19:23:52.567711+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "errore_di_esecuzione",
+        "detail": "Traceback (most recent call last):\n  File \"/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/20_H10/attempt_02/generated.py\", line 43, in <module>\n    gp.quicksum(cost[a][k] * x[a, k] for a in ARCS for k in PRODUCTS)\n  File \"src/gurobipy/_helpers.pyx\", line 41, in gurobipy._helpers.quicksum\n  File \"/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/20_H10/attempt_02/generated.py\", line 43, in <genexpr>\n    gp.quicksum(cost[a][k] * x[a, k] for a in ARCS for k in PRODUCTS)\n                             ~^^^^^^\nKeyError: (('S', 'A'), 'K1')",
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "number": 3,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_03",
+      "created_at_utc": "2026-08-24T19:24:08.640831+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false
+      }
+    },
+    {
+      "number": 4,
+      "kind": "EXPERT_DIRECT_CODE",
+      "directory": "attempt_04",
+      "created_at_utc": "2026-08-24T19:30:58.912226+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "expert_direct_artifact",
+        "source_sha256": "3014d853c4a802c4674c90c2dca224cc12b92e1e5b78b327cfdf234d13364d48",
+        "candidate_source": "H10.sol"
+      }
+    }
+  ],
+  "interventions": [
+    {
+      "handoff_number": 1,
+      "stage": 2,
+      "failure_class": "revisione_di_assicurazione_post_riparazione",
+      "active_minutes": 15.0,
+      "action": "CORRECT",
+      "correction_mode": "DIRECT_CODE",
+      "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+      "correction_summary": "Dopo tre errori di esecuzione consecutivi, l'esperto ha fornito il modello verificato della rete multi-prodotto, con indicizzazione coerente dei flussi, conservazione nodo per nodo, capacità condivise, archi obbligatori e limite complessivo sulle attivazioni.",
+      "semantic_principle": "Nei modelli di flusso multi-prodotto, definire una convenzione unica per gli indici arco-prodotto e usarla invariata in obiettivo, conservazione e capacità condivise.",
+      "expert_artifact_source": "/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_a/H10/modello.py",
+      "expert_artifact_sha256": "3014d853c4a802c4674c90c2dca224cc12b92e1e5b78b327cfdf234d13364d48",
+      "submitted_at_utc": "2026-08-24T19:30:58.912226+00:00",
+      "memory_committed": true
+    }
+  ],
+  "memory_retrieval": {
+    "model": "claude-sonnet-5",
+    "problem_id": "H10",
+    "retrieved_at_utc": "2026-08-24T19:22:56.232969+00:00",
+    "semantic": [
+      {
+        "id": "S-001",
+        "created_at_utc": "2026-08-24T19:06:04.317849+00:00",
+        "source_episode": "H07-H01",
+        "principle": "Nei problemi di approvvigionamento con celle non disponibili, creare variabili soltanto per le coppie ammesse e collegare esplicitamente quantità, uso della coppia e attivazione del fornitore.",
+        "tags": [
+          "Procurement",
+          "MILP intera",
+          "stadio-2",
+          "revisione_di_assicurazione_post_riparazione"
+        ]
+      }
+    ],
+    "episodic": [
+      {
+        "id": "H07-H01",
+        "created_at_utc": "2026-08-24T19:06:04.317838+00:00",
+        "problem_id": "H07",
+        "domain": "Procurement",
+        "model_class": "MILP intera",
+        "stage": 2,
+        "failure_class": "revisione_di_assicurazione_post_riparazione",
+        "correction_summary": "Durante la revisione dello Stadio 2, l'esperto ha sostituito l'artefatto automatico con un codice completo e autonomo che definisce esplicitamente le sole coppie fornitore-componente disponibili, i legami quantità-uso-attivazione e tutti i controlli richiesti dalla traccia.",
+        "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+        "active_minutes": 20.0,
+        "tags": [
+          "Procurement",
+          "MILP intera",
+          "stadio-2",
+          "revisione_di_assicurazione_post_riparazione"
+        ]
+      }
+    ],
+    "semantic_count_total": 2,
+    "episodic_count_total": 2
+  },
+  "pending_handoff": null
+}

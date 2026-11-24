@@ -1,0 +1,30 @@
+{
+  "status": "OPTIMAL",
+  "objective": 962.0,
+  "variables": {
+    "x[R1,Piccolo]": 0.0,
+    "x[R1,Medio]": 3.0,
+    "x[R1,Grande]": 0.0,
+    "x[R2,Piccolo]": 0.0,
+    "x[R2,Medio]": 4.0,
+    "x[R2,Grande]": 0.0,
+    "x[R3,Piccolo]": 0.0,
+    "x[R3,Medio]": 0.0,
+    "x[R3,Grande]": 2.0,
+    "x[R4,Piccolo]": 0.0,
+    "x[R4,Medio]": 2.0,
+    "x[R4,Grande]": 2.0,
+    "y[R1,Piccolo]": 0.0,
+    "y[R1,Medio]": 1.0,
+    "y[R1,Grande]": 0.0,
+    "y[R2,Piccolo]": 0.0,
+    "y[R2,Medio]": 1.0,
+    "y[R2,Grande]": 0.0,
+    "y[R3,Piccolo]": 0.0,
+    "y[R3,Medio]": 0.0,
+    "y[R3,Grande]": 1.0,
+    "y[R4,Piccolo]": 0.0,
+    "y[R4,Medio]": 1.0,
+    "y[R4,Grande]": 1.0
+  }
+}

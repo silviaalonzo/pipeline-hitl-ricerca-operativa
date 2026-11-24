@@ -1,0 +1,73 @@
+{
+  "id": "gen-1786369366-vvAQsNhhD0AONx5Dg9Fe",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "# H02 — Produzione multi-periodo con setup e scorte\n\n## 1. Insiemi, parametri e variabili decisionali\n\n**Insiemi**\n- $P = \\{A, B, C\\}$ : insieme dei prodotti\n- $T = \\{1, 2, 3, 4\\}$ : insieme dei periodi\n\n**Parametri**\n- $d_{p,t}$ : domanda del prodotto $p$ nel periodo $t$\n- $c_{p,t}$ : costo unitario di produzione di $p$ in $t$\n- $s_p$ : costo di setup del prodotto $p$\n- $h_p$ : costo unitario di mantenimento a scorta di $p$\n- $a_p$ : ore richieste per unità di $p$\n- $L_p$ : lotto minimo di produzione di $p$\n- $Cap_t$ : capacità (ore) disponibile nel periodo $t$\n- $I^0_p$ : scorta iniziale di $p$ (prima di $T1$)\n- $MaxSet = 2$ : massimo numero di articoli attivabili per periodo\n- $MaxInv = 20$ : massima scorta totale per periodo\n- $M_p = \\sum_{t\\in T} d_{p,t}$ : big‑M per il prodotto $p$\n\n**Variabili decisionali**\n- $x_{p,t} \\ge 0,\\ \\text{intera}$ : quantità prodotta di $p$ nel periodo $t$\n- $I_{p,t} \\ge 0,\\ \\text{intera}$ : scorta finale di $p$ alla fine del periodo $t$\n- $y_{p,t} \\in \\{0,1\\}$ : 1 se il prodotto $p$ viene attivato (setup) nel periodo $t$\n\n## 2. Formulazione matematica\n\n**Funzione obiettivo**\n\n$$\n\\min \\sum_{p\\in P}\\sum_{t\\in T} \\Big( c_{p,t}\\,x_{p,t} + s_p\\,y_{p,t} + h_p\\,I_{p,t} \\Big)\n$$\n\n**Vincoli**\n\nBilancio di magazzino (con $I_{p,0}=I^0_p$):\n$$\nI_{p,t-1} + x_{p,t} - d_{p,t} = I_{p,t} \\qquad \\forall p\\in P,\\ t\\in T\n$$\n\nLegame produzione–setup (upper bound):\n$$\nx_{p,t} \\le M_p \\, y_{p,t} \\qquad \\forall p\\in P,\\ t\\in T\n$$\n\nLotto minimo:\n$$\nx_{p,t} \\ge L_p \\, y_{p,t} \\qquad \\forall p\\in P,\\ t\\in T\n$$\n\nMassimo numero di setup attivi per periodo:\n$$\n\\sum_{p\\in P} y_{p,t} \\le 2 \\qquad \\forall t\\in T\n$$\n\nCapacità produttiva:\n$$\n\\sum_{p\\in P} a_p\\, x_{p,t} \\le Cap_t \\qquad \\forall t\\in T\n$$\n\nScorta totale massima:\n$$\n\\sum_{p\\in P} I_{p,t} \\le 20 \\qquad \\forall t\\in T\n$$\n\nScorta finale nulla:\n$$\nI_{p,4} = 0 \\qquad \\forall p\\in P\n$$\n\nDominio:\n$$\nx_{p,t}, I_{p,t} \\in \\mathbb{Z}_{\\ge 0}, \\quad y_{p,t} \\in \\{0,1\\} \\qquad \\forall p\\in P,\\ t\\in T\n$$\n\n## 3. Codice Python (gurobipy)\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\n# ---------------- Dati ----------------\nP = ['A', 'B', 'C']\nT = [1, 2, 3, 4]\n\nd = {\n    ('A',1):8, ('A',2):12, ('A',3):10, ('A',4):14,\n    ('B',1):10,('B',2):8,  ('B',3):14, ('B',4):12,\n    ('C',1):6, ('C',2):9,  ('C',3):7,  ('C',4):11,\n}\n\nc = {\n    ('A',1):9, ('A',2):11, ('A',3):10, ('A',4):12,\n    ('B',1):8, ('B',2):9,  ('B',3):11, ('B',4):10,\n    ('C',1):13,('C',2):12, ('C',3):14, ('C',4):11,\n}\n\ns = {'A':45, 'B':40, 'C':50}\nh = {'A':2,  'B':3,  'C':2}\na = {'A':2,  'B':3,  'C':4}\nL = {'A':4,  'B':4,  'C':3}\nCap = {1:90, 2:95, 3:90, 4:100}\nI0 = {'A':0, 'B':0, 'C':6}\n\nM = {p: sum(d[(p,t)] for t in T) for p in P}\n\nMaxSet = 2\nMaxInv = 20\n\n# ---------------- Modello ----------------\nm = gp.Model(\"H02_produzione_multiperiodo\")\n\nx = m.addVars(P, T, vtype=GRB.INTEGER, lb=0, name=\"x\")\nI = m.addVars(P, T, vtype=GRB.INTEGER, lb=0, name=\"I\")\ny = m.addVars(P, T, vtype=GRB.BINARY, name=\"y\")\n\n# Bilancio di magazzino\nfor p in P:\n    for t in T:\n        prev = I0[p] if t == 1 else I[p, t-1]\n        m.addConstr(prev + x[p, t] - d[(p, t)] == I[p, t], name=f\"bal_{p}_{t}\")\n\n# Legame produzione-setup e lotto minimo\nfor p in P:\n    for t in T:\n        m.addConstr(x[p, t] <= M[p] * y[p, t], name=f\"link_{p}_{t}\")\n        m.addConstr(x[p, t] >= L[p] * y[p, t], name=f\"minlot_{p}_{t}\")\n\n# Massimo numero di setup attivi per periodo\nfor t in T:\n    m.addConstr(gp.quicksum(y[p, t] for p in P) <= MaxSet, name=f\"maxset_{t}\")\n\n# Capacità produttiva\nfor t in T:\n    m.addConstr(gp.quicksum(a[p] * x[p, t] for p in P) <= Cap[t], name=f\"cap_{t}\")\n\n# Scorta totale massima\nfor t in T:\n    m.addConstr(gp.quicksum(I[p, t] for p in P) <= MaxInv, name=f\"maxinv_{t}\")\n\n# Scorta finale nulla\nfor p in P:\n    m.addConstr(I[p, 4] == 0, name=f\"finalinv_{p}\")\n\n# Funzione obiettivo\nobj = gp.quicksum(c[(p, t)] * x[p, t] + s[p] * y[p, t] + h[p] * I[p, t]\n                   for p in P for t in T)\nm.setObjective(obj, GRB.MINIMIZE)\n\nm.optimize()\n\n# ---------------- Output ----------------\nresult = {\"status\": None, \"objective\": None, \"variables\": {}}\n\nif m.status == GRB.OPTIMAL:\n    result[\"status\"] = \"OPTIMAL\"\n    result[\"objective\"] = round(m.objVal, 4)\n    variables = {}\n    for p in P:\n        for t in T:\n            variables[f\"x_{p}_{t}\"] = round(x[p, t].X, 4)\n            variables[f\"I_{p}_{t}\"] = round(I[p, t].X, 4)\n            variables[f\"y_{p}_{t}\"] = round(y[p, t].X, 4)\n    result[\"variables\"] = variables\n\n    # Stampa decisioni non nulle (report leggibile)\n    print(\"Stato solver:\", result[\"status\"])\n    print(\"Valore ottimo:\", result[\"objective\"])\n    print(\"Decisioni non nulle:\")\n    for k, v in variables.items():\n        if abs(v) > 1e-6:\n            print(f\"  {k} = {v}\")\nelse:\n    result[\"status\"] = str(m.status)\n\nprint(\"SOLUTION_JSON=\" + json.dumps(result))\n```\n\n## 4. Sintesi della soluzione\n\nIl modello determina il piano di produzione, scorte e setup per i tre articoli nei quattro periodi che minimizza la somma dei costi di produzione, setup e mantenimento, rispettando i vincoli di capacità orarie, lotto minimo, numero massimo di setup contemporanei, tetto massimo di scorta totale e azzeramento delle scorte finali. Il solver Gurobi risolve il problema MILP intero e la riga `SOLUTION_JSON` riporta lo stato (\"OPTIMAL\"), il valore ottimo della funzione obiettivo e tutti i valori delle variabili $x_{p,t}$, $I_{p,t}$ e $y_{p,t}$ (incluse quelle nulle), permettendo di ricostruire integralmente il piano produttivo ottimale.",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": "I'm setting up a mixed-integer linear programming model with three products across four time periods, defining the decision variables for production quantities along with parameters for demand, costs, capacity constraints, and inventory limits.\n\nThe constraints enforce inventory balance across periods, link production to setup decisions with big-M formulations, enforce minimum lot sizes when a product is produced, cap the number of active products per period at two, respect production capacity in labor hours, limit total inventory to twenty units, and require zero ending inventory. The objective minimizes total production costs, setup costs, and holding costs across all products and periods.\n\nI'm working through the big-M calculation for the setup linking constraint, recognizing that production in any period can't exceed the remaining demand from that period onward since there are no backorders and final inventory must be zero.\n\nWriting Python code with Gurobipy...",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "I'm setting up a mixed-integer linear programming model with three products across four time periods, defining the decision variables for production quantities along with parameters for demand, costs, capacity constraints, and inventory limits.\n\nThe constraints enforce inventory balance across periods, link production to setup decisions with big-M formulations, enforce minimum lot sizes when a product is produced, cap the number of active products per period at two, respect production capacity in labor hours, limit total inventory to twenty units, and require zero ending inventory. The objective minimizes total production costs, setup costs, and holding costs across all products and periods.\n\nI'm working through the big-M calculation for the setup linking constraint, recognizing that production in any period can't exceed the remaining demand from that period onward since there are no backorders and final inventory must be zero.\n\nWriting Python code with Gurobipy...",
+            "format": "anthropic-claude-v1",
+            "index": 0,
+            "signature": "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"
+          }
+        ]
+      },
+      "native_finish_reason": "end_turn"
+    }
+  ],
+  "created": 1786369366,
+  "model": "anthropic/claude-sonnet-5",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 4540,
+    "prompt_tokens": 1255,
+    "total_tokens": 5795,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 247,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.04791,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.04791,
+      "upstream_inference_prompt_cost": 0.00251,
+      "upstream_inference_completions_cost": 0.0454
+    }
+  },
+  "provider": "Anthropic",
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "anthropic/claude-sonnet-5",
+    "required_provider": "anthropic",
+    "allow_fallbacks": false,
+    "require_parameters": true
+  },
+  "_experiment": {
+    "elapsed_seconds": 39.22171087499919,
+    "completed_at_utc": "2026-08-10T13:43:24.175026+00:00"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "gpt-5.6-sol",
+  "problem_id": "M02",
+  "problem_sequence": 9,
+  "domain": "Produzione",
+  "difficulty": "Media",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-24T18:14:47.526802+00:00",
+  "updated_at_utc": "2026-08-24T18:15:51.856162+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:15:51.855403+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "lotti interi -> x_i variabile intera non negativa",
+              "costo fisso di setup -> termine -f_i y_i nell'obiettivo",
+              "lotto minimo e domanda massima -> L_i y_i <= x_i <= U_i y_i",
+              "90 ore-macchina -> somma_i a_i x_i <= 90",
+              "100 ore di lavoro -> somma_i h_i x_i <= 100",
+              "almeno due articoli diversi -> somma_i y_i >= 2",
+              "margine totale netto -> max somma_i (p_i x_i-f_i y_i)"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "gpt-5.6-sol",
+    "problem_id": "M02",
+    "retrieved_at_utc": "2026-08-24T18:14:47.526793+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

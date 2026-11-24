@@ -1,0 +1,9 @@
+{
+  "status": "SUBMITTED",
+  "action": "APPROVE",
+  "active_minutes": 15.0,
+  "expert_instruction": "",
+  "correction_summary": "L’esperto ha riesaminato variabili, funzione obiettivo, soddisfacimento delle domande, collegamento tra aperture e flussi, capacità e movimentazione minima, numerosità dei centri, copertura Nord-Sud ed emissioni, approvando senza modifiche il modello prodotto dopo le riparazioni automatiche.",
+  "semantic_principle": "",
+  "submitted_at_utc": "2026-08-24T21:51:15.609557+00:00"
+}

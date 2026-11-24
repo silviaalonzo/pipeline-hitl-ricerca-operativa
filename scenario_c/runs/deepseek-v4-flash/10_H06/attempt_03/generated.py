@@ -1,0 +1,78 @@
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+n = 7
+p = [5, 7, 4, 6, 3, 8, 5]
+r = [0, 0, 2, 3, 5, 0, 6]
+d = [9, 17, 12, 22, 15, 28, 25]
+w = [4, 3, 5, 2, 6, 2, 4]
+
+pairs = [(i, j) for i in range(n) for j in range(i + 1, n)]
+H = sum(p) + max(r)
+M = H
+
+m = gp.Model("weighted_tardiness")
+m.Params.OutputFlag = 0
+m.Params.MIPGap = 0.0
+
+S = m.addVars(n, lb=0, ub=[H - p[i] for i in range(n)], name="S")
+C = m.addVars(n, lb=0, ub=H, name="C")
+T = m.addVars(n, lb=0, name="T")
+y = m.addVars(pairs, vtype=GRB.BINARY, name="y")
+
+m.setObjective(gp.quicksum(w[i] * T[i] for i in range(n)), GRB.MINIMIZE)
+
+m.addConstrs((S[i] + p[i] == C[i] for i in range(n)), name="comp")
+m.addConstrs((T[i] >= C[i] - d[i] for i in range(n)), name="tardy")
+m.addConstrs((S[i] >= r[i] for i in range(n)), name="release")
+
+for i, j in pairs:
+    m.addConstr(C[i] <= S[j] + M * (1 - y[i, j]), name=f"ord_{i}_{j}_ij")
+    m.addConstr(C[j] <= S[i] + M * y[i, j], name=f"ord_{i}_{j}_ji")
+
+m.addConstr(C[0] <= S[1], name="prec_J1_J2")
+m.addConstr(C[2] <= S[4], name="prec_J3_J5")
+
+m.optimize()
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+}
+
+if m.status == GRB.OPTIMAL:
+    status = "OPTIMAL"
+    variables = {}
+    for var in m.getVars():
+        val = round(float(var.X), 6)
+        if abs(val) < 5e-12:
+            val = 0.0
+        variables[var.VarName] = val
+    payload = {
+        "status": status,
+        "objective": float(m.ObjVal),
+        "variables": variables,
+    }
+else:
+    status = status_names.get(m.status, str(m.status))
+    payload = {
+        "status": status,
+        "objective": 0.0,
+        "variables": {},
+    }
+
+print("SOLUTION_JSON=" + json.dumps(payload, separators=(",", ":")))

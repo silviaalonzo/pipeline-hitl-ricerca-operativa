@@ -1,0 +1,73 @@
+{
+  "id": "gen-1786380001-83HqZSRnJ9DM2VgGGIDo",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "# M07 — Selezione dei fornitori con qualità minima\n\n## 1. Insiemi, parametri e variabili decisionali\n\n### Insiemi\n- $I = \\{A, B, C, D\\}$: insieme dei fornitori\n\n### Parametri\n- $c_i$: costo variabile per unità del fornitore $i$\n- $f_i$: costo fisso di attivazione del fornitore $i$\n- $\\text{cap}_i$: capacità massima del fornitore $i$\n- $m_i$: ordine minimo se il fornitore $i$ è attivato\n- $q_i$: qualità del fornitore $i$\n- $e_i$: emissioni per unità del fornitore $i$\n- $D = 180$: domanda totale da soddisfare\n- $Q_{\\min} = 92$: qualità media ponderata minima richiesta\n- $E_{\\max} = 650$: limite massimo di emissioni totali\n- $K_{\\min} = 2$: numero minimo di fornitori da attivare\n\nValori numerici:\n\n| $i$ | $c_i$ | $f_i$ | $\\text{cap}_i$ | $m_i$ | $q_i$ | $e_i$ |\n|---|---|---|---|---|---|---|\n| A | 11 | 80 | 80 | 20 | 96 | 3 |\n| B | 10 | 95 | 100 | 25 | 90 | 4 |\n| C | 12 | 60 | 70 | 15 | 98 | 2 |\n| D | 9 | 120 | 90 | 20 | 88 | 5 |\n\n### Variabili decisionali\n- $x_i \\in \\mathbb{Z}_{\\ge 0}$: quantità acquistata dal fornitore $i$ (unità intere)\n- $y_i \\in \\{0,1\\}$: 1 se il fornitore $i$ è attivato, 0 altrimenti\n\n## 2. Formulazione matematica\n\n$$\n\\min \\sum_{i \\in I} \\left( c_i x_i + f_i y_i \\right)\n$$\n\nsoggetto a:\n\n$$\n\\sum_{i \\in I} x_i = D \\tag{soddisfazione domanda}\n$$\n\n$$\nx_i \\le \\text{cap}_i \\, y_i \\qquad \\forall i \\in I \\tag{capacità legata all'attivazione}\n$$\n\n$$\nx_i \\ge m_i \\, y_i \\qquad \\forall i \\in I \\tag{ordine minimo se attivato}\n$$\n\n$$\n\\sum_{i \\in I} y_i \\ge K_{\\min} \\tag{almeno due fornitori}\n$$\n\n$$\n\\sum_{i \\in I} q_i x_i \\ge Q_{\\min} \\sum_{i \\in I} x_i \\tag{qualità media minima}\n$$\n\n$$\n\\sum_{i \\in I} e_i x_i \\le E_{\\max} \\tag{emissioni totali massime}\n$$\n\n$$\nx_i \\in \\mathbb{Z}_{\\ge 0}, \\quad y_i \\in \\{0,1\\} \\qquad \\forall i \\in I\n$$\n\n## 3. Codice Python con Gurobi\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\n# Dati\nfornitori = [\"A\", \"B\", \"C\", \"D\"]\n\nc = {\"A\": 11, \"B\": 10, \"C\": 12, \"D\": 9}       # costo unitario\nf = {\"A\": 80, \"B\": 95, \"C\": 60, \"D\": 120}     # costo fisso\ncap = {\"A\": 80, \"B\": 100, \"C\": 70, \"D\": 90}   # capacità\nm = {\"A\": 20, \"B\": 25, \"C\": 15, \"D\": 20}      # ordine minimo\nq = {\"A\": 96, \"B\": 90, \"C\": 98, \"D\": 88}      # qualità\ne = {\"A\": 3, \"B\": 4, \"C\": 2, \"D\": 5}          # emissioni/unità\n\nD_tot = 180\nQ_min = 92\nE_max = 650\nK_min = 2\n\n# Modello\nmodel = gp.Model(\"SelezioneFornitori\")\nmodel.Params.OutputFlag = 0\n\nx = model.addVars(fornitori, vtype=GRB.INTEGER, lb=0, name=\"x\")\ny = model.addVars(fornitori, vtype=GRB.BINARY, name=\"y\")\n\n# Obiettivo\nmodel.setObjective(\n    gp.quicksum(c[i]*x[i] + f[i]*y[i] for i in fornitori),\n    GRB.MINIMIZE\n)\n\n# Vincoli\nmodel.addConstr(gp.quicksum(x[i] for i in fornitori) == D_tot, name=\"domanda\")\n\nfor i in fornitori:\n    model.addConstr(x[i] <= cap[i]*y[i], name=f\"cap_{i}\")\n    model.addConstr(x[i] >= m[i]*y[i], name=f\"min_{i}\")\n\nmodel.addConstr(gp.quicksum(y[i] for i in fornitori) >= K_min, name=\"min_fornitori\")\n\nmodel.addConstr(\n    gp.quicksum(q[i]*x[i] for i in fornitori) >= Q_min * gp.quicksum(x[i] for i in fornitori),\n    name=\"qualita_min\"\n)\n\nmodel.addConstr(\n    gp.quicksum(e[i]*x[i] for i in fornitori) <= E_max,\n    name=\"emissioni_max\"\n)\n\n# Risoluzione\nmodel.optimize()\n\nstatus_map = {\n    GRB.OPTIMAL: \"OPTIMAL\",\n    GRB.INFEASIBLE: \"INFEASIBLE\",\n    GRB.UNBOUNDED: \"UNBOUNDED\",\n    GRB.INF_OR_UNBD: \"INF_OR_UNBD\"\n}\n\nstatus = status_map.get(model.status, str(model.status))\n\nif model.status == GRB.OPTIMAL:\n    variables = {}\n    for i in fornitori:\n        variables[f\"x_{i}\"] = round(x[i].X, 4)\n        variables[f\"y_{i}\"] = round(y[i].X, 4)\n    objective = round(model.ObjVal, 4)\n    result = {\"status\": status, \"objective\": objective, \"variables\": variables}\nelse:\n    result = {\"status\": status, \"objective\": None, \"variables\": {}}\n\nprint(\"SOLUTION_JSON=\" + json.dumps(result))\n```\n\n## 4. Sintesi della soluzione\n\nIl modello seleziona i fornitori attivando quelli con costo variabile più basso, garantendo però il rispetto dei vincoli di qualità media (≥92) ed emissioni totali (≤650). \n\n**Analisi della soluzione ottima attesa:**\n- Il fornitore **D** ha il costo variabile più basso (9/unità) ma qualità insufficiente (88) ed emissioni alte (5/unità), quindi il suo utilizzo dev'essere limitato per rispettare i vincoli di qualità/emissioni.\n- Il fornitore **C** ha ottima qualità (98) e basse emissioni (2/unità) ma costo unitario più alto (12).\n- La soluzione ottima bilancia l'uso di fornitori a basso costo (D, B) con fornitori ad alta qualità/basse emissioni (A, C) per soddisfare simultaneamente tutti i vincoli, attivando almeno due fornitori come richiesto.\n\nIl solver Gurobi determina la combinazione esatta di quantità $x_i$ e attivazioni $y_i$ che minimizza il costo totale (variabile + fisso) rispettando: soddisfazione della domanda di 180 unità, vincoli di capacità/ordine minimo per fornitore attivato, almeno 2 fornitori attivi, qualità media ponderata ≥92, ed emissioni totali ≤650. Il risultato numerico esatto (valore obiettivo e quantità ottimali per ciascun fornitore) viene calcolato e stampato dal codice Gurobi in formato JSON standardizzato.",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": "I'm setting up a mixed-integer linear programming model with four suppliers, defining the cost parameters (unit and fixed costs), capacity and minimum order constraints, quality and emissions metrics, along with decision variables for purchase quantities from each supplier.",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "I'm setting up a mixed-integer linear programming model with four suppliers, defining the cost parameters (unit and fixed costs), capacity and minimum order constraints, quality and emissions metrics, along with decision variables for purchase quantities from each supplier.",
+            "format": "anthropic-claude-v1",
+            "index": 0,
+            "signature": "Et0KCokBCBAYAipAxgj22Y+cUuYFZ3QucfU232uW39ZnDFxljxZKmnGKpib/MPuC53gk+rnxRQqcqSOQI+XQvQYz6hrDlJqITv13sDIPY2xhdWRlLXNvbm5ldC01OABCCHRoaW5raW5nWiQwZDk4M2YzZi00OWZhLTRhNDYtODI1NC1iMWJiMjQ5MWEyYTkSDFxz2UurzRYfTl8pPRoMrxfZXp0oWjH0c2LIIjDtUzPHQ7VZzHllloaMtJvGGeb1HJ8omnQm54pvyulSPq7mWAdtAv2z3r9DJWSErJ4qgAkqE+wJ+nEckta1mC31ylKRIfAKjvSVBQ2jdLN6k95ZckUotCZBtWqxJOkqtCxpvz3hROiulEQ3N0QKWY9J9/sIQuZK6ca42et87AEa3vyrvh19tkbJC6//Ow8DPLRLRqn+MFYybdxBN6M6ZACi32+fyNKot8aKcqtMMOQB++SkDDPEgIWQs4QpaY5kHtJ0Jz41WmMRE5vi2jsfg9T07/1U4DlaMNplx/5+0Vc1TBSyLpcRbNFE9PJyqaID6yyuWvqEbNwODpE1ZXPjQBywqLSGkAvOZk13MrXXq18rsGAUas9tTLoE27IgNXxbCzwhFNBtqX+dAAt9ziM9nCwaBvSMoaFq4QmiuYH3FXqIVclSM32eHeZxK39fPomvtDFxnU+xfk0sh8PTmxMoKpo2317nvS15KSe55Ml1Yau7st31mj6ugfKnSC9UecZ6E2BKubIqP2SNuP3iePJXOC12x+WrY9wQxAXArepyyXop/Y4bvOgqHccXB7rfMedxjg0jRbVhMl0F2Lo4ZSv5cOClVptE9oxqsSO45Mcp6hHgSAz4MBr1Gsv9HVaOUFM5z4rwQdg0yggxwFnQDjMU4cCGoSPLrXUQJylj5sbSngUwF5OWwNvLfsv1mGWe/WgP0gsAgVUNNp6kPk/ip6jWUAsarZGLOPrNwUulT4RceuMoDUHHWzuqxaEmlSLBgO+HQNcfDV5/VP/KjaFn/OmyjSiKDP5dhc2si9SCVX9xMlMpudfNht6JBFI//T8nSGf8Vj0Y55mFS0h3ZF1K+dVBkcdofJMXCH61dAJhGODhCNqNhaggYUuj6p5MTTf8aYpT5ykJnMf0S2zm6iXuokJpv6FIp/SDaSBSvRUWE2TirTjvuh3TuKmnk5wZM9PPZ3TM1XejSfW5TlZDO8iJ9h0SZjg69hm31FSWiKPjN2mvhX6BeQLqxzx8SIY0HV3Sjyoq8AEfQT5U+Py2sD8brdAr2R8LgWP8dwIKcADWymX/QOmDZ+JoxK2mUs6bdf+df25vvo1KYNg0zSQgWjH5Y3FQGVy5dnszq6AL31b3CpwYe/TITECnL14e+8WiHIoYt24Xcu1wWdBqLfluqyvl+meJTWnUs+OXWLpBL0PiJ9r2Ap67flMwLAEidKSSETnE6Ur79xQDOIAG0YHBhAgwHw6FgNdVWsDkYHneC/bmP9kp4So/bqgLJuyljcuEjjXdblk6Q6OecdSQNzQbdQrHq9bNgoTCBNX4sOzjzMFPMqzJHJR74pzL4exOyUgm6eMtuN00dwbAp7Ran0gAl2NPuEn9OfX7Tr3CKiu03n60JdVu58nmkrO1uW93IrCA4ul6HQDoekQST79MkH0AfVzJASuFrcry4QQVY54I5RnMW9tJsmErHfk8esVtLFoDwPwO4OO8tIvt0lBiC5ySHtBDGdWA2LHcx64eNmJO5JavPhEEfDmHBXfh9AgguXtXeO/pBJGyzkJHowrm3//Kc72btS1fkYtHQcPXDq4wWfeZ87GVjYMM4Nh8r0WJxgL4oJi0LiBta/p84sIYAQ=="
+          }
+        ]
+      },
+      "native_finish_reason": "end_turn"
+    }
+  ],
+  "created": 1786380001,
+  "model": "anthropic/claude-sonnet-5",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 3233,
+    "prompt_tokens": 954,
+    "total_tokens": 4187,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 69,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.034238,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.034238,
+      "upstream_inference_prompt_cost": 0.001908,
+      "upstream_inference_completions_cost": 0.03233
+    }
+  },
+  "provider": "Anthropic",
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "anthropic/claude-sonnet-5",
+    "required_provider": "anthropic",
+    "allow_fallbacks": false,
+    "require_parameters": true
+  },
+  "_experiment": {
+    "elapsed_seconds": 29.842661708000378,
+    "completed_at_utc": "2026-08-10T16:40:29.824306+00:00"
+  }
+}

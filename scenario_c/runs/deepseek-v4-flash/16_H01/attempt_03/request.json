@@ -1,0 +1,23 @@
+{
+  "scenario": "C",
+  "model_key": "deepseek-v4-flash",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "configuration": {
+    "provider": "openrouter",
+    "upstream_provider": "deepseek",
+    "model": "deepseek/deepseek-v4-flash",
+    "reasoning_effort": "high",
+    "max_output_tokens": 24000
+  },
+  "created_at_utc": "2026-08-24T21:47:11.468884+00:00",
+  "metadata": {
+    "problem_id": "H01",
+    "problem_sequence": 16,
+    "attempt_number": 3,
+    "attempt_kind": "AUTO_REPAIR",
+    "auto_repair_count_current_cycle": 3
+  },
+  "system_prompt": "Correggi un programma Python/gurobipy all'interno di una pipeline di Ricerca Operativa.\nUsa soltanto la traccia, la formulazione o l'istruzione dell'esperto e il messaggio di errore forniti.\nNon usare informazioni esterne e non inventare dati.\n\nRestituisci ESCLUSIVAMENTE un solo blocco di codice Python eseguibile, senza testo prima o dopo.\nIl codice deve costruire e risolvere il modello con Gurobi e stampare alla fine esattamente una riga:\n\nSOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":0.0,\"variables\":{\"nome_variabile\":0.0}}\n\nNel dizionario variables devono comparire tutte le variabili decisionali, comprese quelle nulle.\nSe il solver non restituisce una soluzione ottima, usa lo stato effettivo, objective null e variables vuoto.\nNon leggere o scrivere file, non accedere alla rete, non invocare altri processi e non importare librerie diverse\nda gurobipy, json, math e itertools.\n",
+  "user_prompt": "TRACCIA ORIGINALE:\n# H01 — Rete capacitada di centri distributivi\n\nDifficoltà: Elevata\nClasse: MILP\n\nUn’azienda deve soddisfare integralmente la domanda di otto zone aprendo da tre a quattro centri tra sei siti candidati. La domanda di una zona può essere ripartita tra più centri.\nOgni centro aperto deve movimentare almeno 20 unità e non può superare la propria capacità. Per resilienza deve essere aperto almeno un sito nel gruppo Nord (A–C) e almeno uno nel gruppo Sud (D–F).\nIl costo è dato dai costi fissi più il costo unitario di distribuzione. Le emissioni complessive, calcolate mediante i coefficienti della seconda matrice, non possono superare 470 unità.\n\n## Domanda\n\nZona | Z1 | Z2 | Z3 | Z4 | Z5 | Z6 | Z7 | Z8\n--- | --- | --- | --- | --- | --- | --- | --- | ---\nUnità | 30 | 25 | 35 | 20 | 28 | 32 | 24 | 26\n\n## Siti\n\nSito | Costo fisso | Capacità\n--- | --- | ---\nA | 110 | 90\nB | 95 | 80\nC | 120 | 110\nD | 90 | 75\nE | 105 | 95\nF | 100 | 85\n\n## Costi unitari\n\nZona | A | B | C | D | E | F\n--- | --- | --- | --- | --- | --- | ---\nZ1 | 4 | 7 | 6 | 10 | 9 | 11\nZ2 | 5 | 4 | 8 | 9 | 7 | 10\nZ3 | 7 | 5 | 4 | 8 | 9 | 7\nZ4 | 9 | 8 | 7 | 4 | 5 | 6\nZ5 | 8 | 9 | 6 | 5 | 4 | 7\nZ6 | 10 | 8 | 7 | 6 | 5 | 4\nZ7 | 6 | 7 | 5 | 8 | 6 | 7\nZ8 | 7 | 6 | 8 | 5 | 7 | 4\n\n## Coefficienti di emissione\n\nZona | A | B | C | D | E | F\n--- | --- | --- | --- | --- | --- | ---\nZ1 | 1 | 2 | 2 | 4 | 3 | 4\nZ2 | 2 | 1 | 3 | 3 | 2 | 4\nZ3 | 3 | 2 | 1 | 3 | 4 | 3\nZ4 | 4 | 3 | 3 | 1 | 2 | 2\nZ5 | 3 | 4 | 2 | 2 | 1 | 3\nZ6 | 4 | 3 | 3 | 2 | 2 | 1\nZ7 | 2 | 3 | 1 | 3 | 2 | 3\nZ8 | 3 | 2 | 3 | 1 | 3 | 1\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n\nMEMORIA DELLA PIPELINE (usa solo gli elementi pertinenti; non sono soluzioni del problema corrente):\n- Principio: Nei modelli multi-prodotto e multi-periodo, collegare ogni periodo mediante il bilancio delle scorte e rappresentare lo straordinario come capacità aggiuntiva limitata e costosa; i setup devono attivare la produzione attraverso limiti minimo e massimo di lotto.\n- Episodio precedente: dominio=Production-inventory; errore=output_troncato_o_senza_codice; correzione=Dopo tre riparazioni automatiche concluse senza codice eseguibile, l’esperto ha fornito il modello MILP completo con bilanci di produzione e scorta, setup e lotti minimi, capacità aumentabile tramite straordinario, limiti alle attivazioni e alle scorte e giacenze finali minime.\n\nCICLO DI SELF-REPAIR 3/3\nCategoria: output_troncato_o_senza_codice\nDettaglio verificabile:\nAtteso un solo blocco Python, trovati 0\n\nLa risposta precedente non ha prodotto codice estraibile. Non ripeterne le spiegazioni.\n\nCorreggi soltanto ciò che impedisce l'esecuzione o la soluzione del modello. Restituisci esclusivamente il singolo blocco Python richiesto."
+}

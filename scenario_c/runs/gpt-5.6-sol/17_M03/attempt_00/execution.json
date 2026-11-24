@@ -1,0 +1,7 @@
+{
+  "returncode": 0,
+  "timed_out": false,
+  "elapsed_seconds": 0.08340858399969875,
+  "stdout": "SOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":49.0,\"variables\":{\"x[Ana,M1]\":0.0,\"x[Ana,M2]\":1.0,\"x[Ana,P1]\":0.0,\"x[Ana,P2]\":0.0,\"x[Ana,N1]\":0.0,\"x[Ana,N2]\":0.0,\"x[Bruno,M1]\":1.0,\"x[Bruno,M2]\":0.0,\"x[Bruno,P1]\":1.0,\"x[Bruno,P2]\":0.0,\"x[Bruno,N1]\":0.0,\"x[Bruno,N2]\":0.0,\"x[Carla,M1]\":0.0,\"x[Carla,M2]\":0.0,\"x[Carla,P1]\":0.0,\"x[Carla,P2]\":0.0,\"x[Carla,N1]\":0.0,\"x[Carla,N2]\":0.0,\"x[Diego,M1]\":0.0,\"x[Diego,M2]\":0.0,\"x[Diego,P1]\":0.0,\"x[Diego,P2]\":0.0,\"x[Diego,N1]\":1.0,\"x[Diego,N2]\":0.0,\"x[Elena,M1]\":0.0,\"x[Elena,M2]\":0.0,\"x[Elena,P1]\":0.0,\"x[Elena,P2]\":0.0,\"x[Elena,N1]\":0.0,\"x[Elena,N2]\":1.0,\"x[Fabio,M1]\":0.0,\"x[Fabio,M2]\":0.0,\"x[Fabio,P1]\":0.0,\"x[Fabio,P2]\":1.0,\"x[Fabio,N1]\":0.0,\"x[Fabio,N2]\":0.0}}\n",
+  "stderr": ""
+}

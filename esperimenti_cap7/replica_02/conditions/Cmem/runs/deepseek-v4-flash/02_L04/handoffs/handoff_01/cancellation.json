@@ -1,0 +1,394 @@
+{
+  "status": "CANCELLED_INFRASTRUCTURE_FALSE_POSITIVE",
+  "cancelled_at_utc": "2026-08-26T22:17:01.440512+00:00",
+  "reason": "Dopo la riparazione automatica il modello matematico e la soluzione sono corretti e raggiungono l'ottimo certificato 9077,6; il falso allarme derivava esclusivamente dagli alias Prod e OTact.",
+  "old_evaluation": {
+    "success": false,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "validazione_indipendente_fallita",
+    "detail": "la soluzione viola almeno un requisito del problema originale; il gap supera la soglia dello 0,1%; sono presenti variabili operative non riconosciute",
+    "finish_reason": "stop",
+    "validation_public": {
+      "problem_id": "L04",
+      "correct": false,
+      "candidate_status": "OPTIMAL",
+      "feasible_in_original_problem": false,
+      "gap_within_tolerance": false,
+      "declared_objective_corrected_automatically": false,
+      "max_constraint_violation": 85.0,
+      "constraint_violations": [
+        {
+          "constraint": "balance_A_T1",
+          "lhs": -67.0,
+          "sense": "=",
+          "rhs": 18.0,
+          "violation": 85.0
+        },
+        {
+          "constraint": "min_lot_A_T1",
+          "lhs": -22.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 22.0
+        },
+        {
+          "constraint": "balance_A_T3",
+          "lhs": -25.0,
+          "sense": "=",
+          "rhs": 35.0,
+          "violation": 60.0
+        },
+        {
+          "constraint": "min_lot_A_T3",
+          "lhs": -22.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 22.0
+        },
+        {
+          "constraint": "balance_A_T5",
+          "lhs": -28.0,
+          "sense": "=",
+          "rhs": 45.0,
+          "violation": 73.0
+        },
+        {
+          "constraint": "min_lot_A_T5",
+          "lhs": -22.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 22.0
+        },
+        {
+          "constraint": "balance_A_T6",
+          "lhs": 13.0,
+          "sense": "=",
+          "rhs": 40.0,
+          "violation": 27.0
+        },
+        {
+          "constraint": "min_lot_A_T6",
+          "lhs": -22.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 22.0
+        },
+        {
+          "constraint": "balance_B_T1",
+          "lhs": -36.0,
+          "sense": "=",
+          "rhs": 17.0,
+          "violation": 53.0
+        },
+        {
+          "constraint": "min_lot_B_T1",
+          "lhs": -18.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 18.0
+        },
+        {
+          "constraint": "balance_B_T3",
+          "lhs": -16.0,
+          "sense": "=",
+          "rhs": 44.0,
+          "violation": 60.0
+        },
+        {
+          "constraint": "min_lot_B_T3",
+          "lhs": -18.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 18.0
+        },
+        {
+          "constraint": "balance_B_T4",
+          "lhs": -32.0,
+          "sense": "=",
+          "rhs": 38.0,
+          "violation": 70.0
+        },
+        {
+          "constraint": "min_lot_B_T4",
+          "lhs": -18.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 18.0
+        },
+        {
+          "constraint": "balance_B_T6",
+          "lhs": -8.0,
+          "sense": "=",
+          "rhs": 34.0,
+          "violation": 42.0
+        },
+        {
+          "constraint": "min_lot_B_T6",
+          "lhs": -18.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 18.0
+        },
+        {
+          "constraint": "balance_C_T1",
+          "lhs": -10.0,
+          "sense": "=",
+          "rhs": 15.0,
+          "violation": 25.0
+        },
+        {
+          "constraint": "min_lot_C_T1",
+          "lhs": -25.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 25.0
+        },
+        {
+          "constraint": "balance_C_T2",
+          "lhs": -54.0,
+          "sense": "=",
+          "rhs": 30.0,
+          "violation": 84.0
+        },
+        {
+          "constraint": "min_lot_C_T2",
+          "lhs": -25.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 25.0
+        },
+        {
+          "constraint": "balance_C_T5",
+          "lhs": -39.0,
+          "sense": "=",
+          "rhs": 30.0,
+          "violation": 69.0
+        },
+        {
+          "constraint": "min_lot_C_T5",
+          "lhs": -25.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 25.0
+        },
+        {
+          "constraint": "balance_D_T1",
+          "lhs": -18.0,
+          "sense": "=",
+          "rhs": 22.0,
+          "violation": 40.0
+        },
+        {
+          "constraint": "min_lot_D_T1",
+          "lhs": -20.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 20.0
+        },
+        {
+          "constraint": "balance_D_T2",
+          "lhs": -27.0,
+          "sense": "=",
+          "rhs": 35.0,
+          "violation": 62.0
+        },
+        {
+          "constraint": "min_lot_D_T2",
+          "lhs": -20.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 20.0
+        },
+        {
+          "constraint": "balance_D_T4",
+          "lhs": -38.0,
+          "sense": "=",
+          "rhs": 42.0,
+          "violation": 80.0
+        },
+        {
+          "constraint": "min_lot_D_T4",
+          "lhs": -20.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 20.0
+        },
+        {
+          "constraint": "balance_D_T5",
+          "lhs": 18.0,
+          "sense": "=",
+          "rhs": 38.0,
+          "violation": 20.0
+        },
+        {
+          "constraint": "min_lot_D_T5",
+          "lhs": -20.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 20.0
+        },
+        {
+          "constraint": "balance_D_T6",
+          "lhs": 8.0,
+          "sense": "=",
+          "rhs": 48.0,
+          "violation": 40.0
+        },
+        {
+          "constraint": "min_lot_D_T6",
+          "lhs": -20.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 20.0
+        },
+        {
+          "constraint": "balance_E_T2",
+          "lhs": -14.0,
+          "sense": "=",
+          "rhs": 24.0,
+          "violation": 38.0
+        },
+        {
+          "constraint": "min_lot_E_T2",
+          "lhs": -15.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 15.0
+        },
+        {
+          "constraint": "balance_E_T3",
+          "lhs": -10.0,
+          "sense": "=",
+          "rhs": 22.0,
+          "violation": 32.0
+        },
+        {
+          "constraint": "min_lot_E_T3",
+          "lhs": -15.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 15.0
+        },
+        {
+          "constraint": "balance_E_T5",
+          "lhs": 1.0,
+          "sense": "=",
+          "rhs": 26.0,
+          "violation": 25.0
+        },
+        {
+          "constraint": "min_lot_E_T5",
+          "lhs": -15.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 15.0
+        },
+        {
+          "constraint": "balance_E_T6",
+          "lhs": -5.0,
+          "sense": "=",
+          "rhs": 25.0,
+          "violation": 30.0
+        },
+        {
+          "constraint": "min_lot_E_T6",
+          "lhs": -15.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 15.0
+        },
+        {
+          "constraint": "overtime_upper_T1",
+          "lhs": 84.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 84.0
+        },
+        {
+          "constraint": "overtime_upper_T3",
+          "lhs": 83.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 83.0
+        }
+      ],
+      "bound_violations": [],
+      "integrality_violations": [],
+      "unknown_nonzero_variables": [
+        "OTact_1",
+        "OTact_3",
+        "Prod_A_1",
+        "Prod_A_3",
+        "Prod_A_5",
+        "Prod_A_6",
+        "Prod_B_1",
+        "Prod_B_3",
+        "Prod_B_4",
+        "Prod_B_6",
+        "Prod_C_1",
+        "Prod_C_2",
+        "Prod_C_5",
+        "Prod_D_1",
+        "Prod_D_2",
+        "Prod_D_4",
+        "Prod_D_5",
+        "Prod_D_6",
+        "Prod_E_2",
+        "Prod_E_3",
+        "Prod_E_5",
+        "Prod_E_6"
+      ],
+      "missing_variables_assumed_zero": [
+        "u_T1",
+        "u_T2",
+        "u_T3",
+        "u_T4",
+        "u_T5",
+        "u_T6",
+        "x_A_T1",
+        "x_A_T2",
+        "x_A_T3",
+        "x_A_T4",
+        "x_A_T5",
+        "x_A_T6",
+        "x_B_T1",
+        "x_B_T2",
+        "x_B_T3",
+        "x_B_T4",
+        "x_B_T5",
+        "x_B_T6",
+        "x_C_T1",
+        "x_C_T2",
+        "x_C_T3",
+        "x_C_T4",
+        "x_C_T5",
+        "x_C_T6",
+        "x_D_T1",
+        "x_D_T2",
+        "x_D_T3",
+        "x_D_T4",
+        "x_D_T5",
+        "x_D_T6",
+        "x_E_T1",
+        "x_E_T2",
+        "x_E_T3",
+        "x_E_T4",
+        "x_E_T5",
+        "x_E_T6"
+      ]
+    }
+  },
+  "new_evaluation": {
+    "success": true,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "corretta",
+    "detail": "Soluzione ammissibile e gap entro tolleranza",
+    "finish_reason": "stop",
+    "declared_objective_corrected_automatically": false
+  },
+  "count_as_handoff": false,
+  "count_as_human_time": false,
+  "count_as_memory_event": false
+}

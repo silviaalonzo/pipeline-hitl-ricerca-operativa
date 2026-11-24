@@ -1,0 +1,66 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "claude-sonnet-5",
+  "problem_id": "M05",
+  "problem_sequence": 11,
+  "domain": "Project portfolio",
+  "difficulty": "Media",
+  "model_class": "IP binaria",
+  "created_at_utc": "2026-08-24T18:47:55.979040+00:00",
+  "updated_at_utc": "2026-08-24T18:48:16.785245+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:48:16.784588+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "Budget massimo 100 -> vincolo di budget sum(budget_i*x_i)<=100",
+              "Personale massimo 18 -> vincolo di personale sum(personale_i*x_i)<=18",
+              "P5 richiede P2 -> vincolo x5<=x2",
+              "P7 richiede P3 -> vincolo x7<=x3",
+              "P4 e P6 incompatibili -> vincolo x4+x6<=1",
+              "Almeno un progetto digitale tra P1,P3,P7 -> vincolo x1+x3+x7>=1",
+              "Almeno tre progetti complessivi -> vincolo sum(x_i)>=3",
+              "Massimizzare il valore -> funzione obiettivo max sum(valore_i*x_i)"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "claude-sonnet-5",
+    "problem_id": "M05",
+    "retrieved_at_utc": "2026-08-24T18:47:55.979032+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

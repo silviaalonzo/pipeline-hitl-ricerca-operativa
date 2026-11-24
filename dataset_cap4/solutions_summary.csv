@@ -1,0 +1,21 @@
+id,difficolta,dominio,classe,n_variabili,n_vincoli,ottimo,violazione_max
+M01,Media,Localizzazione e assegnazione,IP binaria,28,35,149.0,0.0
+M02,Media,Produzione,MILP intera,8,11,1640.0,0.0
+M03,Media,Workforce scheduling,IP binaria,36,26,49.0,0.0
+M04,Media,Trasporto,IP intera,5,6,1240.0,0.0
+M05,Media,Project portfolio,IP binaria,8,7,136.0,0.0
+M06,Media,Scheduling,MILP intera,15,10,22.0,0.0
+M07,Media,Procurement,MILP intera,8,12,2055.0,0.0
+M08,Media,Set covering,IP binaria,8,11,106.0,0.0
+M09,Media,Inventory management,MILP intera,18,19,1370.0,0.0
+M10,Media,Network design,MILP intera,14,12,443.0,0.0
+H01,Elevata,Localizzazione e distribuzione,MILP,54,25,1355.0,0.0
+H02,Elevata,Produzione e scorte,MILP intera,36,51,1575.0,0.0
+H03,Elevata,Workforce scheduling,IP binaria,56,72,227.0,0.0
+H04,Elevata,Trasporto,MILP intera,24,37,962.0,0.0
+H05,Elevata,Project portfolio,IP binaria,14,19,235.0,0.0
+H06,Elevata,Scheduling,MILP intera,42,58,42.0,0.0
+H07,Elevata,Procurement,MILP intera,42,84,2160.0,0.0
+H08,Elevata,Localizzazione e copertura,IP binaria,43,61,697.0,0.0
+H09,Elevata,Production-inventory,MILP,60,75,2941.0,0.0
+H10,Elevata,Network design,MILP intera,27,23,583.0,0.0

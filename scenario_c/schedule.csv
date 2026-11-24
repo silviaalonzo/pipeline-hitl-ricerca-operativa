@@ -1,0 +1,61 @@
+global_order,model_order,model,problem_sequence,problem_id,difficulty,domain,model_class,status
+1,1,gpt-5.6-sol,1,M10,Media,Network design,MILP intera,PENDING
+2,1,gpt-5.6-sol,2,H03,Elevata,Workforce scheduling,IP binaria,PENDING
+3,1,gpt-5.6-sol,3,M07,Media,Procurement,MILP intera,PENDING
+4,1,gpt-5.6-sol,4,H02,Elevata,Produzione e scorte,MILP intera,PENDING
+5,1,gpt-5.6-sol,5,M01,Media,Localizzazione e assegnazione,IP binaria,PENDING
+6,1,gpt-5.6-sol,6,H05,Elevata,Project portfolio,IP binaria,PENDING
+7,1,gpt-5.6-sol,7,M09,Media,Inventory management,MILP intera,PENDING
+8,1,gpt-5.6-sol,8,H08,Elevata,Localizzazione e copertura,IP binaria,PENDING
+9,1,gpt-5.6-sol,9,M02,Media,Produzione,MILP intera,PENDING
+10,1,gpt-5.6-sol,10,H06,Elevata,Scheduling,MILP intera,PENDING
+11,1,gpt-5.6-sol,11,M05,Media,Project portfolio,IP binaria,PENDING
+12,1,gpt-5.6-sol,12,H07,Elevata,Procurement,MILP intera,PENDING
+13,1,gpt-5.6-sol,13,M04,Media,Trasporto,IP intera,PENDING
+14,1,gpt-5.6-sol,14,H09,Elevata,Production-inventory,MILP,PENDING
+15,1,gpt-5.6-sol,15,M06,Media,Scheduling,MILP intera,PENDING
+16,1,gpt-5.6-sol,16,H01,Elevata,Localizzazione e distribuzione,MILP,PENDING
+17,1,gpt-5.6-sol,17,M03,Media,Workforce scheduling,IP binaria,PENDING
+18,1,gpt-5.6-sol,18,H04,Elevata,Trasporto,MILP intera,PENDING
+19,1,gpt-5.6-sol,19,M08,Media,Set covering,IP binaria,PENDING
+20,1,gpt-5.6-sol,20,H10,Elevata,Network design,MILP intera,PENDING
+21,2,claude-sonnet-5,1,M10,Media,Network design,MILP intera,PENDING
+22,2,claude-sonnet-5,2,H03,Elevata,Workforce scheduling,IP binaria,PENDING
+23,2,claude-sonnet-5,3,M07,Media,Procurement,MILP intera,PENDING
+24,2,claude-sonnet-5,4,H02,Elevata,Produzione e scorte,MILP intera,PENDING
+25,2,claude-sonnet-5,5,M01,Media,Localizzazione e assegnazione,IP binaria,PENDING
+26,2,claude-sonnet-5,6,H05,Elevata,Project portfolio,IP binaria,PENDING
+27,2,claude-sonnet-5,7,M09,Media,Inventory management,MILP intera,PENDING
+28,2,claude-sonnet-5,8,H08,Elevata,Localizzazione e copertura,IP binaria,PENDING
+29,2,claude-sonnet-5,9,M02,Media,Produzione,MILP intera,PENDING
+30,2,claude-sonnet-5,10,H06,Elevata,Scheduling,MILP intera,PENDING
+31,2,claude-sonnet-5,11,M05,Media,Project portfolio,IP binaria,PENDING
+32,2,claude-sonnet-5,12,H07,Elevata,Procurement,MILP intera,PENDING
+33,2,claude-sonnet-5,13,M04,Media,Trasporto,IP intera,PENDING
+34,2,claude-sonnet-5,14,H09,Elevata,Production-inventory,MILP,PENDING
+35,2,claude-sonnet-5,15,M06,Media,Scheduling,MILP intera,PENDING
+36,2,claude-sonnet-5,16,H01,Elevata,Localizzazione e distribuzione,MILP,PENDING
+37,2,claude-sonnet-5,17,M03,Media,Workforce scheduling,IP binaria,PENDING
+38,2,claude-sonnet-5,18,H04,Elevata,Trasporto,MILP intera,PENDING
+39,2,claude-sonnet-5,19,M08,Media,Set covering,IP binaria,PENDING
+40,2,claude-sonnet-5,20,H10,Elevata,Network design,MILP intera,PENDING
+41,3,deepseek-v4-flash,1,M10,Media,Network design,MILP intera,PENDING
+42,3,deepseek-v4-flash,2,H03,Elevata,Workforce scheduling,IP binaria,PENDING
+43,3,deepseek-v4-flash,3,M07,Media,Procurement,MILP intera,PENDING
+44,3,deepseek-v4-flash,4,H02,Elevata,Produzione e scorte,MILP intera,PENDING
+45,3,deepseek-v4-flash,5,M01,Media,Localizzazione e assegnazione,IP binaria,PENDING
+46,3,deepseek-v4-flash,6,H05,Elevata,Project portfolio,IP binaria,PENDING
+47,3,deepseek-v4-flash,7,M09,Media,Inventory management,MILP intera,PENDING
+48,3,deepseek-v4-flash,8,H08,Elevata,Localizzazione e copertura,IP binaria,PENDING
+49,3,deepseek-v4-flash,9,M02,Media,Produzione,MILP intera,PENDING
+50,3,deepseek-v4-flash,10,H06,Elevata,Scheduling,MILP intera,PENDING
+51,3,deepseek-v4-flash,11,M05,Media,Project portfolio,IP binaria,PENDING
+52,3,deepseek-v4-flash,12,H07,Elevata,Procurement,MILP intera,PENDING
+53,3,deepseek-v4-flash,13,M04,Media,Trasporto,IP intera,PENDING
+54,3,deepseek-v4-flash,14,H09,Elevata,Production-inventory,MILP,PENDING
+55,3,deepseek-v4-flash,15,M06,Media,Scheduling,MILP intera,PENDING
+56,3,deepseek-v4-flash,16,H01,Elevata,Localizzazione e distribuzione,MILP,PENDING
+57,3,deepseek-v4-flash,17,M03,Media,Workforce scheduling,IP binaria,PENDING
+58,3,deepseek-v4-flash,18,H04,Elevata,Trasporto,MILP intera,PENDING
+59,3,deepseek-v4-flash,19,M08,Media,Set covering,IP binaria,PENDING
+60,3,deepseek-v4-flash,20,H10,Elevata,Network design,MILP intera,PENDING

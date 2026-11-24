@@ -1,0 +1,29 @@
+{
+  "success": false,
+  "repairable": true,
+  "stage": 3,
+  "failure_class": "soluzione_non_leggibile",
+  "detail": "Expecting property name enclosed in double quotes: line 1 column 53 (char 52)",
+  "finish_reason": "stop",
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "Domanda soddisfatta integralmente per ogni zona -> vincolo di bilancio della domanda sum_j x_ij = d_i",
+        "Apertura tra 3 e 4 centri su 6 -> vincoli 3<=sum_j y_j<=4",
+        "Movimentazione minima 20 unità per centro aperto -> vincolo sum_i x_ij >= 20*y_j",
+        "Capacità massima dei centri -> vincolo sum_i x_ij <= cap_j*y_j",
+        "Almeno un sito aperto nel gruppo Nord e uno nel gruppo Sud -> vincoli sum_{j in Nord} y_j>=1 e sum_{j in Sud} y_j>=1",
+        "Limite massimo di emissioni complessive -> vincolo sum_i sum_j e_ij*x_ij <= 470",
+        "Costo totale (fissi + distribuzione) da minimizzare -> funzione obiettivo min sum f_j*y_j + sum c_ij*x_ij"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

@@ -1,0 +1,123 @@
+[
+  {
+    "recorded_at_utc": "2026-08-24T18:44:48.605720+00:00",
+    "type": "validator_alias_normalization",
+    "reason": "Il simbolo s usato da Claude per la scorta è semanticamente equivalente al simbolo I della ground truth; la normalizzazione modifica esclusivamente i nomi delle variabili, non valori, decisioni, obiettivo o criterio di correttezza.",
+    "affected_run": "runs/claude-sonnet-5/04_H02",
+    "evaluation_criterion_changed": false,
+    "ground_truth_disclosed_to_model_or_expert": false,
+    "validator_sha256_after_amendment": {
+      "audit_scenario_b.py": "b9696ac601443a8b3207208d1bb1abcdd2799a16943dfbb6340fdf28e66461a0",
+      "revalidate_aliases.py": "64e7eee6ca8b601391305fb728c25f8c3c55a4c893f5ae1cbd4b3c345a4b962a"
+    }
+  },
+  {
+    "recorded_at_utc": "2026-08-24T19:07:43.481675+00:00",
+    "type": "validator_alias_normalization",
+    "reason": "Claude ha omesso il prefisso x nei nomi delle cinque variabili di flotta; i nomi Autocarro, Refrigerato, Elettrico, Bilico e Van sono equivalenti in modo univoco alle corrispondenti variabili x_ della ground truth. La normalizzazione non modifica valori, decisioni, obiettivo o criterio di correttezza.",
+    "affected_run": "runs/claude-sonnet-5/13_M04",
+    "evaluation_criterion_changed": false,
+    "ground_truth_disclosed_to_model_or_expert": false,
+    "validator_sha256_after_amendment": {
+      "audit_scenario_b.py": "b9696ac601443a8b3207208d1bb1abcdd2799a16943dfbb6340fdf28e66461a0",
+      "revalidate_aliases.py": "9230a849f8a367ff839d3323f3a89d8ae2306d17c8089f09f04cd9ae89e3c951"
+    }
+  },
+  {
+    "recorded_at_utc": "2026-08-24T19:12:13.200074+00:00",
+    "type": "validator_alias_normalization",
+    "reason": "Load_A e Load_B sono carichi derivati in modo deterministico dalle assegnazioni x e dai tempi di lavorazione; sono variabili ausiliarie del candidato, non decisioni operative aggiuntive. Ignorarle nella proiezione non modifica assegnazioni, ammissibilità, obiettivo o criterio di correttezza.",
+    "affected_run": "runs/claude-sonnet-5/15_M06",
+    "evaluation_criterion_changed": false,
+    "ground_truth_disclosed_to_model_or_expert": false,
+    "validator_sha256_after_amendment": {
+      "audit_scenario_b.py": "7dfe0324b65a506af509a0111a84dc1367ca35354000bc30b727a1c4b5dfba93",
+      "revalidate_aliases.py": "9230a849f8a367ff839d3323f3a89d8ae2306d17c8089f09f04cd9ae89e3c951"
+    }
+  },
+  {
+    "recorded_at_utc": "2026-08-24T19:19:24.143780+00:00",
+    "type": "validator_alias_normalization",
+    "reason": "Nel codice fornito dall'esperto per H01, x_i indica l'apertura binaria del sito e y_ij il flusso intero sito-zona, mentre la ground truth usa y_i e x_ji. La corrispondenza è univoca per famiglia e indici e non modifica valori, decisioni, obiettivo o criterio di correttezza.",
+    "affected_run": "runs/claude-sonnet-5/16_H01",
+    "evaluation_criterion_changed": false,
+    "ground_truth_disclosed_to_model_or_expert": false,
+    "validator_sha256_after_amendment": {
+      "audit_scenario_b.py": "7dfe0324b65a506af509a0111a84dc1367ca35354000bc30b727a1c4b5dfba93",
+      "revalidate_aliases.py": "b5dc74b30a9e91e50f450d702b7ed4be1f11b1d88775c6f69fd7fee8ef534478"
+    }
+  },
+  {
+    "recorded_at_utc": "2026-08-24T19:22:30.469180+00:00",
+    "type": "validator_alias_normalization",
+    "reason": "Claude ha abbreviato i tipi di veicolo con S, M e L (Small, Medium, Large), equivalenti in modo univoco a Piccolo, Medio e Grande. La normalizzazione modifica soltanto i nomi e non cambia quantità, attivazioni, obiettivo o criterio di correttezza.",
+    "affected_run": "runs/claude-sonnet-5/18_H04",
+    "evaluation_criterion_changed": false,
+    "ground_truth_disclosed_to_model_or_expert": false,
+    "validator_sha256_after_amendment": {
+      "audit_scenario_b.py": "7dfe0324b65a506af509a0111a84dc1367ca35354000bc30b727a1c4b5dfba93",
+      "revalidate_aliases.py": "334a0cccdebe72ab996dc47efb3735440f1d3de71ed5e96d5428b4ce313251dd"
+    }
+  },
+  {
+    "recorded_at_utc": "2026-08-24T19:30:58.913585+00:00",
+    "type": "validator_alias_normalization",
+    "reason": "Nel codice fornito dall'esperto per H10, gli archi sono rappresentati in forma compatta (SA, SB, ..., DT) e i flussi come x_arco_prodotto; la ground truth usa nodi separati e la famiglia f_prodotto_origine_destinazione. La corrispondenza è univoca e non modifica flussi, attivazioni, obiettivo o criterio di correttezza.",
+    "affected_run": "runs/claude-sonnet-5/20_H10",
+    "evaluation_criterion_changed": false,
+    "ground_truth_disclosed_to_model_or_expert": false,
+    "validator_sha256_after_amendment": {
+      "audit_scenario_b.py": "7dfe0324b65a506af509a0111a84dc1367ca35354000bc30b727a1c4b5dfba93",
+      "revalidate_aliases.py": "8860806b507c5226f32ffb0fb9ef1d0c01ad796a0c701e59b70b07fbb0fd07f2"
+    }
+  },
+  {
+    "recorded_at_utc": "2026-08-24T19:52:48+00:00",
+    "type": "validator_alias_normalization",
+    "reason": "Nel codice fornito dall'esperto per H03, dipendenti e giorni sono indicizzati numericamente (1-8 e 1-7), mentre la ground truth usa i nomi E1-E8 e Lun-Dom. La corrispondenza è univoca e modifica soltanto la nomenclatura, senza cambiare turni, vincoli, obiettivo o criterio di correttezza.",
+    "affected_run": "runs/deepseek-v4-flash/02_H03",
+    "evaluation_criterion_changed": false,
+    "ground_truth_disclosed_to_model_or_expert": false,
+    "validator_sha256_after_amendment": {
+      "audit_scenario_b.py": "7dfe0324b65a506af509a0111a84dc1367ca35354000bc30b727a1c4b5dfba93",
+      "revalidate_aliases.py": "8defae1e9f13744641f6e80c0ea339306ad0aed625a92a6a3942005dd417b8c9"
+    }
+  },
+  {
+    "recorded_at_utc": "2026-08-24T20:18:43+00:00",
+    "type": "validator_alias_normalization",
+    "reason": "Nel codice fornito dall'esperto per H02, y indica la scorta e delta la binaria di setup, mentre la ground truth usa rispettivamente I e y. Le variabili di periodo zero rappresentano inoltre scorte iniziali fissate dal testo, non decisioni operative. La normalizzazione disambigua le famiglie mediante la presenza di delta e non modifica quantità, setup, obiettivo o criterio di correttezza.",
+    "affected_run": "runs/deepseek-v4-flash/04_H02",
+    "evaluation_criterion_changed": false,
+    "ground_truth_disclosed_to_model_or_expert": false,
+    "pre_alias_validation_preserved_at": "runs/deepseek-v4-flash/04_H02/_audit_pre_alias_validation/attempt_04",
+    "validator_sha256_after_amendment": {
+      "audit_scenario_b.py": "39a8e04553a68d3be022739cbd6433f7f5686d247490990ff4044501d8644aaf",
+      "revalidate_aliases.py": "f6d259a0c63a5ae4b1e4d1bc54aac4716fb30bde79596fca86b75a7fb4fccb32"
+    }
+  },
+  {
+    "recorded_at_utc": "2026-08-24T20:59:53.063342+00:00",
+    "type": "validator_alias_normalization",
+    "reason": "DeepSeek ha usato gli indici Python 0-6 per rappresentare i lavori J1-J7 e la famiglia y per le binarie di ordinamento. La normalizzazione applica lo spostamento univoco di una posizione e rinomina y_ij in o_Ji_Jj; non modifica tempi di inizio, completamenti, ritardi, ordinamenti, obiettivo o criterio di correttezza.",
+    "affected_run": "runs/deepseek-v4-flash/10_H06",
+    "evaluation_criterion_changed": false,
+    "ground_truth_disclosed_to_model_or_expert": false,
+    "validator_sha256_after_amendment": {
+      "audit_scenario_b.py": "39a8e04553a68d3be022739cbd6433f7f5686d247490990ff4044501d8644aaf",
+      "revalidate_aliases.py": "d8b9b4bd30937078d8053e84c00b4c79febf364cc79ada34f55f95938622e0ee"
+    }
+  },
+  {
+    "recorded_at_utc": "2026-08-24T22:20:11.454023+00:00",
+    "type": "validator_alias_normalization",
+    "reason": "DeepSeek ha usato z_Rotta_Tipo per la binaria di utilizzo del tipo di veicolo, semanticamente equivalente alla famiglia y_Rotta_Tipo della ground truth. La normalizzazione rinomina esclusivamente la famiglia z in y e non modifica viaggi, attivazioni, emissioni, obiettivo o criterio di correttezza.",
+    "affected_run": "runs/deepseek-v4-flash/18_H04",
+    "evaluation_criterion_changed": false,
+    "ground_truth_disclosed_to_model_or_expert": false,
+    "validator_sha256_after_amendment": {
+      "audit_scenario_b.py": "39a8e04553a68d3be022739cbd6433f7f5686d247490990ff4044501d8644aaf",
+      "revalidate_aliases.py": "848efb8a4a0f447352513b0a63f3d03155f04001f863e1cac0e46d1d3a86a370"
+    }
+  }
+]

@@ -1,0 +1,119 @@
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+projects = ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8"]
+
+value = {
+    "P1": 30, "P2": 24, "P3": 35, "P4": 28,
+    "P5": 33, "P6": 26, "P7": 38, "P8": 21
+}
+
+budget = {
+    "P1": 20, "P2": 18, "P3": 27, "P4": 24,
+    "P5": 22, "P6": 19, "P7": 30, "P8": 15
+}
+
+personnel = {
+    "P1": 4, "P2": 3, "P3": 5, "P4": 4,
+    "P5": 4, "P6": 3, "P7": 5, "P8": 2
+}
+
+digital_projects = ["P1", "P3", "P7"]
+requirements = [("P5", "P2"), ("P7", "P3")]
+incompatibilities = [("P4", "P6")]
+
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+model = gp.Model("M05_portafoglio_progetti", env=env)
+model.Params.MIPGap = 0.0
+
+x = {
+    p: model.addVar(vtype=GRB.BINARY, name="x_" + p)
+    for p in projects
+}
+
+model.setObjective(
+    gp.quicksum(value[p] * x[p] for p in projects),
+    GRB.MAXIMIZE
+)
+
+model.addConstr(
+    gp.quicksum(budget[p] * x[p] for p in projects) <= 100,
+    name="budget"
+)
+
+model.addConstr(
+    gp.quicksum(personnel[p] * x[p] for p in projects) <= 18,
+    name="personale"
+)
+
+for required_project, prerequisite in requirements:
+    model.addConstr(
+        x[required_project] <= x[prerequisite],
+        name="precedenza_" + required_project + "_" + prerequisite
+    )
+
+for p, q in incompatibilities:
+    model.addConstr(
+        x[p] + x[q] <= 1,
+        name="incompatibilita_" + p + "_" + q
+    )
+
+model.addConstr(
+    gp.quicksum(x[p] for p in digital_projects) >= 1,
+    name="almeno_un_digitale"
+)
+
+model.addConstr(
+    gp.quicksum(x[p] for p in projects) >= 3,
+    name="almeno_tre_progetti"
+)
+
+model.optimize()
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+status_code = model.Status
+status = status_names.get(status_code, "STATUS_" + str(status_code))
+
+if status_code == GRB.OPTIMAL:
+    result = {
+        "status": "OPTIMAL",
+        "objective": float(round(model.ObjVal, 10)),
+        "variables": {
+            x[p].VarName: 1.0 if x[p].X > 0.5 else 0.0
+            for p in projects
+        }
+    }
+else:
+    result = {
+        "status": status,
+        "objective": None,
+        "variables": {}
+    }
+
+model.dispose()
+env.dispose()
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))

@@ -1,0 +1,114 @@
+{
+  "problem_id": "M08",
+  "candidate_status": "OPTIMAL",
+  "feasible": false,
+  "correct": false,
+  "recomputed_objective": 0.0,
+  "known_optimum": 106.0,
+  "relative_gap": 1.0,
+  "max_violation": 2.0,
+  "declared_objective": 106.0,
+  "declared_objective_delta": 106.0,
+  "missing_variables_assumed_zero": [
+    "y_A",
+    "y_B",
+    "y_C",
+    "y_D",
+    "y_E",
+    "y_F",
+    "y_G",
+    "y_H"
+  ],
+  "unknown_variables": [
+    "x_A",
+    "x_B",
+    "x_C",
+    "x_D",
+    "x_E",
+    "x_F",
+    "x_G",
+    "x_H"
+  ],
+  "duplicate_variable_names": [],
+  "normalized_variable_names": {},
+  "numeric_error": null,
+  "bound_violations": [],
+  "integrality_violations": [],
+  "constraint_violations": [
+    {
+      "constraint": "copertura_Z1",
+      "lhs": 0.0,
+      "sense": ">=",
+      "rhs": 1.0,
+      "violation": 1.0
+    },
+    {
+      "constraint": "copertura_Z2",
+      "lhs": 0.0,
+      "sense": ">=",
+      "rhs": 1.0,
+      "violation": 1.0
+    },
+    {
+      "constraint": "copertura_Z3",
+      "lhs": 0.0,
+      "sense": ">=",
+      "rhs": 2.0,
+      "violation": 2.0
+    },
+    {
+      "constraint": "copertura_Z4",
+      "lhs": 0.0,
+      "sense": ">=",
+      "rhs": 1.0,
+      "violation": 1.0
+    },
+    {
+      "constraint": "copertura_Z5",
+      "lhs": 0.0,
+      "sense": ">=",
+      "rhs": 1.0,
+      "violation": 1.0
+    },
+    {
+      "constraint": "copertura_Z6",
+      "lhs": 0.0,
+      "sense": ">=",
+      "rhs": 1.0,
+      "violation": 1.0
+    },
+    {
+      "constraint": "copertura_Z7",
+      "lhs": 0.0,
+      "sense": ">=",
+      "rhs": 2.0,
+      "violation": 2.0
+    },
+    {
+      "constraint": "copertura_Z8",
+      "lhs": 0.0,
+      "sense": ">=",
+      "rhs": 1.0,
+      "violation": 1.0
+    },
+    {
+      "constraint": "copertura_Z9",
+      "lhs": 0.0,
+      "sense": ">=",
+      "rhs": 1.0,
+      "violation": 1.0
+    },
+    {
+      "constraint": "copertura_Z10",
+      "lhs": 0.0,
+      "sense": ">=",
+      "rhs": 1.0,
+      "violation": 1.0
+    }
+  ],
+  "tolerances": {
+    "feasibility": 1e-06,
+    "integrality": 1e-05,
+    "relative_gap": 0.001
+  }
+}

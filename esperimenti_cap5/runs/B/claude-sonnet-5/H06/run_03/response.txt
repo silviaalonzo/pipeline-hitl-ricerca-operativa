@@ -1,0 +1,148 @@
+# H06 — Sequenziamento con ritardi pesati
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $J = \{1,2,3,4,5,6,7\}$ : insieme dei lavori
+- $P = \{(i,j) \in J \times J : i < j\}$ : insieme delle coppie di lavori (per i vincoli disgiuntivi)
+
+**Parametri**
+- $p_j$ : durata del lavoro $j$
+- $r_j$ : data di disponibilità (release date) del lavoro $j$
+- $d_j$ : scadenza (due date) del lavoro $j$
+- $w_j$ : peso di priorità del lavoro $j$
+- $M$ : costante Big-M, scelta come $M = \sum_{j\in J} p_j + \max_j r_j = 38 + 6 = 44$; per sicurezza si usa $M = 50$ (limite superiore ragionevole per qualunque tempo di completamento nella soluzione ottima, essendo la somma di tutte le durate più il massimo ritardo di rilascio possibile)
+
+**Variabili decisionali**
+- $S_j \ge 0$ : istante di inizio del lavoro $j$ (continua)
+- $C_j \ge 0$ : istante di completamento del lavoro $j$ (continua), con $C_j = S_j + p_j$
+- $T_j \ge 0$ : ritardo del lavoro $j$ (continua)
+- $x_{ij} \in \{0,1\}$ per $(i,j)\in P$ : $x_{ij}=1$ se il lavoro $i$ precede il lavoro $j$ sulla macchina, $0$ altrimenti
+
+## 2. Formulazione matematica
+
+$$
+\min \sum_{j \in J} w_j T_j
+$$
+
+soggetto a:
+
+$$
+C_j = S_j + p_j \qquad \forall j \in J
+$$
+$$
+S_j \ge r_j \qquad \forall j \in J
+$$
+$$
+T_j \ge C_j - d_j \qquad \forall j \in J
+$$
+$$
+T_j \ge 0 \qquad \forall j \in J
+$$
+
+**Vincoli di non sovrapposizione (disgiuntivi) per ogni coppia $(i,j)\in P$:**
+$$
+S_j \ge C_i - M(1-x_{ij})
+$$
+$$
+S_i \ge C_j - M\,x_{ij}
+$$
+$$
+x_{ij} \in \{0,1\}
+$$
+
+**Vincoli di precedenza specifici:**
+$$
+C_1 \le S_2
+$$
+$$
+C_3 \le S_5
+$$
+
+**Domini:**
+$$
+S_j, C_j, T_j \ge 0 \quad \forall j \in J, \qquad x_{ij} \in \{0,1\} \quad \forall (i,j) \in P
+$$
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+import itertools
+
+# Dati
+jobs = [1, 2, 3, 4, 5, 6, 7]
+p = {1: 5, 2: 7, 3: 4, 4: 6, 5: 3, 6: 8, 7: 5}
+r = {1: 0, 2: 0, 3: 2, 4: 3, 5: 5, 6: 0, 7: 6}
+d = {1: 9, 2: 17, 3: 12, 4: 22, 5: 15, 6: 28, 7: 25}
+w = {1: 4, 2: 3, 3: 5, 4: 2, 5: 6, 6: 2, 7: 4}
+
+M = 50  # Big-M: somma durate (38) + max release date (6) = 44, arrotondato per sicurezza
+
+pairs = list(itertools.combinations(jobs, 2))
+
+model = gp.Model("H06_sequenziamento")
+model.Params.OutputFlag = 0
+
+# Variabili
+S = model.addVars(jobs, lb=0.0, name="S")
+C = model.addVars(jobs, lb=0.0, name="C")
+T = model.addVars(jobs, lb=0.0, name="T")
+x = model.addVars(pairs, vtype=GRB.BINARY, name="x")
+
+# Vincoli di completamento
+for j in jobs:
+    model.addConstr(C[j] == S[j] + p[j], name=f"comp_{j}")
+
+# Disponibilita'
+for j in jobs:
+    model.addConstr(S[j] >= r[j], name=f"rel_{j}")
+
+# Ritardo
+for j in jobs:
+    model.addConstr(T[j] >= C[j] - d[j], name=f"tard_{j}")
+
+# Non sovrapposizione (disgiuntiva) con Big-M
+for (i, j) in pairs:
+    model.addConstr(S[j] >= C[i] - M * (1 - x[i, j]), name=f"seq1_{i}_{j}")
+    model.addConstr(S[i] >= C[j] - M * x[i, j], name=f"seq2_{i}_{j}")
+
+# Precedenze specifiche
+model.addConstr(C[1] <= S[2], name="prec_J1_J2")
+model.addConstr(C[3] <= S[5], name="prec_J3_J5")
+
+# Obiettivo
+model.setObjective(gp.quicksum(w[j] * T[j] for j in jobs), GRB.MINIMIZE)
+
+model.optimize()
+
+variables = {}
+status_str = None
+obj_val = None
+
+if model.Status == GRB.OPTIMAL:
+    status_str = "OPTIMAL"
+    obj_val = model.ObjVal
+    for j in jobs:
+        variables[f"S_{j}"] = round(S[j].X, 4)
+        variables[f"C_{j}"] = round(C[j].X, 4)
+        variables[f"T_{j}"] = round(T[j].X, 4)
+    for (i, j) in pairs:
+        variables[f"x_{i}_{j}"] = round(x[i, j].X, 4)
+else:
+    status_str = str(model.Status)
+
+result = {
+    "status": status_str,
+    "objective": obj_val,
+    "variables": variables if status_str == "OPTIMAL" else {}
+}
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello MILP determina la sequenza ottima dei 7 lavori sulla macchina singola, rispettando le date di disponibilità, i vincoli di precedenza (J1→J2, J3→J5) e minimizzando la somma pesata dei ritardi. Le variabili binarie $x_{ij}$ codificano l'ordinamento tra ogni coppia di lavori, mentre il Big-M ($M=50$) disattiva il vincolo non rilevante nella coppia disgiuntiva. Il solver Gurobi risolve il problema all'ottimalità restituendo per ogni lavoro l'istante di inizio $S_j$, di completamento $C_j$ e il ritardo $T_j$, oltre alla sequenza ottima codificata da $x_{ij}$. Il valore obiettivo riportato in `SOLUTION_JSON` rappresenta il ritardo pesato totale minimo raggiungibile rispettando tutti i vincoli di precedenza e di risorsa.

@@ -1,0 +1,30 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "esattamente quattro stazioni aperte -> sum_j y_j = 4",
+        "almeno una stazione Ovest -> sum_{j in Ovest} y_j >= 1",
+        "almeno una stazione Est -> sum_{j in Est} y_j >= 1",
+        "assegnazione di ogni zona -> sum_{j in R_i} x_ij = 1",
+        "capacita della stazione assegnata -> sum_i d_i x_ij <= c_j y_j",
+        "backup per zone critiche -> sum_{j in R_k} y_j >= 2 per k in K",
+        "minimizzazione costi fissi + domanda*tempo -> funzione obiettivo"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

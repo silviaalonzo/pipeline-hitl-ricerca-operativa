@@ -1,0 +1,61 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 3 rows, 5 columns and 15 nonzeros (Min)
+Model fingerprint: 0x2ea2f93a
+Model has 5 linear objective coefficients
+Variable types: 0 continuous, 5 integer (0 binary)
+Coefficient statistics:
+  Matrix range     [4e+00, 4e+01]
+  Objective range  [1e+02, 3e+02]
+  Bounds range     [1e+00, 8e+00]
+  RHS range        [1e+02, 2e+02]
+
+Found heuristic solution: objective 1440.0000000
+Presolve time: 0.00s
+Presolved: 3 rows, 5 columns, 15 nonzeros
+Variable types: 0 continuous, 5 integer (0 binary)
+
+Root relaxation: objective 1.224000e+03, 0 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0 1224.00000    0    1 1440.00000 1224.00000  15.0%     -    0s
+H    0     0                    1260.0000000 1224.00000  2.86%     -    0s
+H    0     0                    1240.0000000 1224.00000  1.29%     -    0s
+     0     0 1224.00000    0    1 1240.00000 1224.00000  1.29%     -    0s
+
+Explored 1 nodes (0 simplex iterations) in 0.00 seconds (0.00 work units)
+Thread count was 8 (of 8 available processors)
+
+Solution count 3: 1240 1260 1440 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 1.240000000000e+03, best bound 1.240000000000e+03, gap 0.0000%
+
+======================================================================
+RISULTATO M04 - Composizione di una flotta giornaliera
+======================================================================
+Stato finale Gurobi      : OPTIMAL (codice 2)
+Tempo di esecuzione Gurobi: 0.0018 s
+Valore funzione obiettivo : 1240
+
+Decisioni non nulle:
+    x[2] (Autocarro) = 2   (costo unitario 180)
+    x[3] (Refrigerato) = 1   (costo unitario 210)
+    x[4] (Elettrico) = 1   (costo unitario 150)
+    x[5] (Bilico) = 2   (costo unitario 260)
+
+Verifica requisiti:
+    volume offerto   = 180 (richiesto >= 180)
+    portata offerta  = 109 (richiesta >= 95)
+    emissioni totali = 127 (ammesse <= 145)
+
+File soluzione scritto: /Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_a/M04/M04.sol
+======================================================================

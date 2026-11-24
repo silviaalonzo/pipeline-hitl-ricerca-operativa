@@ -1,0 +1,204 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["esattamente quattro stazioni aperte -> sum_j y_j = 4","almeno una stazione Ovest -> sum_{j in Ovest} y_j >= 1","almeno una stazione Est -> sum_{j in Est} y_j >= 1","assegnazione di ogni zona -> sum_{j in R_i} x_ij = 1","capacita della stazione assegnata -> sum_i d_i x_ij <= c_j y_j","backup per zone critiche -> sum_{j in R_k} y_j >= 2 per k in K","minimizzazione costi fissi + domanda*tempo -> funzione obiettivo"]}
+
+## Insiemi, parametri e variabili decisionali
+
+Insiemi:
+- \(I = \{Z1,\dots,Z12\}\): zone.
+- \(J = \{A,\dots,H\}\): stazioni candidate.
+- \(R_i \subseteq J\): stazioni raggiungibili dalla zona \(i\).
+- \(O = \{A,B,C,D\}\): gruppo Ovest.
+- \(E_g = \{E,F,G,H\}\): gruppo Est.
+- \(K = \{Z3,Z8,Z11\}\): zone critiche con backup.
+
+Parametri:
+- \(f_j\): costo fisso di apertura della stazione \(j\).
+- \(c_j\): capacità della stazione \(j\).
+- \(d_i\): domanda della zona \(i\).
+- \(t_{ij}\): tempo di percorrenza tra zona \(i\) e stazione \(j\), definito solo per \(j \in R_i\).
+
+Variabili decisionali:
+- \(y_j \in \{0,1\}\): vale 1 se la stazione \(j\) viene aperta.
+- \(x_{ij} \in \{0,1\}\): vale 1 se la zona \(i\) è assegnata alla stazione \(j\), con \(j \in R_i\).
+
+## Formulazione matematica
+
+\[
+\min \sum_{j \in J} f_j y_j + \sum_{i \in I} \sum_{j \in R_i} d_i t_{ij} x_{ij}
+\]
+
+vincoli:
+
+\[
+\sum_{j \in J} y_j = 4
+\]
+
+\[
+\sum_{j \in O} y_j \ge 1
+\]
+
+\[
+\sum_{j \in E_g} y_j \ge 1
+\]
+
+\[
+\sum_{j \in R_i} x_{ij} = 1 \qquad \forall i \in I
+\]
+
+\[
+x_{ij} \le y_j \qquad \forall i \in I,\; j \in R_i
+\]
+
+\[
+\sum_{i \in I : j \in R_i} d_i x_{ij} \le c_j y_j \qquad \forall j \in J
+\]
+
+\[
+\sum_{j \in R_k} y_j \ge 2 \qquad \forall k \in K
+\]
+
+\[
+x_{ij} \in \{0,1\}, \quad y_j \in \{0,1\}
+\]
+
+## Codice Python
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+zone = ["Z1","Z2","Z3","Z4","Z5","Z6","Z7","Z8","Z9","Z10","Z11","Z12"]
+station = ["A","B","C","D","E","F","G","H"]
+
+costo_fisso = {
+    "A": 35, "B": 32, "C": 40, "D": 30,
+    "E": 38, "F": 33, "G": 36, "H": 31
+}
+
+capacita = {
+    "A": 42, "B": 44, "C": 46, "D": 40,
+    "E": 45, "F": 43, "G": 44, "H": 42
+}
+
+domanda = {
+    "Z1": 8, "Z2": 7, "Z3": 10, "Z4": 6,
+    "Z5": 9, "Z6": 8, "Z7": 7, "Z8": 11,
+    "Z9": 6, "Z10": 9, "Z11": 8, "Z12": 7
+}
+
+tempo = {
+    "Z1": {"A": 3, "B": 5},
+    "Z2": {"A": 6, "B": 8, "C": 10},
+    "Z3": {"B": 11, "C": 4, "D": 6},
+    "Z4": {"C": 7, "D": 9},
+    "Z5": {"A": 6, "D": 3, "E": 5},
+    "Z6": {"B": 11, "E": 8, "F": 10},
+    "Z7": {"C": 7, "F": 4, "G": 6, "H": 8},
+    "Z8": {"D": 3, "G": 9, "H": 11},
+    "Z9": {"E": 8, "F": 10, "H": 5},
+    "Z10": {"F": 4, "G": 6, "H": 8},
+    "Z11": {"A": 6, "E": 5, "H": 11},
+    "Z12": {"B": 11, "G": 3, "H": 5}
+}
+
+ovest = ["A","B","C","D"]
+est = ["E","F","G","H"]
+critiche = ["Z3","Z8","Z11"]
+
+m = gp.Model("Rete_emergenza")
+m.setParam("OutputFlag", 0)
+
+y = m.addVars(station, vtype=GRB.BINARY, name="y")
+
+x = {}
+for i in zone:
+    for j in tempo[i]:
+        x[i, j] = m.addVar(vtype=GRB.BINARY, name=f"x_{i}_{j}")
+
+m.setObjective(
+    gp.quicksum(costo_fisso[j] * y[j] for j in station)
+    + gp.quicksum(domanda[i] * tempo[i][j] * x[i, j]
+                  for i in zone for j in tempo[i]),
+    GRB.MINIMIZE
+)
+
+m.addConstr(gp.quicksum(y[j] for j in station) == 4, "quattro_stazioni")
+m.addConstr(gp.quicksum(y[j] for j in ovest) >= 1, "almeno_ovest")
+m.addConstr(gp.quicksum(y[j] for j in est) >= 1, "almeno_est")
+
+for i in zone:
+    m.addConstr(
+        gp.quicksum(x[i, j] for j in tempo[i]) == 1,
+        f"assegnazione_{i}"
+    )
+
+for i in zone:
+    for j in tempo[i]:
+        m.addConstr(x[i, j] <= y[j], f"apertura_{i}_{j}")
+
+for j in station:
+    m.addConstr(
+        gp.quicksum(domanda[i] * x[i, j] for i in zone if j in tempo[i])
+        <= capacita[j] * y[j],
+        f"capacita_{j}"
+    )
+
+for i in critiche:
+    m.addConstr(
+        gp.quicksum(y[j] for j in tempo[i]) >= 2,
+        f"backup_{i}"
+    )
+
+m.optimize()
+
+if m.Status == GRB.OPTIMAL:
+    variables = {}
+    for j in station:
+        variables[f"y_{j}"] = y[j].X
+    for (i, j), var in x.items():
+        variables[f"x_{i}_{j}"] = var.X
+
+    solution = {
+        "status": "OPTIMAL",
+        "objective": m.ObjVal,
+        "variables": variables
+    }
+else:
+    solution = {
+        "status": str(m.Status),
+        "objective": None,
+        "variables": {}
+    }
+
+print("SOLUTION_JSON=" + json.dumps(solution, ensure_ascii=False))
+```
+
+## Sintesi della soluzione
+
+Il solver trova la soluzione ottima con valore \(697.0\).
+
+Stazioni aperte:
+- \(A = 1\), \(B = 1\), \(D = 1\), \(H = 1\)
+- \(C = 0\), \(E = 0\), \(F = 0\), \(G = 0\)
+
+Assegnazioni non nulle:
+- \(x_{Z1,A}=1\)
+- \(x_{Z2,A}=1\)
+- \(x_{Z3,D}=1\)
+- \(x_{Z4,D}=1\)
+- \(x_{Z5,D}=1\)
+- \(x_{Z6,B}=1\)
+- \(x_{Z7,H}=1\)
+- \(x_{Z8,D}=1\)
+- \(x_{Z9,H}=1\)
+- \(x_{Z10,H}=1\)
+- \(x_{Z11,A}=1\)
+- \(x_{Z12,H}=1\)
+
+Capacità utilizzate:
+- \(A\): 23/42
+- \(B\): 8/44
+- \(D\): 36/40
+- \(H\): 29/42
+
+Le altre variabili decisionali sono nulle.

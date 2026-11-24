@@ -1,0 +1,182 @@
+{
+  "problem_id": "H06",
+  "candidate_status": "OPTIMAL",
+  "feasible": false,
+  "correct": false,
+  "recomputed_objective": 42.0,
+  "known_optimum": 42.0,
+  "relative_gap": 0.0,
+  "max_violation": 38.0,
+  "declared_objective": 42.0,
+  "declared_objective_delta": 0.0,
+  "missing_variables_assumed_zero": [
+    "o_J1_J2",
+    "o_J1_J3",
+    "o_J1_J4",
+    "o_J1_J5",
+    "o_J1_J6",
+    "o_J1_J7",
+    "o_J2_J3",
+    "o_J2_J4",
+    "o_J2_J5",
+    "o_J2_J6",
+    "o_J2_J7",
+    "o_J3_J4",
+    "o_J3_J5",
+    "o_J3_J6",
+    "o_J3_J7",
+    "o_J4_J5",
+    "o_J4_J6",
+    "o_J4_J7",
+    "o_J5_J6",
+    "o_J5_J7",
+    "o_J6_J7"
+  ],
+  "unknown_variables": [
+    "x_J1_J2",
+    "x_J1_J3",
+    "x_J1_J4",
+    "x_J1_J5",
+    "x_J1_J6",
+    "x_J1_J7",
+    "x_J2_J3",
+    "x_J2_J4",
+    "x_J2_J5",
+    "x_J2_J6",
+    "x_J2_J7",
+    "x_J3_J4",
+    "x_J3_J5",
+    "x_J3_J6",
+    "x_J3_J7",
+    "x_J4_J5",
+    "x_J4_J6",
+    "x_J4_J7",
+    "x_J5_J6",
+    "x_J5_J7",
+    "x_J6_J7"
+  ],
+  "duplicate_variable_names": [],
+  "normalized_variable_names": {},
+  "numeric_error": null,
+  "bound_violations": [],
+  "integrality_violations": [],
+  "constraint_violations": [
+    {
+      "constraint": "ordine2_J1_J2",
+      "lhs": -12.0,
+      "sense": ">=",
+      "rhs": 7.0,
+      "violation": 19.0
+    },
+    {
+      "constraint": "ordine2_J1_J3",
+      "lhs": -5.0,
+      "sense": ">=",
+      "rhs": 4.0,
+      "violation": 9.0
+    },
+    {
+      "constraint": "ordine2_J1_J4",
+      "lhs": -24.0,
+      "sense": ">=",
+      "rhs": 6.0,
+      "violation": 30.0
+    },
+    {
+      "constraint": "ordine2_J1_J5",
+      "lhs": -9.0,
+      "sense": ">=",
+      "rhs": 3.0,
+      "violation": 12.0
+    },
+    {
+      "constraint": "ordine2_J1_J6",
+      "lhs": -30.0,
+      "sense": ">=",
+      "rhs": 8.0,
+      "violation": 38.0
+    },
+    {
+      "constraint": "ordine2_J1_J7",
+      "lhs": -19.0,
+      "sense": ">=",
+      "rhs": 5.0,
+      "violation": 24.0
+    },
+    {
+      "constraint": "ordine2_J2_J4",
+      "lhs": -12.0,
+      "sense": ">=",
+      "rhs": 6.0,
+      "violation": 18.0
+    },
+    {
+      "constraint": "ordine2_J2_J6",
+      "lhs": -18.0,
+      "sense": ">=",
+      "rhs": 8.0,
+      "violation": 26.0
+    },
+    {
+      "constraint": "ordine2_J2_J7",
+      "lhs": -7.0,
+      "sense": ">=",
+      "rhs": 5.0,
+      "violation": 12.0
+    },
+    {
+      "constraint": "ordine2_J3_J4",
+      "lhs": -19.0,
+      "sense": ">=",
+      "rhs": 6.0,
+      "violation": 25.0
+    },
+    {
+      "constraint": "ordine2_J3_J5",
+      "lhs": -4.0,
+      "sense": ">=",
+      "rhs": 3.0,
+      "violation": 7.0
+    },
+    {
+      "constraint": "ordine2_J3_J6",
+      "lhs": -25.0,
+      "sense": ">=",
+      "rhs": 8.0,
+      "violation": 33.0
+    },
+    {
+      "constraint": "ordine2_J3_J7",
+      "lhs": -14.0,
+      "sense": ">=",
+      "rhs": 5.0,
+      "violation": 19.0
+    },
+    {
+      "constraint": "ordine2_J4_J6",
+      "lhs": -6.0,
+      "sense": ">=",
+      "rhs": 8.0,
+      "violation": 14.0
+    },
+    {
+      "constraint": "ordine2_J5_J6",
+      "lhs": -21.0,
+      "sense": ">=",
+      "rhs": 8.0,
+      "violation": 29.0
+    },
+    {
+      "constraint": "ordine2_J5_J7",
+      "lhs": -10.0,
+      "sense": ">=",
+      "rhs": 5.0,
+      "violation": 15.0
+    }
+  ],
+  "tolerances": {
+    "feasibility": 1e-06,
+    "integrality": 1e-05,
+    "relative_gap": 0.001
+  }
+}

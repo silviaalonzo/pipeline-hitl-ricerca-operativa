@@ -1,0 +1,132 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "deepseek-v4-flash",
+  "problem_id": "H01",
+  "problem_sequence": 16,
+  "domain": "Localizzazione e distribuzione",
+  "difficulty": "Elevata",
+  "model_class": "MILP",
+  "created_at_utc": "2026-08-24T21:37:30.236092+00:00",
+  "updated_at_utc": "2026-08-24T21:51:28.499275+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": true,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T21:40:41.235502+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "length"
+      }
+    },
+    {
+      "number": 1,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_01",
+      "created_at_utc": "2026-08-24T21:43:50.810562+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "length"
+      }
+    },
+    {
+      "number": 2,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_02",
+      "created_at_utc": "2026-08-24T21:47:11.465862+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "length"
+      }
+    },
+    {
+      "number": 3,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_03",
+      "created_at_utc": "2026-08-24T21:49:35.484255+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false
+      }
+    }
+  ],
+  "interventions": [
+    {
+      "handoff_number": 1,
+      "stage": 2,
+      "failure_class": "revisione_di_assicurazione_post_riparazione",
+      "handoff_mode": "ASSURANCE_REVIEW",
+      "active_minutes": 15.0,
+      "action": "APPROVE",
+      "expert_instruction": "",
+      "correction_summary": "L’esperto ha riesaminato variabili, funzione obiettivo, soddisfacimento delle domande, collegamento tra aperture e flussi, capacità e movimentazione minima, numerosità dei centri, copertura Nord-Sud ed emissioni, approvando senza modifiche il modello prodotto dopo le riparazioni automatiche.",
+      "semantic_principle": "",
+      "submitted_at_utc": "2026-08-24T21:51:15.609557+00:00",
+      "memory_committed": false
+    }
+  ],
+  "memory_retrieval": {
+    "model": "deepseek-v4-flash",
+    "problem_id": "H01",
+    "retrieved_at_utc": "2026-08-24T21:37:30.236080+00:00",
+    "semantic": [
+      {
+        "id": "S-004",
+        "created_at_utc": "2026-08-24T21:34:22.100781+00:00",
+        "source_episode": "H09-H01",
+        "principle": "Nei modelli multi-prodotto e multi-periodo, collegare ogni periodo mediante il bilancio delle scorte e rappresentare lo straordinario come capacità aggiuntiva limitata e costosa; i setup devono attivare la produzione attraverso limiti minimo e massimo di lotto.",
+        "tags": [
+          "Production-inventory",
+          "MILP",
+          "stadio-3",
+          "output_troncato_o_senza_codice"
+        ]
+      }
+    ],
+    "episodic": [
+      {
+        "id": "H09-H01",
+        "created_at_utc": "2026-08-24T21:34:22.100774+00:00",
+        "problem_id": "H09",
+        "domain": "Production-inventory",
+        "model_class": "MILP",
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "correction_summary": "Dopo tre riparazioni automatiche concluse senza codice eseguibile, l’esperto ha fornito il modello MILP completo con bilanci di produzione e scorta, setup e lotti minimi, capacità aumentabile tramite straordinario, limiti alle attivazioni e alle scorte e giacenze finali minime.",
+        "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+        "active_minutes": 15.0,
+        "tags": [
+          "Production-inventory",
+          "MILP",
+          "stadio-3",
+          "output_troncato_o_senza_codice"
+        ]
+      }
+    ],
+    "semantic_count_total": 4,
+    "episodic_count_total": 4
+  },
+  "pending_handoff": null
+}

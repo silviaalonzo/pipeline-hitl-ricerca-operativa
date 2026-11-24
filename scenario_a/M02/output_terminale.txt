@@ -1,0 +1,60 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 11 rows, 8 columns and 28 nonzeros (Max)
+Model fingerprint: 0xce06c59c
+Model has 8 linear objective coefficients
+Variable types: 0 continuous, 8 integer (4 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 3e+01]
+  Objective range  [3e+01, 9e+01]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [2e+00, 1e+02]
+
+Presolve time: 0.00s
+Presolved: 11 rows, 8 columns, 28 nonzeros
+Variable types: 0 continuous, 8 integer (4 binary)
+Found heuristic solution: objective 820.0000000
+Found heuristic solution: objective 840.0000000
+Found heuristic solution: objective 995.0000000
+Found heuristic solution: objective 1031.0000000
+
+Root relaxation: objective 1.640000e+03, 4 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+*    0     0               0    1640.0000000 1640.00000  0.00%     -    0s
+
+Explored 1 nodes (4 simplex iterations) in 0.01 seconds (0.00 work units)
+Thread count was 8 (of 8 available processors)
+
+Solution count 5: 1640 1031 995 ... 820
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 1.640000000000e+03, best bound 1.640000000000e+03, gap 0.0000%
+
+======================================================================
+RISULTATO M02 - Piano di produzione con costi di setup
+======================================================================
+Stato finale Gurobi      : OPTIMAL (codice 2)
+Tempo di esecuzione Gurobi: 0.0093 s
+Valore funzione obiettivo : 1640
+
+Decisioni non nulle:
+    x[A] = 20   (margine unitario 42)
+    x[D] = 30   (margine unitario 31)
+    delta[A] = 1   (setup 80)
+    delta[D] = 1   (setup 50)
+
+Verifica risorse:
+    ore macchina impiegate = 90 / 90
+    ore lavoro impiegate   = 100 / 100
+
+File soluzione scritto: /Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_a/M02/M02.sol
+======================================================================

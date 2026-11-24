@@ -1,0 +1,24 @@
+```python
+import gurobipy as gp
+import json
+
+products = ["A", "B", "C"]
+periods = [1, 2, 3, 4]
+
+demand = {
+    "A": [8, 12, 10, 14],
+    "B": [10, 8, 14, 12],
+    "C": [6, 9, 7, 11],
+}
+
+prod_cost = {
+    "A": [9, 11, 10, 12],
+    "B": [8, 9, 11, 10],
+    "C": [13, 12, 14, 11],
+}
+
+setup_cost = {"A": 45, "B": 40, "C": 50}
+holding_cost = {"A": 2, "B": 3, "C": 2}
+hours_per_unit = {"A": 2, "B": 3, "C": 4}
+min_lot = {"A": 4, "B": 4, "C": 3}
+

@@ -1,0 +1,17 @@
+{
+  "scenario": "B",
+  "provider": "openrouter",
+  "model": "anthropic/claude-sonnet-5",
+  "problem_id": "H05",
+  "replicate": 1,
+  "started_at_utc": "2026-08-10T11:50:28.634441+00:00",
+  "configuration": {
+    "provider": "openrouter",
+    "upstream_provider": "anthropic",
+    "model": "anthropic/claude-sonnet-5",
+    "reasoning_effort": "high",
+    "max_output_tokens": 24000
+  },
+  "system_prompt": "Agisci come esperto di Ricerca Operativa. Devi formulare e risolvere il problema descritto dall'utente senza chiedere chiarimenti e senza usare informazioni esterne.\n\nLa risposta deve contenere, in quest'ordine:\n1. insiemi, parametri e variabili decisionali;\n2. formulazione matematica completa;\n3. un solo blocco di codice Python eseguibile con gurobipy;\n4. una breve sintesi della soluzione.\n\nIl codice deve costruire il modello a partire dai dati presenti nella traccia, chiamare Gurobi e stampare alla fine ESATTAMENTE una riga nel formato seguente:\n\nSOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":0.0,\"variables\":{\"nome_variabile\":0.0}}\n\nNel dizionario \"variables\" devono comparire tutte le variabili decisionali, comprese quelle con valore zero. Usa i nomi indicati nella formulazione e valori numerici, non espressioni testuali. Se il solver non restituisce una soluzione ottima, stampa comunque la riga SOLUTION_JSON con lo stato effettivo, objective null e variables vuoto.\n\nNon leggere o scrivere file, non accedere alla rete, non invocare altri processi e non utilizzare librerie diverse da gurobipy, json, math e itertools.\n\n",
+  "problem_prompt": "# H05 — Portafoglio pluriennale con sinergie\n\nDifficoltà: Elevata\nClasse: IP binaria\n\nUn’impresa seleziona progetti su un orizzonte triennale. Deve massimizzare il VAN complessivo rispettando budget annuali pari a 110, 100 e 90, un limite di 28 unità di personale e un rischio complessivo non superiore a 32.\nG richiede B, J richiede E e K richiede C. Le coppie D–H e F–L sono incompatibili. Servono almeno due progetti digitali tra A, C, G e J e almeno un progetto sostenibile tra E, H e K; si possono scegliere al massimo otto progetti.\nSe A e C sono entrambi scelti si ottiene una sinergia di 12; se E e K sono entrambi scelti la sinergia è 10. Le sinergie devono essere modellate esplicitamente.\n\n## Dati dei progetti\n\nProg. | VAN | Costo A1 | Costo A2 | Costo A3 | Personale | Rischio\n--- | --- | --- | --- | --- | --- | ---\nA | 42 | 18 | 12 | 10 | 4 | 5\nB | 35 | 20 | 18 | 14 | 4 | 4\nC | 48 | 25 | 20 | 18 | 5 | 6\nD | 31 | 15 | 14 | 12 | 3 | 3\nE | 40 | 22 | 16 | 15 | 4 | 4\nF | 28 | 14 | 12 | 10 | 3 | 2\nG | 55 | 30 | 25 | 22 | 6 | 7\nH | 37 | 20 | 18 | 16 | 4 | 5\nI | 33 | 17 | 15 | 12 | 3 | 3\nJ | 50 | 27 | 21 | 18 | 5 | 6\nK | 46 | 24 | 19 | 17 | 5 | 5\nL | 29 | 16 | 13 | 11 | 3 | 3\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n"
+}

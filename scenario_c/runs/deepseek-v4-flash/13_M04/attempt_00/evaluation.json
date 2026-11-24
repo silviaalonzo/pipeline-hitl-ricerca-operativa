@@ -1,0 +1,30 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "almeno 180 unita di volume -> sum_i V_i x_i >= 180",
+        "almeno 95 unita di portata -> sum_i Q_i x_i >= 95",
+        "almeno un mezzo refrigerato -> x_Refrigerato >= 1",
+        "almeno un mezzo elettrico -> x_Elettrico >= 1",
+        "emissioni massime 145 -> sum_i G_i x_i <= 145",
+        "minimizzare costo giornaliero -> min sum_i C_i x_i",
+        "disponibilita veicoli -> 0 <= x_i <= A_i"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

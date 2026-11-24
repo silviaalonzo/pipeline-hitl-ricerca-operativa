@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "acquisto esattamente 180 unità -> somma_i x_i = 180",
+        "almeno due fornitori -> somma_i y_i >= 2",
+        "attivazione, capacità e ordine minimo -> l_i y_i <= x_i <= u_i y_i",
+        "qualità media ponderata almeno 92 -> somma_i q_i x_i >= 92*180",
+        "emissioni totali non superiori a 650 -> somma_i e_i x_i <= 650",
+        "minimizzazione dei costi variabili e fissi -> min somma_i(c_i x_i+f_i y_i)"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

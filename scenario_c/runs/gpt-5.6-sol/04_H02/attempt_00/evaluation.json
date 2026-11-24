@@ -1,0 +1,33 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "domanda senza arretrati -> equazioni di bilancio con scorte non negative",
+        "scorte iniziali 0,0,6 -> parametro I0 nei bilanci di T1",
+        "setup per articolo e periodo -> variabili binarie y e costi f_i y_it",
+        "lotto minimo -> vincoli L_i y_it <= x_it",
+        "massimo due articoli attivi per periodo -> somma_i y_it <= 2",
+        "capacità in ore -> somma_i a_i x_it <= H_t",
+        "scorta totale massima 20 -> somma_i I_it <= 20",
+        "scorte finali nulle -> I_i,T4 = 0",
+        "produzione e scorte intere -> x_it e I_it intere non negative",
+        "minimizzazione dei costi -> costi di produzione, setup e mantenimento in funzione obiettivo"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

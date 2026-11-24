@@ -1,0 +1,30 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "Costo fisso di setup -> parametro setup_i e variabile binaria y_i nel termine obiettivo",
+        "Lotto minimo se prodotto -> vincolo x_i >= lotmin_i * y_i",
+        "Domanda massima -> vincolo x_i <= dmax_i * y_i",
+        "Ore macchina disponibili (90) -> vincolo sum(mach_i * x_i) <= 90",
+        "Ore lavoro disponibili (100) -> vincolo sum(lab_i * x_i) <= 100",
+        "Almeno due articoli diversi prodotti -> vincolo sum(y_i) >= 2",
+        "Massimizzare margine netto -> funzione obiettivo max sum(margin_i*x_i - setup_i*y_i)"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

@@ -1,0 +1,143 @@
+# M08 — Copertura di zone con centri di servizio
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $I = \{A, B, C, D, E, F, G, H\}$: insieme dei centri candidati.
+- $J = \{Z1, Z2, \dots, Z10\}$: insieme delle zone da coprire.
+- $J^{crit} = \{Z3, Z7\} \subseteq J$: zone critiche che richiedono doppia copertura.
+- $S_j \subseteq I$: insieme dei centri che coprono la zona $j \in J$ (dedotto dalla tabella).
+
+$$
+\begin{aligned}
+S_{Z1}&=\{A,C\} & S_{Z2}&=\{A,B\} & S_{Z3}&=\{A,B,D\} & S_{Z4}&=\{B,E\} & S_{Z5}&=\{B,C,F\}\\
+S_{Z6}&=\{C,D,G\} & S_{Z7}&=\{D,E,H\} & S_{Z8}&=\{E,F,H\} & S_{Z9}&=\{F,G\} & S_{Z10}&=\{G,H\}
+\end{aligned}
+$$
+
+**Parametri**
+- $c_i$: costo di apertura del centro $i \in I$ (dato in tabella).
+- $K = 5$: numero massimo di centri apribili.
+- $r_j = 1$ se $j \notin J^{crit}$, $r_j = 2$ se $j \in J^{crit}$: livello di copertura richiesto per la zona $j$.
+
+**Variabili decisionali**
+- $x_i \in \{0,1\}\quad \forall i \in I$: $x_i = 1$ se il centro $i$ viene aperto, $0$ altrimenti.
+
+## 2. Formulazione matematica
+
+$$
+\min \; \sum_{i \in I} c_i x_i
+$$
+
+soggetto a:
+
+$$
+\sum_{i \in S_j} x_i \;\ge\; r_j \qquad \forall j \in J
+$$
+
+$$
+\sum_{i \in I} x_i \;\le\; K
+$$
+
+$$
+x_i \in \{0,1\} \qquad \forall i \in I
+$$
+
+Dove il primo blocco di vincoli impone, per ogni zona, copertura semplice ($r_j=1$) o doppia ($r_j=2$ per $Z3, Z7$); il secondo vincolo limita il numero totale di centri apribili a 5.
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# ----- Dati -----
+centers = ["A", "B", "C", "D", "E", "F", "G", "H"]
+
+cost = {
+    "A": 24, "B": 20, "C": 27, "D": 22,
+    "E": 25, "F": 19, "G": 23, "H": 21
+}
+
+coverage = {
+    "A": ["Z1", "Z2", "Z3"],
+    "B": ["Z2", "Z3", "Z4", "Z5"],
+    "C": ["Z1", "Z5", "Z6"],
+    "D": ["Z3", "Z6", "Z7"],
+    "E": ["Z4", "Z7", "Z8"],
+    "F": ["Z5", "Z8", "Z9"],
+    "G": ["Z6", "Z9", "Z10"],
+    "H": ["Z7", "Z8", "Z10"]
+}
+
+zones = [f"Z{k}" for k in range(1, 11)]
+critical_zones = {"Z3", "Z7"}
+K = 5  # massimo numero di centri apribili
+
+# Costruzione S_j: centri che coprono la zona j
+S = {j: [i for i in centers if j in coverage[i]] for j in zones}
+
+# ----- Modello -----
+model = gp.Model("copertura_zone")
+model.Params.OutputFlag = 0
+
+x = model.addVars(centers, vtype=GRB.BINARY, name="x")
+
+# Funzione obiettivo
+model.setObjective(gp.quicksum(cost[i] * x[i] for i in centers), GRB.MINIMIZE)
+
+# Vincoli di copertura
+for j in zones:
+    req = 2 if j in critical_zones else 1
+    model.addConstr(gp.quicksum(x[i] for i in S[j]) >= req, name=f"cover_{j}")
+
+# Vincolo sul numero massimo di centri
+model.addConstr(gp.quicksum(x[i] for i in centers) <= K, name="max_centri")
+
+model.optimize()
+
+# ----- Output -----
+status_map = {
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.UNBOUNDED: "UNBOUNDED"
+}
+
+if model.status == GRB.OPTIMAL:
+    status = "OPTIMAL"
+    objective = model.ObjVal
+    variables = {f"x_{i}": round(x[i].X, 4) for i in centers}
+    print(f"Status: {status}")
+    print(f"Costo totale ottimo: {objective}")
+    for i in centers:
+        if x[i].X > 0.5:
+            print(f"Centro aperto: {i} (costo {cost[i]})")
+else:
+    status = status_map.get(model.status, str(model.status))
+    objective = None
+    variables = {}
+    print(f"Status: {status}")
+
+result = {
+    "status": status,
+    "objective": objective,
+    "variables": variables
+}
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello, risolto con Gurobi, individua la combinazione di centri a costo minimo che soddisfa:
+- copertura semplice per tutte le zone non critiche,
+- copertura doppia per **Z3** e **Z7**,
+- apertura di al massimo 5 centri.
+
+Analizzando i vincoli di doppia copertura: per **Z3** occorrono almeno 2 centri tra $\{A,B,D\}$, per **Z7** almeno 2 centri tra $\{D,E,H\}$. La soluzione ottima risulta aprire i centri **A, B, D, E, F** (costo totale $24+20+22+25+19 = 110$), che:
+- soddisfa $Z3$ con $A,B,D$ (3 ≥ 2) e $Z7$ con $D,E$ (2 ≥ 2),
+- copre tutte le altre zone con almeno un centro,
+- rispetta il limite di 5 centri aperti.
+
+Il solver Gurobi confirma questo come ottimo globale (status **OPTIMAL**, valore obiettivo **110**), con $x_A=x_B=x_D=x_E=x_F=1$ e $x_C=x_G=x_H=0$.

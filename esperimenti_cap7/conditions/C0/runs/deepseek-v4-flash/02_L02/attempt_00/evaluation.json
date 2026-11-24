@@ -1,0 +1,33 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "domanda per prodotto/periodo -> parametri demand e vincoli di bilancio",
+        "capacità oraria condivisa -> vincoli somma_p h_p*x <= CAP_t",
+        "setup e lotti minimo/massimo -> variabili binarie y e vincoli L*y <= x <= U*y",
+        "scorte intere non negative <=75 -> variabili I con 0<=I<=75",
+        "giacenza complessiva <=150 -> vincoli somma_p I <= 150",
+        "giacenze finali minime -> vincoli I_T8 >= F_p",
+        "massimo 18 setup -> vincolo somma y <= 18",
+        "T3/T6 max due prodotti -> vincoli somma_p y_T3 <=2 e somma_p y_T6 <=2",
+        "costi produzione/setup/scorta -> funzione obiettivo"
+      ],
+      "memory_items_used": []
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

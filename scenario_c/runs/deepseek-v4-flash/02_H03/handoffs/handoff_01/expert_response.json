@@ -1,0 +1,12 @@
+{
+  "status": "SUBMITTED",
+  "action": "CORRECT",
+  "correction_mode": "DIRECT_CODE",
+  "active_minutes": 20.0,
+  "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+  "correction_summary": "Durante la revisione dello Stadio 2, l’esperto ha corretto il vincolo sul fine settimana separando il limite di E1 da quello di E2 e ha fornito il modello completo con domanda, seniority, riposi, specialisti e indisponibilità.",
+  "semantic_principle": "Quando un requisito si applica individualmente a più soggetti, formulare un vincolo separato per ciascun soggetto anziché aggregarli in un unico limite complessivo.",
+  "expert_artifact_source": "/Users/silviaalonzo/.codex/attachments/ebce34d7-c722-4917-a96c-4389c41a1519/pasted-text.txt",
+  "expert_artifact_sha256": "c4bbeeb5a20d7b4c7726963983244ec3bb7673d57d62adbc168a7089efe3a5c2",
+  "submitted_at_utc": "2026-08-24T19:52:07.273769+00:00"
+}

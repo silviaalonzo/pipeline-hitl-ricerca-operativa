@@ -1,0 +1,30 @@
+# Solution for model M01_localizzazione_centri_assistenza
+# Objective value = 149
+x[A] 0
+x[B] 1
+x[C] 0
+x[D] 1
+y[A,Z1] 0
+y[A,Z2] 0
+y[A,Z3] 0
+y[A,Z4] 0
+y[A,Z5] 0
+y[A,Z6] 0
+y[B,Z1] 1
+y[B,Z2] 1
+y[B,Z3] 1
+y[B,Z4] 0
+y[B,Z5] 0
+y[B,Z6] 0
+y[C,Z1] 0
+y[C,Z2] 0
+y[C,Z3] 0
+y[C,Z4] 0
+y[C,Z5] 0
+y[C,Z6] 0
+y[D,Z1] 0
+y[D,Z2] 0
+y[D,Z3] 0
+y[D,Z4] 1
+y[D,Z5] 1
+y[D,Z6] 1

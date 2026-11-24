@@ -1,0 +1,23 @@
+{
+  "scenario": "C",
+  "model_key": "deepseek-v4-flash",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "configuration": {
+    "provider": "openrouter",
+    "upstream_provider": "deepseek",
+    "model": "deepseek/deepseek-v4-flash",
+    "reasoning_effort": "high",
+    "max_output_tokens": 24000
+  },
+  "created_at_utc": "2026-08-24T21:09:36.118148+00:00",
+  "metadata": {
+    "problem_id": "H07",
+    "problem_sequence": 12,
+    "attempt_number": 2,
+    "attempt_kind": "AUTO_REPAIR",
+    "auto_repair_count_current_cycle": 2
+  },
+  "system_prompt": "Correggi un programma Python/gurobipy all'interno di una pipeline di Ricerca Operativa.\nUsa soltanto la traccia, la formulazione o l'istruzione dell'esperto e il messaggio di errore forniti.\nNon usare informazioni esterne e non inventare dati.\n\nRestituisci ESCLUSIVAMENTE un solo blocco di codice Python eseguibile, senza testo prima o dopo.\nIl codice deve costruire e risolvere il modello con Gurobi e stampare alla fine esattamente una riga:\n\nSOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":0.0,\"variables\":{\"nome_variabile\":0.0}}\n\nNel dizionario variables devono comparire tutte le variabili decisionali, comprese quelle nulle.\nSe il solver non restituisce una soluzione ottima, usa lo stato effettivo, objective null e variables vuoto.\nNon leggere o scrivere file, non accedere alla rete, non invocare altri processi e non importare librerie diverse\nda gurobipy, json, math e itertools.\n",
+  "user_prompt": "TRACCIA ORIGINALE:\n# H07 — Sourcing multi-componente con rischio e multisourcing\n\nDifficoltà: Elevata\nClasse: MILP intera\n\nUn produttore deve acquistare esattamente 80 unità di C1, 70 di C2 e 60 di C3. Ogni componente deve provenire da almeno due fornitori, con almeno 10 unità per ogni combinazione fornitore–componente utilizzata.\nLa capacità indicata è complessiva sui tre componenti. La qualità media di ciascun componente deve essere almeno 95. Si possono attivare al massimo quattro fornitori e almeno uno tra A e B. Il rischio totale, pari a quantità per coefficiente del fornitore, non può superare 580.\nLe celle “—” indicano componenti non fornibili. Minimizzare costi d’acquisto e attivazione.\n\n## Fornitori\n\nFornitore | Costo fisso | Capacità totale | Rischio\n--- | --- | --- | ---\nA | 120 | 100 | 2\nB | 140 | 110 | 3\nC | 100 | 90 | 1\nD | 150 | 120 | 4\nE | 90 | 80 | 2\nF | 110 | 95 | 3\n\n## Costi unitari\n\nFornitore | C1 | C2 | C3\n--- | --- | --- | ---\nA | 9 | 12 | 11\nB | 10 | 9 | 12\nC | 11 | 10 | 9\nD | — | 11 | 10\nE | 12 | 8 | —\nF | 10 | — | 8\n\n## Qualità\n\nFornitore | C1 | C2 | C3\n--- | --- | --- | ---\nA | 96 | 94 | 95\nB | 93 | 97 | 92\nC | 98 | 95 | 96\nD | — | 94 | 93\nE | 97 | 98 | —\nF | 94 | — | 98\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n\nMEMORIA DELLA PIPELINE (usa solo gli elementi pertinenti; non sono soluzioni del problema corrente):\n- Principio: Nei problemi di produzione multi-periodo, indicizzare esplicitamente anche la scorta iniziale e collegare periodi consecutivi mediante il bilancio produzione più scorta precedente uguale domanda più scorta finale; completare poi il collegamento tra produzione e setup con limiti minimo e massimo di lotto.\n- Episodio precedente: dominio=Produzione e scorte; errore=output_troncato_o_senza_codice; correzione=Dopo tre riparazioni automatiche concluse senza codice eseguibile, l’esperto ha completato il modello MILP introducendo variabili di produzione, scorta e setup, bilanci intertemporali, condizioni iniziali e finali, capacità, limite ai setup e vincoli di lotto.\n\nCICLO DI SELF-REPAIR 2/3\nCategoria: codice_non_estratto\nDettaglio verificabile:\nAtteso un solo blocco Python, trovati 0\n\nCODICE PRECEDENTE:\n```python\n\n```\n\nCorreggi soltanto ciò che impedisce l'esecuzione o la soluzione del modello. Restituisci esclusivamente il singolo blocco Python richiesto."
+}

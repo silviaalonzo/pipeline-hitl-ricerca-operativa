@@ -1,0 +1,131 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["almeno 180 unità di volume -> vincolo sum(volume_t*x_t)>=180","almeno 95 unità di portata -> vincolo sum(portata_t*x_t)>=95","almeno un mezzo refrigerato -> vincolo x_Refrigerato>=1","almeno un mezzo elettrico -> vincolo x_Elettrico>=1","emissioni complessive <=145 -> vincolo sum(emissioni_t*x_t)<=145","disponibilità limitata per tipo -> vincolo x_t<=disp_t","minimizzare costo giornaliero -> funzione obiettivo min sum(costo_t*x_t)"]}
+
+## 2. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $T = \{Van, Autocarro, Refrigerato, Elettrico, Bilico\}$ : tipi di veicolo disponibili.
+
+**Parametri** (per ogni $t \in T$)
+- $vol_t$ : volume offerto da un veicolo di tipo $t$
+- $port_t$ : portata offerta da un veicolo di tipo $t$
+- $cost_t$ : costo giornaliero di un veicolo di tipo $t$
+- $emis_t$ : emissioni di un veicolo di tipo $t$
+- $disp_t$ : disponibilità massima (numero di veicoli) di tipo $t$
+
+Valori:
+
+| t | vol | port | cost | emis | disp |
+|---|---|---|---|---|---|
+| Van | 18 | 8 | 120 | 12 | 8 |
+| Autocarro | 30 | 18 | 180 | 22 | 6 |
+| Refrigerato | 20 | 10 | 210 | 15 | 4 |
+| Elettrico | 16 | 7 | 150 | 4 | 5 |
+| Bilico | 42 | 28 | 260 | 32 | 3 |
+
+**Variabili decisionali**
+- $x_t \in \mathbb{Z}_{\ge 0}$ : numero di veicoli di tipo $t$ impiegati nella giornata, $\forall t \in T$.
+
+## 3. Formulazione matematica
+
+$$
+\min \sum_{t \in T} cost_t \, x_t
+$$
+
+soggetto a:
+
+$$
+\sum_{t \in T} vol_t \, x_t \ge 180
+$$
+
+$$
+\sum_{t \in T} port_t \, x_t \ge 95
+$$
+
+$$
+\sum_{t \in T} emis_t \, x_t \le 145
+$$
+
+$$
+x_{Refrigerato} \ge 1
+$$
+
+$$
+x_{Elettrico} \ge 1
+$$
+
+$$
+0 \le x_t \le disp_t \qquad \forall t \in T
+$$
+
+$$
+x_t \in \mathbb{Z} \qquad \forall t \in T
+$$
+
+## 4. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+
+# Dati
+types = ["Van", "Autocarro", "Refrigerato", "Elettrico", "Bilico"]
+
+volume = {"Van": 18, "Autocarro": 30, "Refrigerato": 20, "Elettrico": 16, "Bilico": 42}
+portata = {"Van": 8, "Autocarro": 18, "Refrigerato": 10, "Elettrico": 7, "Bilico": 28}
+costo = {"Van": 120, "Autocarro": 180, "Refrigerato": 210, "Elettrico": 150, "Bilico": 260}
+emissioni = {"Van": 12, "Autocarro": 22, "Refrigerato": 15, "Elettrico": 4, "Bilico": 32}
+disponibilita = {"Van": 8, "Autocarro": 6, "Refrigerato": 4, "Elettrico": 5, "Bilico": 3}
+
+# Modello
+m = gp.Model("composizione_flotta")
+
+x = m.addVars(types, vtype=GRB.INTEGER, lb=0, name="x")
+
+# Vincoli di disponibilità
+for t in types:
+    x[t].ub = disponibilita[t]
+
+# Vincoli di volume e portata
+m.addConstr(gp.quicksum(volume[t] * x[t] for t in types) >= 180, name="volume_min")
+m.addConstr(gp.quicksum(portata[t] * x[t] for t in types) >= 95, name="portata_min")
+
+# Almeno un refrigerato e un elettrico
+m.addConstr(x["Refrigerato"] >= 1, name="min_refrigerato")
+m.addConstr(x["Elettrico"] >= 1, name="min_elettrico")
+
+# Vincolo di emissioni
+m.addConstr(gp.quicksum(emissioni[t] * x[t] for t in types) <= 145, name="emissioni_max")
+
+# Obiettivo: minimizzare il costo totale
+m.setObjective(gp.quicksum(costo[t] * x[t] for t in types), GRB.MINIMIZE)
+
+m.optimize()
+
+status = m.Status
+if status == GRB.OPTIMAL:
+    obj_val = m.ObjVal
+    variables = {t: x[t].X for t in types}
+    import json
+    print("SOLUTION_JSON=" + json.dumps({
+        "status": "OPTIMAL",
+        "objective": obj_val,
+        "variables": variables
+    }))
+else:
+    import json
+    status_map = {
+        GRB.INFEASIBLE: "INFEASIBLE",
+        GRB.UNBOUNDED: "UNBOUNDED",
+        GRB.INF_OR_UNBD: "INF_OR_UNBD"
+    }
+    status_str = status_map.get(status, str(status))
+    print("SOLUTION_JSON=" + json.dumps({
+        "status": status_str,
+        "objective": None,
+        "variables": {}
+    }))
+```
+
+## 5. Sintesi della soluzione
+
+Il modello è un problema di programmazione lineare intera che seleziona il numero di veicoli di ciascun tipo da impiegare in giornata, rispettando i vincoli minimi di volume (≥180), portata (≥95), la presenza obbligatoria di almeno un veicolo refrigerato e uno elettrico, il tetto massimo di emissioni (≤145) e i limiti di disponibilità per tipo, minimizzando il costo totale giornaliero. Il codice Gurobi costruisce il modello con i dati forniti, risolve il problema e stampa lo stato ottimale, il costo minimo trovato e il numero di veicoli di ciascun tipo selezionati (inclusi quelli a zero) nel formato richiesto.

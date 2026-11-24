@@ -1,0 +1,65 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "deepseek-v4-flash",
+  "problem_id": "M10",
+  "problem_sequence": 1,
+  "domain": "Network design",
+  "difficulty": "Media",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-24T19:32:25.045297+00:00",
+  "updated_at_utc": "2026-08-24T19:35:39.389393+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T19:35:39.388613+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "40 unità da S a T -> d=40 e vincoli di bilancio ai nodi S/T",
+              "attivazione degli archi -> variabile binaria y_a e vincolo x_a <= u_a*y_a",
+              "costo fisso -> parametro f_a e termine f_a*y_a nell'obiettivo",
+              "costo per unità -> parametro c_a e termine c_a*x_a nell'obiettivo",
+              "capacità degli archi -> parametro u_a e vincolo di capacità",
+              "flusso intero -> variabili x_a in Z_+",
+              "conservazione del flusso -> vincoli di bilancio ai nodi"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "deepseek-v4-flash",
+    "problem_id": "M10",
+    "retrieved_at_utc": "2026-08-24T19:32:25.044861+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

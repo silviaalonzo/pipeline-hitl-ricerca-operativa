@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "non sovrapposizione sulla macchina -> vincoli disgiuntivi con variabili binarie x_ij e big-M",
+        "J1 termina prima dell'inizio di J2 -> vincolo S2 >= S1+p1",
+        "J3 termina prima dell'inizio di J5 -> vincolo S5 >= S3+p3",
+        "minimizzare somma ritardi pesati -> funzione obiettivo sum w_i*T_i",
+        "data di disponibilità di ogni lavoro -> vincolo S_i >= r_i",
+        "scadenza di ogni lavoro -> vincolo T_i >= S_i+p_i-d_i"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

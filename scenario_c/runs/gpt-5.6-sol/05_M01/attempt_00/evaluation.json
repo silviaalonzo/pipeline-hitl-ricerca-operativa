@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "aprire esattamente due centri -> vincolo sum_i y_i = 2",
+        "assegnare ogni zona a un solo centro -> vincolo sum_i x_ji = 1",
+        "assegnare solo a centri aperti -> vincoli x_ji <= y_i",
+        "rispettare la capacità dei siti -> vincoli sum_j x_ji <= q_i y_i",
+        "minimizzare costi fissi e di servizio -> funzione obiettivo",
+        "decisioni binarie -> domini y_i e x_ji binari"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

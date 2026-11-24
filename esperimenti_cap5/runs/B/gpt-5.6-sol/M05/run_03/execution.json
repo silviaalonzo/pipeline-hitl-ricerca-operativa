@@ -1,0 +1,7 @@
+{
+  "returncode": 0,
+  "timed_out": false,
+  "elapsed_seconds": 0.07198762499683653,
+  "stdout": "SOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":136.0,\"variables\":{\"x_P1\":1.0,\"x_P2\":1.0,\"x_P3\":1.0,\"x_P4\":0.0,\"x_P5\":0.0,\"x_P6\":1.0,\"x_P7\":0.0,\"x_P8\":1.0}}\n",
+  "stderr": ""
+}

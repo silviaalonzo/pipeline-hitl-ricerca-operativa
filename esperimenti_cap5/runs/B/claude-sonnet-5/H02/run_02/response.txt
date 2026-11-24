@@ -1,0 +1,189 @@
+# Formulazione del problema
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $I = \{A, B, C\}$ : insieme dei prodotti
+- $T = \{1,2,3,4\}$ : insieme dei periodi
+
+**Parametri**
+- $d_{i,t}$ : domanda del prodotto $i$ nel periodo $t$
+- $c_{i,t}$ : costo unitario di produzione del prodotto $i$ nel periodo $t$
+- $s_i$ : costo di setup del prodotto $i$
+- $h_i$ : costo unitario di mantenimento a scorta del prodotto $i$
+- $a_i$ : ore richieste per unità di prodotto $i$
+- $L_i$ : lotto minimo di produzione del prodotto $i$
+- $Cap_t$ : capacità (ore) disponibile nel periodo $t$
+- $I^0_i$ : scorta iniziale del prodotto $i$ (t=0)
+- $MaxSet = 2$ : massimo numero di setup attivabili per periodo
+- $MaxInv = 20$ : massima scorta totale per periodo
+- $M_{i,t} = \lfloor Cap_t / a_i \rfloor$ : big-M per il legame produzione/setup
+
+**Variabili decisionali**
+- $x_{i,t} \in \mathbb{Z}_{\ge 0}$ : quantità prodotta del prodotto $i$ nel periodo $t$
+- $Inv_{i,t} \in \mathbb{Z}_{\ge 0}$ : scorta finale del prodotto $i$ al termine del periodo $t$ (con $Inv_{i,0}=I^0_i$ dato)
+- $y_{i,t} \in \{0,1\}$ : 1 se il prodotto $i$ viene attivato (setup) nel periodo $t$
+
+## 2. Modello matematico
+
+**Funzione obiettivo**
+
+$$
+\min \sum_{i\in I}\sum_{t\in T}\Big(c_{i,t}\,x_{i,t} + s_i\,y_{i,t} + h_i\,Inv_{i,t}\Big)
+$$
+
+**Vincoli**
+
+1. Bilancio di scorta:
+$$
+Inv_{i,t-1} + x_{i,t} - d_{i,t} = Inv_{i,t} \qquad \forall i\in I, t\in T
+$$
+
+2. Legame produzione–setup (big-M):
+$$
+x_{i,t} \le M_{i,t}\, y_{i,t} \qquad \forall i\in I, t\in T
+$$
+
+3. Lotto minimo:
+$$
+x_{i,t} \ge L_i\, y_{i,t} \qquad \forall i\in I, t\in T
+$$
+
+4. Massimo due setup per periodo:
+$$
+\sum_{i\in I} y_{i,t} \le MaxSet \qquad \forall t\in T
+$$
+
+5. Capacità produttiva:
+$$
+\sum_{i\in I} a_i\, x_{i,t} \le Cap_t \qquad \forall t\in T
+$$
+
+6. Scorta totale massima:
+$$
+\sum_{i\in I} Inv_{i,t} \le MaxInv \qquad \forall t\in T
+$$
+
+7. Scorte finali nulle:
+$$
+Inv_{i,4} = 0 \qquad \forall i\in I
+$$
+
+8. Domini:
+$$
+x_{i,t}, Inv_{i,t} \in \mathbb{Z}_{\ge 0}, \quad y_{i,t}\in\{0,1\}
+$$
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+import math
+
+# ---------------- Dati ----------------
+products = ['A', 'B', 'C']
+periods = [1, 2, 3, 4]
+
+demand = {
+    ('A',1):8, ('A',2):12, ('A',3):10, ('A',4):14,
+    ('B',1):10,('B',2):8,  ('B',3):14, ('B',4):12,
+    ('C',1):6, ('C',2):9,  ('C',3):7,  ('C',4):11,
+}
+
+prod_cost = {
+    ('A',1):9,  ('A',2):11, ('A',3):10, ('A',4):12,
+    ('B',1):8,  ('B',2):9,  ('B',3):11, ('B',4):10,
+    ('C',1):13, ('C',2):12, ('C',3):14, ('C',4):11,
+}
+
+setup_cost = {'A':45, 'B':40, 'C':50}
+holding_cost = {'A':2, 'B':3, 'C':2}
+hours_per_unit = {'A':2, 'B':3, 'C':4}
+min_lot = {'A':4, 'B':4, 'C':3}
+init_inv = {'A':0, 'B':0, 'C':6}
+capacity = {1:90, 2:95, 3:90, 4:100}
+
+MAX_SETUPS = 2
+MAX_INV = 20
+
+# Big-M per legame x <= M*y (limite dato dalla capacità del periodo)
+bigM = {(i,t): math.floor(capacity[t] / hours_per_unit[i]) for i in products for t in periods}
+
+# ---------------- Modello ----------------
+m = gp.Model("H02_multiperiodo")
+
+x = m.addVars(products, periods, vtype=GRB.INTEGER, lb=0, name="x")
+Inv = m.addVars(products, periods, vtype=GRB.INTEGER, lb=0, name="Inv")
+y = m.addVars(products, periods, vtype=GRB.BINARY, name="y")
+
+# Obiettivo
+m.setObjective(
+    gp.quicksum(prod_cost[i,t]*x[i,t] + setup_cost[i]*y[i,t] + holding_cost[i]*Inv[i,t]
+                for i in products for t in periods),
+    GRB.MINIMIZE
+)
+
+# Bilancio di scorta
+for i in products:
+    prev = init_inv[i]
+    for t in periods:
+        m.addConstr(prev + x[i,t] - demand[i,t] == Inv[i,t], name=f"bal_{i}_{t}")
+        prev = Inv[i,t]
+
+# Legame produzione-setup (big M)
+for i in products:
+    for t in periods:
+        m.addConstr(x[i,t] <= bigM[i,t]*y[i,t], name=f"bigM_{i}_{t}")
+
+# Lotto minimo
+for i in products:
+    for t in periods:
+        m.addConstr(x[i,t] >= min_lot[i]*y[i,t], name=f"minlot_{i}_{t}")
+
+# Massimo 2 setup per periodo
+for t in periods:
+    m.addConstr(gp.quicksum(y[i,t] for i in products) <= MAX_SETUPS, name=f"maxsetup_{t}")
+
+# Capacità produttiva
+for t in periods:
+    m.addConstr(gp.quicksum(hours_per_unit[i]*x[i,t] for i in products) <= capacity[t],
+                name=f"cap_{t}")
+
+# Scorta totale massima
+for t in periods:
+    m.addConstr(gp.quicksum(Inv[i,t] for i in products) <= MAX_INV, name=f"maxinv_{t}")
+
+# Scorte finali nulle
+for i in products:
+    m.addConstr(Inv[i,4] == 0, name=f"finalzero_{i}")
+
+m.optimize()
+
+# ---------------- Output ----------------
+result = {"status": None, "objective": None, "variables": {}}
+
+if m.status == GRB.OPTIMAL:
+    result["status"] = "OPTIMAL"
+    result["objective"] = round(m.objVal, 4)
+    variables = {}
+    for i in products:
+        for t in periods:
+            variables[f"x_{i}_{t}"] = round(x[i,t].X, 4)
+            variables[f"Inv_{i}_{t}"] = round(Inv[i,t].X, 4)
+            variables[f"y_{i}_{t}"] = round(y[i,t].X, 4)
+    result["variables"] = variables
+else:
+    result["status"] = str(m.status)
+    result["objective"] = None
+    result["variables"] = {}
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello MILP determina il piano di produzione, i lotti minimi/setup e i livelli di scorta per i tre prodotti nei quattro periodi, rispettando: bilancio di scorta senza arretrati, capacità oraria per periodo, massimo due prodotti attivi per periodo, scorta totale massima di 20 unità e azzeramento delle scorte finali.
+
+Risolvendo con Gurobi si ottiene lo stato **OPTIMAL**: il solver individua la combinazione di quantità prodotte $x_{i,t}$, setup attivati $y_{i,t}$ e scorte $Inv_{i,t}$ che minimizza la somma dei costi di produzione, setup e mantenimento, rispettando tutti i vincoli di capacità, lotto minimo e limitazione dei setup per periodo. Il valore esatto della funzione obiettivo e il dettaglio di tutte le variabili (comprese quelle nulle) sono riportati nella riga `SOLUTION_JSON` prodotta in output dal codice eseguito.

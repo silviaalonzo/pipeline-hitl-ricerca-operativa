@@ -1,0 +1,32 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "domanda per prodotto/periodo -> parametro d_{i,t}",
+        "scorte iniziali/finali minime -> I_{i,0}=s_i e I_{i,6}>=f_i",
+        "setup e limiti di lotto -> l_i y_{i,t}<=x_{i,t}<=u_i y_{i,t}",
+        "capacità ordinaria condivisa -> sum_i h_i x_{i,t}<=C_t+o_t",
+        "straordinario con attivazione e soglia minima -> 10 z_t<=o_t<=OTmax_t z_t",
+        "limite giacenza per prodotto e totale -> I_{i,t}<=75, sum_i I_{i,t}<=210",
+        "limiti sui setup -> sum_{i,t} y_{i,t}<=26 e sum_i y_{i,t}<=4",
+        "obiettivo -> min produzione+setup+scorte+straordinario"
+      ],
+      "memory_items_used": []
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "claude-sonnet-5",
+  "problem_id": "M01",
+  "problem_sequence": 5,
+  "domain": "Localizzazione e assegnazione",
+  "difficulty": "Media",
+  "model_class": "IP binaria",
+  "created_at_utc": "2026-08-24T18:44:57.300849+00:00",
+  "updated_at_utc": "2026-08-24T18:45:19.315331+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:45:19.314785+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "Aprire esattamente due centri -> vincolo sum_i y_i = 2",
+              "Ogni zona assegnata a un solo centro aperto -> vincolo sum_i x_ij = 1 per ogni j",
+              "Capacità massima per sito -> vincolo sum_j x_ij <= cap_i * y_i",
+              "Costi fissi e di assegnazione -> funzione obiettivo min sum f_i*y_i + sum c_ij*x_ij",
+              "Centro deve essere aperto per ricevere assegnazioni -> vincolo di capacità legato a y_i"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "claude-sonnet-5",
+    "problem_id": "M01",
+    "retrieved_at_utc": "2026-08-24T18:44:57.300689+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

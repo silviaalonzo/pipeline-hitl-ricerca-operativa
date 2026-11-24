@@ -1,0 +1,274 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["sei periodi -> T={1,...,6}","scorta iniziale 10 -> I_0=10","assenza di arretrati -> I_t>=0","scorta finale almeno 5 -> I_6>=5","ordine minimo 10 se attivato -> 10y_t<=q_t","capacità periodale -> q_t<=U_ty_t","costo fisso di ordine -> 40y_t in obiettivo","integralità di ordini e scorte -> q_t,I_t interi"]}
+
+## 1. Insiemi, parametri e variabili decisionali
+
+### Insieme
+
+\[
+T=\{1,2,3,4,5,6\}
+\]
+
+insieme ordinato dei periodi.
+
+### Parametri
+
+- \(d_t\): domanda nel periodo \(t\);
+- \(c_t\): costo unitario di acquisto nel periodo \(t\);
+- \(U_t\): capacità massima di ordine nel periodo \(t\).
+
+I dati sono:
+
+\[
+(d_1,\ldots,d_6)=(20,30,15,35,25,20)
+\]
+
+\[
+(c_1,\ldots,c_6)=(9,8,11,7,10,9)
+\]
+
+\[
+(U_1,\ldots,U_6)=(50,50,45,55,45,50)
+\]
+
+Ulteriori parametri:
+
+- \(I_0=10\): scorta iniziale;
+- \(I^{\min}=5\): scorta finale minima;
+- \(L=10\): quantità minima di un ordine attivato;
+- \(F=40\): costo fisso di attivazione di un ordine;
+- \(h=2\): costo unitario di mantenimento della scorta a fine periodo.
+
+### Variabili decisionali
+
+Per ogni \(t\in T\):
+
+- \(q_t\in\mathbb Z_{\geq 0}\): quantità ordinata nel periodo \(t\);
+- \(I_t\in\mathbb Z_{\geq 0}\): scorta disponibile alla fine del periodo \(t\);
+- \(y_t\in\{0,1\}\): vale 1 se un ordine è attivato nel periodo \(t\), 0 altrimenti.
+
+## 2. Formulazione matematica completa
+
+### Funzione obiettivo
+
+\[
+\min \quad
+\sum_{t\in T}\left(c_tq_t+Fy_t+hI_t\right)
+\]
+
+ossia:
+
+\[
+\min \quad
+\sum_{t=1}^{6}\left(c_tq_t+40y_t+2I_t\right).
+\]
+
+### Vincoli di bilancio della scorta
+
+\[
+I_t=I_{t-1}+q_t-d_t
+\qquad \forall t\in T,
+\]
+
+con:
+
+\[
+I_0=10.
+\]
+
+### Attivazione, ordine minimo e capacità
+
+\[
+10y_t\leq q_t\leq U_ty_t
+\qquad \forall t\in T.
+\]
+
+Questi vincoli impongono \(q_t=0\) quando \(y_t=0\) e \(10\leq q_t\leq U_t\) quando \(y_t=1\).
+
+### Scorta finale minima
+
+\[
+I_6\geq 5.
+\]
+
+### Assenza di arretrati e domini
+
+\[
+q_t\in\mathbb Z_{\geq 0}
+\qquad \forall t\in T,
+\]
+
+\[
+I_t\in\mathbb Z_{\geq 0}
+\qquad \forall t\in T,
+\]
+
+\[
+y_t\in\{0,1\}
+\qquad \forall t\in T.
+\]
+
+## 3. Codice Python con gurobipy
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+T = range(1, 7)
+
+demand = {
+    1: 20,
+    2: 30,
+    3: 15,
+    4: 35,
+    5: 25,
+    6: 20
+}
+
+purchase_cost = {
+    1: 9,
+    2: 8,
+    3: 11,
+    4: 7,
+    5: 10,
+    6: 9
+}
+
+capacity = {
+    1: 50,
+    2: 50,
+    3: 45,
+    4: 55,
+    5: 45,
+    6: 50
+}
+
+initial_inventory = 10
+minimum_final_inventory = 5
+minimum_order = 10
+fixed_order_cost = 40
+holding_cost = 2
+
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+model = gp.Model("piano_riordino_costi_fissi", env=env)
+model.Params.MIPGap = 0.0
+
+q = model.addVars(T, vtype=GRB.INTEGER, lb=0, name="q")
+I = model.addVars(T, vtype=GRB.INTEGER, lb=0, name="I")
+y = model.addVars(T, vtype=GRB.BINARY, name="y")
+
+model.setObjective(
+    gp.quicksum(
+        purchase_cost[t] * q[t]
+        + fixed_order_cost * y[t]
+        + holding_cost * I[t]
+        for t in T
+    ),
+    GRB.MINIMIZE
+)
+
+for t in T:
+    previous_inventory = initial_inventory if t == 1 else I[t - 1]
+    model.addConstr(
+        I[t] == previous_inventory + q[t] - demand[t],
+        name=f"inventory_balance_{t}"
+    )
+
+    model.addConstr(
+        q[t] >= minimum_order * y[t],
+        name=f"minimum_order_{t}"
+    )
+
+    model.addConstr(
+        q[t] <= capacity[t] * y[t],
+        name=f"order_capacity_{t}"
+    )
+
+model.addConstr(
+    I[6] >= minimum_final_inventory,
+    name="minimum_final_inventory"
+)
+
+model.optimize()
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+solver_status = status_names.get(model.Status, f"STATUS_{model.Status}")
+
+if model.Status == GRB.OPTIMAL:
+    def clean_number(value):
+        if abs(value - round(value)) <= 1e-6:
+            return float(round(value))
+        return float(value)
+
+    variable_values = {}
+
+    for t in T:
+        variable_values[f"q_{t}"] = clean_number(q[t].X)
+    for t in T:
+        variable_values[f"I_{t}"] = clean_number(I[t].X)
+    for t in T:
+        variable_values[f"y_{t}"] = clean_number(y[t].X)
+
+    result = {
+        "status": "OPTIMAL",
+        "objective": clean_number(model.ObjVal),
+        "variables": variable_values
+    }
+else:
+    result = {
+        "status": solver_status,
+        "objective": None,
+        "variables": {}
+    }
+
+model.dispose()
+env.dispose()
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato è **OPTIMAL** e il costo minimo complessivo è:
+
+\[
+\boxed{1370}
+\]
+
+Le decisioni non nulle sono:
+
+\[
+q_1=10,\quad q_2=50,\quad q_4=55,\quad q_6=25,
+\]
+
+\[
+y_1=y_2=y_4=y_6=1,
+\]
+
+\[
+I_2=20,\quad I_3=5,\quad I_4=25,\quad I_6=5.
+\]
+
+Le altre variabili sono nulle. Il costo è composto da 1100 di acquisto, 160 di attivazione degli ordini e 110 di mantenimento delle scorte.

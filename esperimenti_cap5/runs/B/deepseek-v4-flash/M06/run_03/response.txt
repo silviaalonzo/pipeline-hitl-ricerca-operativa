@@ -1,0 +1,52 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+- \(J=\{J_1,\dots,J_7\}\): set dei lavori.
+- \(M=\{A,B\}\): set delle macchine.
+- \(E=\{(j,m)\in J\times M \mid \text{il tempo di lavorazione è definito}\}\). Dalla tabella:
+  \[
+  E=(J\times M)\setminus\{(J_7,A)\}
+  \]
+- \(p_{j,m}\): tempo di lavorazione del lavoro \(j\) sulla macchina \(m\), per \((j,m)\in E\).
+
+Variabili:
+- \(x_{j,m}\in\{0,1\}\), per \(j\in J,\ m\in M\): vale 1 se il lavoro \(j\) è assegnato alla macchina \(m\);
+- \(C_{\max}\ge 0\): makespan, cioè il massimo carico tra le due macchine.
+
+## 2. Formulazione matematica
+
+\[
+\begin{aligned}
+\min \quad & C_{\max} \\
+\text{soggetto a} \quad
+& \sum_{m\in M} x_{j,m}=1 && \forall j\in J,\\
+& x_{J_7,A}=0 && \text{(incompatibilità)},\\
+& \sum_{j\in J:(j,m)\in E} p_{j,m}x_{j,m} \le C_{\max} && \forall m\in M,\\
+& x_{j,m}\in\{0,1\} && \forall j\in J,\ m\in M,\\
+& C_{\max}\ge 0.
+\end{aligned}
+\]
+
+## 3. Codice Python con Gurobi
+
+```python
+import json
+import gurobipy as gp
+from gurobipy import GRB
+
+jobs = ["J1", "J2", "J3", "J4", "J5", "J6", "J7"]
+machines = ["A", "B"]
+
+p = {
+    ("J1", "A"): 7, ("J2", "A"): 6, ("J3", "A"): 8, ("J4", "A"): 5,
+    ("J5", "A"): 9, ("J6", "A"): 4,
+    ("J1", "B"): 9, ("J2", "B"): 5, ("J3", "B"): 7, ("J4", "B"): 8,
+    ("J5", "B"): 6, ("J6", "B"): 7, ("J7", "B"): 5,
+}
+
+model = gp.Model("Bilanciamento")
+model.Params.OutputFlag = 0
+
+x = {}
+for j in jobs:
+    for m in machines:
+        x[j, m] = model.addVar(vtype=GRB.BINARY, name=f"

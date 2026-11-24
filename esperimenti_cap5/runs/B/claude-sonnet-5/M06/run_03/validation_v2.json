@@ -1,0 +1,43 @@
+{
+  "problem_id": "M06",
+  "candidate_status": "OPTIMAL",
+  "feasible": true,
+  "correct": true,
+  "recomputed_objective": 22.0,
+  "known_optimum": 22.0,
+  "relative_gap": 0.0,
+  "max_violation": 0.0,
+  "declared_objective": 22.0,
+  "declared_objective_delta": 0.0,
+  "missing_variables_assumed_zero": [
+    "x_J7_A"
+  ],
+  "unknown_variables": [],
+  "duplicate_variable_names": [],
+  "normalized_variable_names": {},
+  "numeric_error": null,
+  "bound_violations": [],
+  "integrality_violations": [],
+  "constraint_violations": [],
+  "tolerances": {
+    "feasibility": 1e-06,
+    "integrality": 1e-05,
+    "relative_gap": 0.001
+  },
+  "validation_version": "2.0-alias-normalization",
+  "semantic_aliases": {
+    "x_1_A": "x_J1_A",
+    "x_1_B": "x_J1_B",
+    "x_2_A": "x_J2_A",
+    "x_2_B": "x_J2_B",
+    "x_3_A": "x_J3_A",
+    "x_3_B": "x_J3_B",
+    "x_4_A": "x_J4_A",
+    "x_4_B": "x_J4_B",
+    "x_5_A": "x_J5_A",
+    "x_5_B": "x_J5_B",
+    "x_6_A": "x_J6_A",
+    "x_6_B": "x_J6_B",
+    "x_7_B": "x_J7_B"
+  }
+}

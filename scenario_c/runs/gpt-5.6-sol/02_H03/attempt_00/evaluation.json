@@ -1,0 +1,31 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "domanda giornaliera minima -> vincoli di copertura",
+        "almeno un senior al giorno -> vincoli senior",
+        "da tre a cinque giorni per dipendente -> vincoli di carico settimanale",
+        "divieto di quattro giorni consecutivi -> vincoli sulle finestre di quattro giorni",
+        "specialista presente giovedì e venerdì -> vincoli su E7 ed E8",
+        "E1 ed E2 al massimo un giorno nel weekend -> vincoli di fine settimana",
+        "indisponibilità indicate da trattino -> fissaggio delle variabili a zero",
+        "minimizzazione del costo settimanale -> funzione obiettivo"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

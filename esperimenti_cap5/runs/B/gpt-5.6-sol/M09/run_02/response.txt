@@ -1,0 +1,224 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insieme dei periodi**
+
+\[
+T=\{1,2,3,4,5,6\}.
+\]
+
+**Parametri**
+
+- \(d_t\): domanda del periodo \(t\)
+
+\[
+(d_1,\ldots,d_6)=(20,30,15,35,25,20).
+\]
+
+- \(c_t\): costo unitario di acquisto
+
+\[
+(c_1,\ldots,c_6)=(9,8,11,7,10,9).
+\]
+
+- \(U_t\): capacità massima dell’ordine
+
+\[
+(U_1,\ldots,U_6)=(50,50,45,55,45,50).
+\]
+
+- \(I_0=10\): scorta iniziale;
+- \(I^{\min}_6=5\): scorta finale minima;
+- \(L=10\): quantità minima di un ordine attivato;
+- \(F=40\): costo fisso per ordine;
+- \(h=2\): costo unitario di mantenimento a fine periodo.
+
+**Variabili decisionali**
+
+Per ogni \(t\in T\):
+
+- \(q_t\in\mathbb Z_+\): quantità ordinata nel periodo \(t\);
+- \(I_t\in\mathbb Z_+\): scorta alla fine del periodo \(t\);
+- \(y_t\in\{0,1\}\): vale 1 se l’ordine del periodo \(t\) è attivato.
+
+---
+
+## 2. Formulazione matematica completa
+
+La funzione obiettivo minimizza costi di acquisto, costi fissi e costi di mantenimento:
+
+\[
+\min \quad
+\sum_{t\in T}\left(c_tq_t+Fy_t+hI_t\right).
+\]
+
+Vincoli di bilancio delle scorte:
+
+\[
+I_t=I_{t-1}+q_t-d_t
+\qquad \forall t\in T,
+\]
+
+dove \(I_0=10\).
+
+Vincoli di attivazione e quantità minima dell’ordine:
+
+\[
+q_t\ge Ly_t
+\qquad \forall t\in T.
+\]
+
+Vincoli di capacità:
+
+\[
+q_t\le U_ty_t
+\qquad \forall t\in T.
+\]
+
+Scorta finale minima:
+
+\[
+I_6\ge 5.
+\]
+
+Domini:
+
+\[
+q_t\in\mathbb Z_+,\qquad
+I_t\in\mathbb Z_+,\qquad
+y_t\in\{0,1\}
+\qquad \forall t\in T.
+\]
+
+La non negatività di \(I_t\) impedisce implicitamente gli arretrati.
+
+---
+
+## 3. Codice Python eseguibile con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+T = range(1, 7)
+
+d = {1: 20, 2: 30, 3: 15, 4: 35, 5: 25, 6: 20}
+c = {1: 9, 2: 8, 3: 11, 4: 7, 5: 10, 6: 9}
+U = {1: 50, 2: 50, 3: 45, 4: 55, 5: 45, 6: 50}
+
+I0 = 10
+final_min = 5
+L = 10
+F = 40
+h = 2
+
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+model = gp.Model("M09_piano_riordino", env=env)
+model.Params.OutputFlag = 0
+model.Params.MIPGap = 0.0
+
+q = {
+    t: model.addVar(vtype=GRB.INTEGER, lb=0, name=f"q_{t}")
+    for t in T
+}
+I = {
+    t: model.addVar(vtype=GRB.INTEGER, lb=0, name=f"I_{t}")
+    for t in T
+}
+y = {
+    t: model.addVar(vtype=GRB.BINARY, name=f"y_{t}")
+    for t in T
+}
+
+model.setObjective(
+    gp.quicksum(c[t] * q[t] + F * y[t] + h * I[t] for t in T),
+    GRB.MINIMIZE
+)
+
+for t in T:
+    previous_inventory = I0 if t == 1 else I[t - 1]
+    model.addConstr(
+        I[t] == previous_inventory + q[t] - d[t],
+        name=f"bilancio_{t}"
+    )
+    model.addConstr(q[t] >= L * y[t], name=f"ordine_minimo_{t}")
+    model.addConstr(q[t] <= U[t] * y[t], name=f"capacita_{t}")
+
+model.addConstr(I[6] >= final_min, name="scorta_finale_minima")
+
+model.optimize()
+
+status_candidates = [
+    "LOADED", "OPTIMAL", "INFEASIBLE", "INF_OR_UNBD", "UNBOUNDED",
+    "CUTOFF", "ITERATION_LIMIT", "NODE_LIMIT", "TIME_LIMIT",
+    "SOLUTION_LIMIT", "INTERRUPTED", "NUMERIC", "SUBOPTIMAL",
+    "INPROGRESS", "USER_OBJ_LIMIT", "WORK_LIMIT", "MEM_LIMIT"
+]
+
+status_name = f"STATUS_{model.Status}"
+for candidate in status_candidates:
+    if getattr(GRB, candidate, None) == model.Status:
+        status_name = candidate
+        break
+
+if model.Status == GRB.OPTIMAL:
+    def numeric_value(value):
+        if abs(value) < 1e-7:
+            return 0.0
+        rounded = round(value)
+        if abs(value - rounded) < 1e-6:
+            return float(rounded)
+        return float(value)
+
+    variables = {}
+    for t in T:
+        variables[f"q_{t}"] = numeric_value(q[t].X)
+    for t in T:
+        variables[f"I_{t}"] = numeric_value(I[t].X)
+    for t in T:
+        variables[f"y_{t}"] = numeric_value(y[t].X)
+
+    result = {
+        "status": "OPTIMAL",
+        "objective": numeric_value(model.ObjVal),
+        "variables": variables
+    }
+else:
+    result = {
+        "status": status_name,
+        "objective": None,
+        "variables": {}
+    }
+
+model.dispose()
+env.dispose()
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":"), allow_nan=False))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato è **OPTIMAL** e il costo minimo è:
+
+\[
+\boxed{1370}.
+\]
+
+Decisioni non nulle:
+
+\[
+q_1=10,\quad q_2=50,\quad q_4=55,\quad q_6=25,
+\]
+
+\[
+I_2=20,\quad I_3=5,\quad I_4=25,\quad I_6=5,
+\]
+
+\[
+y_1=y_2=y_4=y_6=1.
+\]
+
+Il costo è composto da \(1100\) di acquisto, \(160\) di costi fissi e \(110\) di mantenimento.

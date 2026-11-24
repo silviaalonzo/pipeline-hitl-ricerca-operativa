@@ -1,0 +1,97 @@
+import json
+import gurobipy as gp
+from gurobipy import GRB
+
+projects = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"]
+
+data = {
+    "A": (42, 18, 12, 10, 4, 5),
+    "B": (35, 20, 18, 14, 4, 4),
+    "C": (48, 25, 20, 18, 5, 6),
+    "D": (31, 15, 14, 12, 3, 3),
+    "E": (40, 22, 16, 15, 4, 4),
+    "F": (28, 14, 12, 10, 3, 2),
+    "G": (55, 30, 25, 22, 6, 7),
+    "H": (37, 20, 18, 16, 4, 5),
+    "I": (33, 17, 15, 12, 3, 3),
+    "J": (50, 27, 21, 18, 5, 6),
+    "K": (46, 24, 19, 17, 5, 5),
+    "L": (29, 16, 13, 11, 3, 3),
+}
+
+van = {p: data[p][0] for p in projects}
+c1 = {p: data[p][1] for p in projects}
+c2 = {p: data[p][2] for p in projects}
+c3 = {p: data[p][3] for p in projects}
+pers = {p: data[p][4] for p in projects}
+risk = {p: data[p][5] for p in projects}
+
+model = gp.Model("H05_portfolio")
+model.setParam("OutputFlag", 0)
+
+x = {}
+for p in projects:
+    x[p] = model.addVar(vtype=GRB.BINARY, name=f"x_{p}")
+
+y_AC = model.addVar(vtype=GRB.BINARY, name="y_AC")
+y_EK = model.addVar(vtype=GRB.BINARY, name="y_EK")
+
+model.update()
+
+model.setObjective(
+    gp.quicksum(van[p] * x[p] for p in projects) + 12 * y_AC + 10 * y_EK,
+    GRB.MAXIMIZE,
+)
+
+model.addConstr(gp.quicksum(c1[p] * x[p] for p in projects) <= 110, "budget_anno1")
+model.addConstr(gp.quicksum(c2[p] * x[p] for p in projects) <= 100, "budget_anno2")
+model.addConstr(gp.quicksum(c3[p] * x[p] for p in projects) <= 90, "budget_anno3")
+model.addConstr(gp.quicksum(pers[p] * x[p] for p in projects) <= 28, "personale")
+model.addConstr(gp.quicksum(risk[p] * x[p] for p in projects) <= 32, "rischio")
+model.addConstr(gp.quicksum(x[p] for p in projects) <= 8, "max_progetti")
+
+model.addConstr(x["G"] <= x["B"], "G_richiede_B")
+model.addConstr(x["J"] <= x["E"], "J_richiede_E")
+model.addConstr(x["K"] <= x["C"], "K_richiede_C")
+
+model.addConstr(x["D"] + x["H"] <= 1, "D_H_incompatibili")
+model.addConstr(x["F"] + x["L"] <= 1, "F_L_incompatibili")
+
+model.addConstr(x["A"] + x["C"] + x["G"] + x["J"] >= 2, "almeno_due_digitali")
+model.addConstr(x["E"] + x["H"] + x["K"] >= 1, "almeno_uno_sostenibile")
+
+model.addConstr(y_AC <= x["A"], "yAC_le_A")
+model.addConstr(y_AC <= x["C"], "yAC_le_C")
+model.addConstr(y_AC >= x["A"] + x["C"] - 1, "yAC_ge_AC")
+
+model.addConstr(y_EK <= x["E"], "yEK_le_E")
+model.addConstr(y_EK <= x["K"], "yEK_le_K")
+model.addConstr(y_EK >= x["E"] + x["K"] - 1, "yEK_ge_EK")
+
+model.optimize()
+
+if model.Status == GRB.OPTIMAL:
+    status = "OPTIMAL"
+    objective = float(model.ObjVal)
+    variables = {v.VarName: float(v.X) for v in model.getVars()}
+else:
+    status = {
+        GRB.INFEASIBLE: "INFEASIBLE",
+        GRB.UNBOUNDED: "UNBOUNDED",
+        GRB.INF_OR_UNBD: "INF_OR_UNBD",
+        GRB.INTERRUPTED: "INTERRUPTED",
+        GRB.NUMERIC: "NUMERIC",
+        GRB.SUBOPTIMAL: "SUBOPTIMAL",
+        GRB.TIME_LIMIT: "TIME_LIMIT",
+        GRB.NODE_LIMIT: "NODE_LIMIT",
+    }.get(model.Status, str(model.Status))
+    objective = None
+    variables = {}
+
+result = {
+    "status": status,
+    "objective": objective,
+    "variables": variables,
+}
+
+print("SOLUTION_JSON=" + json.dumps(result))

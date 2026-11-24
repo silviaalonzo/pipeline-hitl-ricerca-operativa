@@ -1,0 +1,293 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+### Insiemi
+
+- \(J=\{\mathrm{J1},\ldots,\mathrm{J7}\}\): insieme dei lavori.
+- \(P=\{(i,j)\in J\times J:i<j\}\): coppie non ordinate di lavori, rappresentate secondo l’indice crescente.
+- \(A=\{(\mathrm{J1},\mathrm{J2}),(\mathrm{J3},\mathrm{J5})\}\): precedenze obbligatorie.
+
+### Parametri
+
+Per ogni \(i\in J\):
+
+\[
+\begin{array}{c|rrrrrrr}
+i&J1&J2&J3&J4&J5&J6&J7\\ \hline
+p_i&5&7&4&6&3&8&5\\
+r_i&0&0&2&3&5&0&6\\
+d_i&9&17&12&22&15&28&25\\
+w_i&4&3&5&2&6&2&4
+\end{array}
+\]
+
+Si considera l’orizzonte:
+
+\[
+H=\max_{i\in J}r_i+\sum_{i\in J}p_i=6+38=44.
+\]
+
+Per qualsiasi ordinamento, la sua schedulazione al più presto termina entro \(H\). Poiché la funzione obiettivo è non decrescente rispetto ai tempi di completamento, esiste una soluzione ottima al più presto entro tale orizzonte. Impostando \(C_i\le H\), è quindi valida la scelta:
+
+\[
+M=H=44.
+\]
+
+### Variabili decisionali
+
+Per ogni \(i\in J\):
+
+- \(S_i\ge 0\): istante di inizio, denominato nel codice `S_Ji`;
+- \(C_i\ge 0\): istante di completamento, denominato `C_Ji`;
+- \(T_i\ge 0\): ritardo, denominato `T_Ji`.
+
+Per ogni \((i,j)\in P\):
+
+\[
+x_{ij}=
+\begin{cases}
+1 & \text{se }i\text{ precede }j,\\
+0 & \text{se }j\text{ precede }i,
+\end{cases}
+\]
+
+denominato nel codice `x_Ji_Jj`.
+
+---
+
+## 2. Formulazione matematica completa
+
+\[
+\min \quad \sum_{i\in J} w_iT_i
+\]
+
+soggetta a:
+
+### Disponibilità
+
+\[
+S_i\ge r_i \qquad \forall i\in J.
+\]
+
+### Definizione dei completamenti
+
+\[
+C_i=S_i+p_i \qquad \forall i\in J.
+\]
+
+### Definizione dei ritardi
+
+\[
+T_i\ge C_i-d_i \qquad \forall i\in J,
+\]
+
+\[
+T_i\ge 0 \qquad \forall i\in J.
+\]
+
+### Non sovrapposizione
+
+Per ogni \((i,j)\in P\):
+
+\[
+S_j\ge C_i-M(1-x_{ij}),
+\]
+
+\[
+S_i\ge C_j-Mx_{ij}.
+\]
+
+Se \(x_{ij}=1\), il primo vincolo impone che \(i\) termini prima dell’inizio di \(j\); se \(x_{ij}=0\), il secondo impone l’ordine opposto.
+
+### Precedenze obbligatorie
+
+\[
+C_{\mathrm{J1}}\le S_{\mathrm{J2}},
+\]
+
+\[
+C_{\mathrm{J3}}\le S_{\mathrm{J5}}.
+\]
+
+### Orizzonte e domini
+
+\[
+C_i\le 44 \qquad \forall i\in J,
+\]
+
+\[
+S_i,C_i,T_i\in\mathbb{R}_+ \qquad \forall i\in J,
+\]
+
+\[
+x_{ij}\in\{0,1\} \qquad \forall(i,j)\in P.
+\]
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+jobs = ["J1", "J2", "J3", "J4", "J5", "J6", "J7"]
+
+p = {"J1": 5, "J2": 7, "J3": 4, "J4": 6, "J5": 3, "J6": 8, "J7": 5}
+r = {"J1": 0, "J2": 0, "J3": 2, "J4": 3, "J5": 5, "J6": 0, "J7": 6}
+d = {"J1": 9, "J2": 17, "J3": 12, "J4": 22, "J5": 15, "J6": 28, "J7": 25}
+w = {"J1": 4, "J2": 3, "J3": 5, "J4": 2, "J5": 6, "J6": 2, "J7": 4}
+
+pairs = [(jobs[a], jobs[b])
+         for a in range(len(jobs))
+         for b in range(a + 1, len(jobs))]
+
+H = max(r.values()) + sum(p.values())
+M = H
+
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+model = gp.Model("H06_sequenziamento_ritardi_pesati", env=env)
+
+S = {
+    i: model.addVar(
+        lb=0.0, ub=H, vtype=GRB.CONTINUOUS, name=f"S_{i}"
+    )
+    for i in jobs
+}
+C = {
+    i: model.addVar(
+        lb=0.0, ub=H, vtype=GRB.CONTINUOUS, name=f"C_{i}"
+    )
+    for i in jobs
+}
+T = {
+    i: model.addVar(
+        lb=0.0, vtype=GRB.CONTINUOUS, name=f"T_{i}"
+    )
+    for i in jobs
+}
+x = {
+    (i, j): model.addVar(
+        vtype=GRB.BINARY, name=f"x_{i}_{j}"
+    )
+    for i, j in pairs
+}
+
+model.setObjective(
+    gp.quicksum(w[i] * T[i] for i in jobs),
+    GRB.MINIMIZE
+)
+
+for i in jobs:
+    model.addConstr(S[i] >= r[i], name=f"availability_{i}")
+    model.addConstr(C[i] == S[i] + p[i], name=f"completion_{i}")
+    model.addConstr(T[i] >= C[i] - d[i], name=f"tardiness_{i}")
+
+for i, j in pairs:
+    model.addConstr(
+        S[j] >= C[i] - M * (1 - x[i, j]),
+        name=f"order_{i}_before_{j}"
+    )
+    model.addConstr(
+        S[i] >= C[j] - M * x[i, j],
+        name=f"order_{j}_before_{i}"
+    )
+
+model.addConstr(C["J1"] <= S["J2"], name="precedence_J1_J2")
+model.addConstr(C["J3"] <= S["J5"], name="precedence_J3_J5")
+
+model.optimize()
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+def clean(value):
+    if abs(value) < 1e-9:
+        return 0.0
+    return float(round(value, 10))
+
+status = status_names.get(model.Status, "STATUS_" + str(model.Status))
+
+if model.Status == GRB.OPTIMAL:
+    result = {
+        "status": "OPTIMAL",
+        "objective": clean(model.ObjVal),
+        "variables": {
+            var.VarName: clean(var.X)
+            for var in model.getVars()
+        }
+    }
+else:
+    result = {
+        "status": status,
+        "objective": None,
+        "variables": {}
+    }
+
+model.dispose()
+env.dispose()
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato ottimo è `OPTIMAL`, con valore:
+
+\[
+z^*=42.
+\]
+
+La sequenza ottima è:
+
+\[
+\mathrm{J1}\rightarrow\mathrm{J3}\rightarrow\mathrm{J5}
+\rightarrow\mathrm{J2}\rightarrow\mathrm{J7}
+\rightarrow\mathrm{J4}\rightarrow\mathrm{J6}.
+\]
+
+Gli intervalli sono:
+
+\[
+J1:[0,5],\ J3:[5,9],\ J5:[9,12],\ J2:[12,19],
+\ J7:[19,24],\ J4:[24,30],\ J6:[30,38].
+\]
+
+I soli ritardi non nulli sono:
+
+\[
+T_{\mathrm{J2}}=2,\qquad T_{\mathrm{J4}}=8,\qquad T_{\mathrm{J6}}=10,
+\]
+
+da cui:
+
+\[
+3(2)+2(8)+2(10)=42.
+\]
+
+Le variabili binarie non nulle sono:
+
+\[
+x_{12},x_{13},x_{14},x_{15},x_{16},x_{17},
+x_{24},x_{26},x_{27},
+x_{34},x_{35},x_{36},x_{37},
+x_{46},x_{56},x_{57}.
+\]

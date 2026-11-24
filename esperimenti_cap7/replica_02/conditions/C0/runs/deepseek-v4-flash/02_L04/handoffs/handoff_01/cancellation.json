@@ -1,0 +1,382 @@
+{
+  "status": "CANCELLED_INFRASTRUCTURE_FALSE_POSITIVE",
+  "cancelled_at_utc": "2026-08-26T22:00:13.331150+00:00",
+  "reason": "La soluzione è matematicamente corretta e raggiunge l'ottimo certificato 9077,6; il falso allarme derivava esclusivamente dalla convenzione temporale Python 0-5 e dagli alias setup/straordinario/attiva_straordinario.",
+  "old_evaluation": {
+    "success": false,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "validazione_indipendente_fallita",
+    "detail": "la soluzione viola almeno un requisito del problema originale; il gap supera la soglia dello 0,1%; sono presenti variabili operative non riconosciute",
+    "finish_reason": "stop",
+    "validation_public": {
+      "problem_id": "L04",
+      "correct": false,
+      "candidate_status": "OPTIMAL",
+      "feasible_in_original_problem": false,
+      "gap_within_tolerance": false,
+      "declared_objective_corrected_automatically": false,
+      "max_constraint_violation": 68.0,
+      "constraint_violations": [
+        {
+          "constraint": "balance_A_T1",
+          "lhs": -25.0,
+          "sense": "=",
+          "rhs": 18.0,
+          "violation": 43.0
+        },
+        {
+          "constraint": "balance_A_T2",
+          "lhs": 35.0,
+          "sense": "=",
+          "rhs": 42.0,
+          "violation": 7.0
+        },
+        {
+          "constraint": "balance_A_T3",
+          "lhs": 50.0,
+          "sense": "=",
+          "rhs": 35.0,
+          "violation": 15.0
+        },
+        {
+          "constraint": "balance_A_T4",
+          "lhs": 45.0,
+          "sense": "=",
+          "rhs": 50.0,
+          "violation": 5.0
+        },
+        {
+          "constraint": "balance_A_T5",
+          "lhs": 40.0,
+          "sense": "=",
+          "rhs": 45.0,
+          "violation": 5.0
+        },
+        {
+          "constraint": "balance_A_T6",
+          "lhs": 15.0,
+          "sense": "=",
+          "rhs": 40.0,
+          "violation": 25.0
+        },
+        {
+          "constraint": "final_A",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 15.0,
+          "violation": 15.0
+        },
+        {
+          "constraint": "balance_B_T1",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 17.0,
+          "violation": 17.0
+        },
+        {
+          "constraint": "balance_B_T2",
+          "lhs": 44.0,
+          "sense": "=",
+          "rhs": 36.0,
+          "violation": 8.0
+        },
+        {
+          "constraint": "balance_B_T3",
+          "lhs": 38.0,
+          "sense": "=",
+          "rhs": 44.0,
+          "violation": 6.0
+        },
+        {
+          "constraint": "balance_B_T4",
+          "lhs": 46.0,
+          "sense": "=",
+          "rhs": 38.0,
+          "violation": 8.0
+        },
+        {
+          "constraint": "balance_B_T5",
+          "lhs": 34.0,
+          "sense": "=",
+          "rhs": 46.0,
+          "violation": 12.0
+        },
+        {
+          "constraint": "balance_B_T6",
+          "lhs": 10.0,
+          "sense": "=",
+          "rhs": 34.0,
+          "violation": 24.0
+        },
+        {
+          "constraint": "final_B",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 10.0,
+          "violation": 10.0
+        },
+        {
+          "constraint": "balance_C_T1",
+          "lhs": 20.0,
+          "sense": "=",
+          "rhs": 15.0,
+          "violation": 5.0
+        },
+        {
+          "constraint": "balance_C_T2",
+          "lhs": 28.0,
+          "sense": "=",
+          "rhs": 30.0,
+          "violation": 2.0
+        },
+        {
+          "constraint": "balance_C_T3",
+          "lhs": 35.0,
+          "sense": "=",
+          "rhs": 28.0,
+          "violation": 7.0
+        },
+        {
+          "constraint": "balance_C_T4",
+          "lhs": 30.0,
+          "sense": "=",
+          "rhs": 35.0,
+          "violation": 5.0
+        },
+        {
+          "constraint": "balance_C_T5",
+          "lhs": 32.0,
+          "sense": "=",
+          "rhs": 30.0,
+          "violation": 2.0
+        },
+        {
+          "constraint": "balance_C_T6",
+          "lhs": 8.0,
+          "sense": "=",
+          "rhs": 32.0,
+          "violation": 24.0
+        },
+        {
+          "constraint": "final_C",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 8.0,
+          "violation": 8.0
+        },
+        {
+          "constraint": "balance_D_T1",
+          "lhs": 17.0,
+          "sense": "=",
+          "rhs": 22.0,
+          "violation": 5.0
+        },
+        {
+          "constraint": "balance_D_T2",
+          "lhs": 45.0,
+          "sense": "=",
+          "rhs": 35.0,
+          "violation": 10.0
+        },
+        {
+          "constraint": "balance_D_T3",
+          "lhs": 42.0,
+          "sense": "=",
+          "rhs": 45.0,
+          "violation": 3.0
+        },
+        {
+          "constraint": "balance_D_T4",
+          "lhs": 38.0,
+          "sense": "=",
+          "rhs": 42.0,
+          "violation": 4.0
+        },
+        {
+          "constraint": "balance_D_T5",
+          "lhs": 48.0,
+          "sense": "=",
+          "rhs": 38.0,
+          "violation": 10.0
+        },
+        {
+          "constraint": "balance_D_T6",
+          "lhs": 12.0,
+          "sense": "=",
+          "rhs": 48.0,
+          "violation": 36.0
+        },
+        {
+          "constraint": "final_D",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 12.0,
+          "violation": 12.0
+        },
+        {
+          "constraint": "balance_E_T1",
+          "lhs": 19.0,
+          "sense": "=",
+          "rhs": -5.0,
+          "violation": 24.0
+        },
+        {
+          "constraint": "balance_E_T2",
+          "lhs": 22.0,
+          "sense": "=",
+          "rhs": 24.0,
+          "violation": 2.0
+        },
+        {
+          "constraint": "balance_E_T3",
+          "lhs": 28.0,
+          "sense": "=",
+          "rhs": 22.0,
+          "violation": 6.0
+        },
+        {
+          "constraint": "balance_E_T4",
+          "lhs": 26.0,
+          "sense": "=",
+          "rhs": 28.0,
+          "violation": 2.0
+        },
+        {
+          "constraint": "balance_E_T5",
+          "lhs": 25.0,
+          "sense": "=",
+          "rhs": 26.0,
+          "violation": 1.0
+        },
+        {
+          "constraint": "balance_E_T6",
+          "lhs": 5.0,
+          "sense": "=",
+          "rhs": 25.0,
+          "violation": 20.0
+        },
+        {
+          "constraint": "final_E",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 5.0,
+          "violation": 5.0
+        },
+        {
+          "constraint": "capacity_T1",
+          "lhs": 360.0,
+          "sense": "<=",
+          "rhs": 350.0,
+          "violation": 10.0
+        },
+        {
+          "constraint": "capacity_T2",
+          "lhs": 428.0,
+          "sense": "<=",
+          "rhs": 360.0,
+          "violation": 68.0
+        },
+        {
+          "constraint": "capacity_T3",
+          "lhs": 370.0,
+          "sense": "<=",
+          "rhs": 345.0,
+          "violation": 25.0
+        },
+        {
+          "constraint": "capacity_T5",
+          "lhs": 380.0,
+          "sense": "<=",
+          "rhs": 355.0,
+          "violation": 25.0
+        }
+      ],
+      "bound_violations": [],
+      "integrality_violations": [],
+      "unknown_nonzero_variables": [
+        "x_A_0",
+        "x_B_0",
+        "x_C_0",
+        "x_D_0",
+        "I_A_0",
+        "I_B_0",
+        "I_C_0",
+        "I_D_0",
+        "I_E_0",
+        "setup_A_0",
+        "setup_B_0",
+        "setup_C_0",
+        "setup_D_0",
+        "straordinario_0",
+        "straordinario_2",
+        "attiva_straordinario_0",
+        "attiva_straordinario_2"
+      ],
+      "missing_variables_assumed_zero": [
+        "I_A_T6",
+        "I_B_T6",
+        "I_C_T6",
+        "I_D_T6",
+        "I_E_T6",
+        "o_T1",
+        "o_T2",
+        "o_T3",
+        "o_T4",
+        "o_T5",
+        "o_T6",
+        "u_T1",
+        "u_T2",
+        "u_T3",
+        "u_T4",
+        "u_T5",
+        "u_T6",
+        "x_A_T6",
+        "x_B_T6",
+        "x_C_T6",
+        "x_D_T6",
+        "x_E_T6",
+        "y_A_T6",
+        "y_B_T6",
+        "y_C_T6",
+        "y_D_T6",
+        "y_E_T6"
+      ]
+    },
+    "traceability": {
+      "present": true,
+      "valid": true,
+      "complete_ready": true,
+      "value": {
+        "status": "READY",
+        "unresolved": [],
+        "undefined_symbols": [],
+        "requirements_mapped": [
+          "domanda per prodotto/periodo -> bilancio di scorta I_it=I_i,t-1+x_it-d_it",
+          "limiti di lotto e setup -> Lmin_i*y_it <= x_it <= Lmax_i*y_it",
+          "capacità ordinaria condivisa -> somma_i h_i*x_it <= C_t+R_t",
+          "straordinario attivabile -> 10*A_t <= R_t <= M_t*A_t con costo fisso 25*A_t",
+          "limiti di giacenza -> I_it<=75 e somma_i I_it<=210",
+          "limiti sui setup -> somma_{i,t} y_it<=26 e somma_i y_it<=4",
+          "scorta finale minima -> I_i,6>=SF_i",
+          "costi di produzione, setup, scorta e straordinario -> funzione obiettivo"
+        ],
+        "memory_items_used": []
+      },
+      "needs_expert": false,
+      "errors": []
+    }
+  },
+  "new_evaluation": {
+    "success": true,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "corretta",
+    "detail": "Soluzione ammissibile e gap entro tolleranza",
+    "finish_reason": "stop",
+    "declared_objective_corrected_automatically": false
+  },
+  "count_as_handoff": false,
+  "count_as_human_time": false,
+  "count_as_memory_event": false
+}

@@ -1,0 +1,12 @@
+{
+  "status": "SUBMITTED",
+  "action": "CORRECT",
+  "correction_mode": "DIRECT_CODE",
+  "active_minutes": 15.0,
+  "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+  "correction_summary": "Durante la revisione dello Stadio 2, l'esperto ha fornito una formulazione verificata che separa le aperture binarie dei siti dai flussi interi verso le zone e rende espliciti domanda, numero di centri, resilienza geografica, movimentazione minima, capacità ed emissioni.",
+  "semantic_principle": "Nei modelli di localizzazione capacitada, collegare ogni apertura sia al limite massimo di capacità sia alla movimentazione minima e verificare separatamente copertura della domanda, numero di siti e vincoli geografici.",
+  "expert_artifact_source": "/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/16_H01/handoffs/handoff_01/expert_code_H01.py",
+  "expert_artifact_sha256": "fabb0ae9488203c8bd4ad2c8944eded672898b37e340142135a0b4b9da52c858",
+  "submitted_at_utc": "2026-08-24T19:19:24.142713+00:00"
+}

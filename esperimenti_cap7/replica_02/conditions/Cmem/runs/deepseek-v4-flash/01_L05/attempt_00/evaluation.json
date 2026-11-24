@@ -1,0 +1,35 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "copertura audit ordinari -> sum_i x_i,a = 1 per a non ad alto rischio",
+        "audit ad alto rischio richiedono due ispettori -> sum_i x_i,a = 2 per a in H",
+        "almeno un senior sugli audit ad alto rischio -> sum_{i in senior} x_i,a >= 1 per a in H",
+        "celle non disponibili -> variabili x_i,a definite solo sulle coppie ammesse Q",
+        "limiti di ore e numero audit per ispettore -> vincoli separati per ogni i",
+        "coppie incompatibili -> x_i,a + x_i,b <= 1 per ogni ispettore e coppia",
+        "massimo dieci ispettori attivati -> sum_i y_i <= 10"
+      ],
+      "memory_items_used": [
+        "S-001",
+        "S-003",
+        "S-005"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

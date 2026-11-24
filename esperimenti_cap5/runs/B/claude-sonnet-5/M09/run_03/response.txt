@@ -1,0 +1,127 @@
+# M09 — Piano di riordino con costi fissi
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $T = \{1,2,3,4,5,6\}$ : periodi di pianificazione
+
+**Parametri**
+- $d_t$ : domanda nel periodo $t$
+- $c_t$ : costo unitario di acquisto nel periodo $t$
+- $Cap_t$ : capacità massima di un ordine nel periodo $t$
+- $q_{min} = 10$ : quantità minima di un ordine attivato
+- $F = 40$ : costo fisso per ordine attivato
+- $h = 2$ : costo di mantenimento per unità a fine periodo
+- $I_0 = 10$ : scorta iniziale
+- $I_{fin}^{min} = 5$ : scorta minima richiesta a fine orizzonte
+
+**Variabili decisionali**
+- $x_t \in \mathbb{Z}_{\ge 0}$ : quantità ordinata nel periodo $t$
+- $I_t \in \mathbb{Z}_{\ge 0}$ : scorta di fine periodo $t$
+- $y_t \in \{0,1\}$ : indica se nel periodo $t$ viene attivato un ordine
+
+## 2. Formulazione matematica
+
+$$
+\min \sum_{t \in T} \left( c_t x_t + F y_t + h I_t \right)
+$$
+
+soggetto a:
+
+$$
+I_{t-1} + x_t - d_t = I_t \qquad \forall t \in T \quad (\text{con } I_0 \text{ dato})
+$$
+
+$$
+x_t \le Cap_t \, y_t \qquad \forall t \in T
+$$
+
+$$
+x_t \ge q_{min} \, y_t \qquad \forall t \in T
+$$
+
+$$
+I_6 \ge I_{fin}^{min}
+$$
+
+$$
+x_t \in \mathbb{Z}_{\ge 0}, \quad I_t \in \mathbb{Z}_{\ge 0}, \quad y_t \in \{0,1\} \qquad \forall t \in T
+$$
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# ---------------- Dati ----------------
+periods = [1, 2, 3, 4, 5, 6]
+
+demand   = {1: 20, 2: 30, 3: 15, 4: 35, 5: 25, 6: 20}
+cost     = {1: 9,  2: 8,  3: 11, 4: 7,  5: 10, 6: 9}
+capacity = {1: 50, 2: 50, 3: 45, 4: 55, 5: 45, 6: 50}
+
+I0 = 10
+minQ = 10
+F = 40
+h = 2
+minFinal = 5
+
+# ---------------- Modello ----------------
+m = gp.Model("M09_piano_riordino")
+
+x = m.addVars(periods, vtype=GRB.INTEGER, lb=0, name="x")
+I = m.addVars(periods, vtype=GRB.INTEGER, lb=0, name="I")
+y = m.addVars(periods, vtype=GRB.BINARY, name="y")
+
+# Bilancio scorte
+prev = I0
+for t in periods:
+    m.addConstr(prev + x[t] - demand[t] == I[t], name=f"bilancio_{t}")
+    prev = I[t]
+
+# Capacità e minimo ordine legati all'attivazione
+for t in periods:
+    m.addConstr(x[t] <= capacity[t] * y[t], name=f"cap_{t}")
+    m.addConstr(x[t] >= minQ * y[t], name=f"minq_{t}")
+
+# Scorta finale minima
+m.addConstr(I[6] >= minFinal, name="scorta_finale")
+
+# Funzione obiettivo
+obj = gp.quicksum(cost[t] * x[t] + F * y[t] + h * I[t] for t in periods)
+m.setObjective(obj, GRB.MINIMIZE)
+
+m.optimize()
+
+# ---------------- Output ----------------
+status = m.Status
+result = {"status": "UNKNOWN", "objective": None, "variables": {}}
+
+if status == GRB.OPTIMAL:
+    variables = {}
+    for t in periods:
+        variables[f"x_{t}"] = round(x[t].X, 4)
+        variables[f"I_{t}"] = round(I[t].X, 4)
+        variables[f"y_{t}"] = round(y[t].X, 4)
+
+    result["status"] = "OPTIMAL"
+    result["objective"] = round(m.ObjVal, 4)
+    result["variables"] = variables
+
+    print("=== Riepilogo soluzione ===")
+    print(f"Stato solver: OPTIMAL")
+    print(f"Costo totale ottimo: {m.ObjVal:.2f}")
+    for t in periods:
+        print(f"Periodo {t}: ordine x={x[t].X:.0f}, scorta I={I[t].X:.0f}, "
+              f"ordine attivato y={y[t].X:.0f}")
+else:
+    result["status"] = str(status)
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello MILP è risolto in modo esatto da Gurobi (branch-and-bound su variabili intere/binarie). La soluzione ottima determina, per ciascuno dei sei periodi, se attivare un ordine (variabile binaria $y_t$), la relativa quantità $x_t$ (rispettando il minimo di 10 unità e la capacità massima) e la scorta di fine periodo $I_t$, in modo da soddisfare la domanda senza arretrati, garantire una scorta finale di almeno 5 unità e minimizzare la somma di costi di acquisto, costi fissi di ordine e costi di mantenimento. Lo stato del solver, il valore ottimo della funzione obiettivo e tutte le decisioni (anche quelle nulle) sono riportati nella riga `SOLUTION_JSON` stampata a video, coerentemente con il formato richiesto.

@@ -1,0 +1,117 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "deepseek-v4-flash",
+  "problem_id": "H09",
+  "problem_sequence": 14,
+  "domain": "Production-inventory",
+  "difficulty": "Elevata",
+  "model_class": "MILP",
+  "created_at_utc": "2026-08-24T21:18:07.360974+00:00",
+  "updated_at_utc": "2026-08-24T21:34:22.101452+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T21:22:14.250073+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "length"
+      }
+    },
+    {
+      "number": 1,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_01",
+      "created_at_utc": "2026-08-24T21:25:55.025400+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "length"
+      }
+    },
+    {
+      "number": 2,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_02",
+      "created_at_utc": "2026-08-24T21:29:34.557421+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "length"
+      }
+    },
+    {
+      "number": 3,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_03",
+      "created_at_utc": "2026-08-24T21:33:05.139293+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "length"
+      }
+    },
+    {
+      "number": 4,
+      "kind": "EXPERT_DIRECT_CODE",
+      "directory": "attempt_04",
+      "created_at_utc": "2026-08-24T21:34:22.100002+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "expert_direct_artifact",
+        "source_sha256": "0e8a715b03966d2ac909824a60c50d28ae2be80968533fff7720797618408ab0",
+        "candidate_source": "H09.sol"
+      }
+    }
+  ],
+  "interventions": [
+    {
+      "handoff_number": 1,
+      "stage": 3,
+      "failure_class": "output_troncato_o_senza_codice",
+      "active_minutes": 15.0,
+      "action": "CORRECT",
+      "correction_mode": "DIRECT_CODE",
+      "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+      "correction_summary": "Dopo tre riparazioni automatiche concluse senza codice eseguibile, l’esperto ha fornito il modello MILP completo con bilanci di produzione e scorta, setup e lotti minimi, capacità aumentabile tramite straordinario, limiti alle attivazioni e alle scorte e giacenze finali minime.",
+      "semantic_principle": "Nei modelli multi-prodotto e multi-periodo, collegare ogni periodo mediante il bilancio delle scorte e rappresentare lo straordinario come capacità aggiuntiva limitata e costosa; i setup devono attivare la produzione attraverso limiti minimo e massimo di lotto.",
+      "expert_artifact_source": "/Users/silviaalonzo/.codex/attachments/b2c2d31d-000b-4fad-9dbd-2aeb0f8a4f21/pasted-text.txt",
+      "expert_artifact_sha256": "0e8a715b03966d2ac909824a60c50d28ae2be80968533fff7720797618408ab0",
+      "submitted_at_utc": "2026-08-24T21:34:22.100002+00:00",
+      "memory_committed": true
+    }
+  ],
+  "memory_retrieval": {
+    "model": "deepseek-v4-flash",
+    "problem_id": "H09",
+    "retrieved_at_utc": "2026-08-24T21:18:07.360962+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 3,
+    "episodic_count_total": 3
+  },
+  "pending_handoff": null
+}

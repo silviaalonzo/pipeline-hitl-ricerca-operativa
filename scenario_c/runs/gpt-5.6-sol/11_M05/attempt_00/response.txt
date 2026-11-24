@@ -1,0 +1,272 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["massimizzare il valore complessivo -> funzione obiettivo max somma dei valori","budget massimo 100 -> vincolo somma dei budget <= 100","personale massimo 18 -> vincolo somma del personale <= 18","P5 richiede P2 -> vincolo x_P5 <= x_P2","P7 richiede P3 -> vincolo x_P7 <= x_P3","P4 e P6 incompatibili -> vincolo x_P4 + x_P6 <= 1","almeno un progetto digitale -> vincolo x_P1 + x_P3 + x_P7 >= 1","almeno tre progetti -> vincolo somma x_i >= 3"]}
+
+## 1. Insiemi, parametri e variabili decisionali
+
+### Insiemi
+
+- \(I=\{\mathrm{P1},\ldots,\mathrm{P8}\}\): insieme dei progetti.
+- \(D=\{\mathrm{P1},\mathrm{P3},\mathrm{P7}\}\): insieme dei progetti digitali.
+- \(R=\{(\mathrm{P5},\mathrm{P2}),(\mathrm{P7},\mathrm{P3})\}\): coppie \((i,j)\) nelle quali il progetto \(i\) richiede \(j\).
+- \(C=\{(\mathrm{P4},\mathrm{P6})\}\): coppie di progetti incompatibili.
+
+### Parametri
+
+Per ogni \(i\in I\):
+
+| \(i\) | Valore \(v_i\) | Budget \(b_i\) | Personale \(h_i\) |
+|---|---:|---:|---:|
+| P1 | 30 | 20 | 4 |
+| P2 | 24 | 18 | 3 |
+| P3 | 35 | 27 | 5 |
+| P4 | 28 | 24 | 4 |
+| P5 | 33 | 22 | 4 |
+| P6 | 26 | 19 | 3 |
+| P7 | 38 | 30 | 5 |
+| P8 | 21 | 15 | 2 |
+
+Inoltre:
+
+- \(B=100\): budget disponibile;
+- \(H=18\): personale disponibile;
+- \(K=3\): numero minimo di progetti.
+
+### Variabili decisionali
+
+\[
+x_i=
+\begin{cases}
+1 & \text{se il progetto }i\text{ è selezionato},\\
+0 & \text{altrimenti},
+\end{cases}
+\qquad i\in I.
+\]
+
+## 2. Formulazione matematica completa
+
+### Funzione obiettivo
+
+\[
+\max z=\sum_{i\in I}v_i x_i
+\]
+
+ossia:
+
+\[
+\max z=
+30x_{\mathrm{P1}}+24x_{\mathrm{P2}}+35x_{\mathrm{P3}}
++28x_{\mathrm{P4}}+33x_{\mathrm{P5}}+26x_{\mathrm{P6}}
++38x_{\mathrm{P7}}+21x_{\mathrm{P8}}.
+\]
+
+### Vincolo di budget
+
+\[
+\sum_{i\in I}b_i x_i\leq 100,
+\]
+
+ossia:
+
+\[
+20x_{\mathrm{P1}}+18x_{\mathrm{P2}}+27x_{\mathrm{P3}}
++24x_{\mathrm{P4}}+22x_{\mathrm{P5}}+19x_{\mathrm{P6}}
++30x_{\mathrm{P7}}+15x_{\mathrm{P8}}\leq 100.
+\]
+
+### Vincolo di personale
+
+\[
+\sum_{i\in I}h_i x_i\leq 18,
+\]
+
+ossia:
+
+\[
+4x_{\mathrm{P1}}+3x_{\mathrm{P2}}+5x_{\mathrm{P3}}
++4x_{\mathrm{P4}}+4x_{\mathrm{P5}}+3x_{\mathrm{P6}}
++5x_{\mathrm{P7}}+2x_{\mathrm{P8}}\leq 18.
+\]
+
+### Dipendenze
+
+\[
+x_i\leq x_j \qquad \forall (i,j)\in R,
+\]
+
+ossia:
+
+\[
+x_{\mathrm{P5}}\leq x_{\mathrm{P2}},
+\]
+
+\[
+x_{\mathrm{P7}}\leq x_{\mathrm{P3}}.
+\]
+
+### Incompatibilità
+
+\[
+x_i+x_j\leq 1 \qquad \forall (i,j)\in C,
+\]
+
+ossia:
+
+\[
+x_{\mathrm{P4}}+x_{\mathrm{P6}}\leq 1.
+\]
+
+### Presenza di almeno un progetto digitale
+
+\[
+\sum_{i\in D}x_i\geq 1,
+\]
+
+ossia:
+
+\[
+x_{\mathrm{P1}}+x_{\mathrm{P3}}+x_{\mathrm{P7}}\geq 1.
+\]
+
+### Numero minimo di progetti
+
+\[
+\sum_{i\in I}x_i\geq 3.
+\]
+
+### Dominio
+
+\[
+x_i\in\{0,1\}\qquad \forall i\in I.
+\]
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+projects = ["P1", "P2", "P3", "P4", "P5", "P6", "P7", "P8"]
+
+value = {
+    "P1": 30, "P2": 24, "P3": 35, "P4": 28,
+    "P5": 33, "P6": 26, "P7": 38, "P8": 21
+}
+
+budget = {
+    "P1": 20, "P2": 18, "P3": 27, "P4": 24,
+    "P5": 22, "P6": 19, "P7": 30, "P8": 15
+}
+
+personnel = {
+    "P1": 4, "P2": 3, "P3": 5, "P4": 4,
+    "P5": 4, "P6": 3, "P7": 5, "P8": 2
+}
+
+digital_projects = ["P1", "P3", "P7"]
+dependencies = [("P5", "P2"), ("P7", "P3")]
+incompatibilities = [("P4", "P6")]
+
+model = gp.Model("project_portfolio")
+model.Params.OutputFlag = 0
+
+x = {
+    p: model.addVar(vtype=GRB.BINARY, name=f"x_{p}")
+    for p in projects
+}
+
+model.setObjective(
+    gp.quicksum(value[p] * x[p] for p in projects),
+    GRB.MAXIMIZE
+)
+
+model.addConstr(
+    gp.quicksum(budget[p] * x[p] for p in projects) <= 100,
+    name="budget_limit"
+)
+
+model.addConstr(
+    gp.quicksum(personnel[p] * x[p] for p in projects) <= 18,
+    name="personnel_limit"
+)
+
+for required_project, prerequisite in dependencies:
+    model.addConstr(
+        x[required_project] <= x[prerequisite],
+        name=f"dependency_{required_project}_{prerequisite}"
+    )
+
+for p, q in incompatibilities:
+    model.addConstr(
+        x[p] + x[q] <= 1,
+        name=f"incompatibility_{p}_{q}"
+    )
+
+model.addConstr(
+    gp.quicksum(x[p] for p in digital_projects) >= 1,
+    name="digital_project"
+)
+
+model.addConstr(
+    gp.quicksum(x[p] for p in projects) >= 3,
+    name="minimum_projects"
+)
+
+model.optimize()
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+solver_status = status_names.get(model.Status, f"STATUS_{model.Status}")
+
+if model.Status == GRB.OPTIMAL:
+    variable_values = {
+        f"x_{p}": float(round(x[p].X))
+        for p in projects
+    }
+    result = {
+        "status": "OPTIMAL",
+        "objective": float(round(model.ObjVal, 10)),
+        "variables": variable_values
+    }
+else:
+    result = {
+        "status": solver_status,
+        "objective": None,
+        "variables": {}
+    }
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato ottimo è **OPTIMAL** e il valore massimo è:
+
+\[
+z^*=136.
+\]
+
+Una soluzione ottima seleziona i progetti **P1, P2, P4, P5 e P8**, con decisioni non nulle:
+
+\[
+x_{\mathrm{P1}}=x_{\mathrm{P2}}=x_{\mathrm{P4}}=x_{\mathrm{P5}}=x_{\mathrm{P8}}=1.
+\]
+
+Questa soluzione usa 99 unità di budget e 17 unità di personale. Esiste anche una soluzione ottima alternativa, composta da **P1, P2, P3, P6 e P8**, anch’essa con valore 136, budget 99 e personale 17.

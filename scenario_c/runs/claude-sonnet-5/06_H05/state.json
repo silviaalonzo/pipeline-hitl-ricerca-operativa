@@ -1,0 +1,67 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "claude-sonnet-5",
+  "problem_id": "H05",
+  "problem_sequence": 6,
+  "domain": "Project portfolio",
+  "difficulty": "Elevata",
+  "model_class": "IP binaria",
+  "created_at_utc": "2026-08-24T18:45:19.316475+00:00",
+  "updated_at_utc": "2026-08-24T18:45:51.619144+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:45:51.618513+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "Budget annuali 110,100,90 -> vincoli sum costoA1/A2/A3 * x_p <= budget_t",
+              "Limite personale 28 -> vincolo sum personale_p * x_p <= 28",
+              "Rischio massimo 32 -> vincolo sum rischio_p * x_p <= 32",
+              "G richiede B, J richiede E, K richiede C -> vincoli di precedenza x_G<=x_B, x_J<=x_E, x_K<=x_C",
+              "D-H e F-L incompatibili -> vincoli x_D+x_H<=1, x_F+x_L<=1",
+              "Almeno due digitali tra A,C,G,J -> vincolo x_A+x_C+x_G+x_J>=2",
+              "Almeno un sostenibile tra E,H,K -> vincolo x_E+x_H+x_K>=1",
+              "Massimo otto progetti -> vincolo sum x_p<=8",
+              "Sinergia A-C (12) e E-K (10) -> variabili ausiliarie y_AC, y_EK linearizzate con vincoli McCormick"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "claude-sonnet-5",
+    "problem_id": "H05",
+    "retrieved_at_utc": "2026-08-24T18:45:19.316465+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

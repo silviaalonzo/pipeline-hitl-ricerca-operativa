@@ -1,0 +1,149 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "deepseek-v4-flash",
+  "problem_id": "M03",
+  "problem_sequence": 17,
+  "domain": "Workforce scheduling",
+  "difficulty": "Media",
+  "model_class": "IP binaria",
+  "created_at_utc": "2026-08-24T21:51:28.500262+00:00",
+  "updated_at_utc": "2026-08-24T22:11:39.351064+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T21:54:51.638140+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "length"
+      }
+    },
+    {
+      "number": 1,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_01",
+      "created_at_utc": "2026-08-24T21:58:13.200595+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "length"
+      }
+    },
+    {
+      "number": 2,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_02",
+      "created_at_utc": "2026-08-24T22:01:42.935912+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "length"
+      }
+    },
+    {
+      "number": 3,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_03",
+      "created_at_utc": "2026-08-24T22:05:16.770569+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "length"
+      }
+    },
+    {
+      "number": 4,
+      "kind": "EXPERT_DIRECT_CODE",
+      "directory": "attempt_04",
+      "created_at_utc": "2026-08-24T22:11:39.349529+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "expert_direct_artifact",
+        "source_sha256": "34743b7e68c369c9e86dda15fa4db1ca2d1028621b411abc8f293171bce599e0",
+        "candidate_source": "M03.sol"
+      }
+    }
+  ],
+  "interventions": [
+    {
+      "handoff_number": 1,
+      "stage": 3,
+      "failure_class": "output_troncato_o_senza_codice",
+      "active_minutes": 10.0,
+      "action": "CORRECT",
+      "correction_mode": "DIRECT_CODE",
+      "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+      "correction_summary": "Dopo tre riparazioni automatiche concluse senza codice completo, l’esperto ha fornito un modello eseguibile che copre esattamente ogni turno, limita a due i turni per dipendente e a uno i notturni e rappresenta esplicitamente tutte le indisponibilità.",
+      "semantic_principle": "Nei problemi di assegnazione con celle non disponibili, mantenere una variabile binaria per ogni coppia e imporre esplicitamente a zero le combinazioni vietate, oppure creare variabili soltanto per le coppie ammesse; in entrambi i casi la copertura deve essere imposta su ciascun turno.",
+      "expert_artifact_source": "/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/deepseek-v4-flash/17_M03/handoffs/handoff_01/expert_code_M03_sandbox.py",
+      "expert_artifact_sha256": "34743b7e68c369c9e86dda15fa4db1ca2d1028621b411abc8f293171bce599e0",
+      "submitted_at_utc": "2026-08-24T22:11:39.349529+00:00",
+      "memory_committed": true
+    }
+  ],
+  "memory_retrieval": {
+    "model": "deepseek-v4-flash",
+    "problem_id": "M03",
+    "retrieved_at_utc": "2026-08-24T21:51:28.500257+00:00",
+    "semantic": [
+      {
+        "id": "S-001",
+        "created_at_utc": "2026-08-24T19:52:07.274566+00:00",
+        "source_episode": "H03-H01",
+        "principle": "Quando un requisito si applica individualmente a più soggetti, formulare un vincolo separato per ciascun soggetto anziché aggregarli in un unico limite complessivo.",
+        "tags": [
+          "Workforce scheduling",
+          "IP binaria",
+          "stadio-2",
+          "revisione_di_assicurazione_post_riparazione"
+        ]
+      }
+    ],
+    "episodic": [
+      {
+        "id": "H03-H01",
+        "created_at_utc": "2026-08-24T19:52:07.274558+00:00",
+        "problem_id": "H03",
+        "domain": "Workforce scheduling",
+        "model_class": "IP binaria",
+        "stage": 2,
+        "failure_class": "revisione_di_assicurazione_post_riparazione",
+        "correction_summary": "Durante la revisione dello Stadio 2, l’esperto ha corretto il vincolo sul fine settimana separando il limite di E1 da quello di E2 e ha fornito il modello completo con domanda, seniority, riposi, specialisti e indisponibilità.",
+        "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+        "active_minutes": 20.0,
+        "tags": [
+          "Workforce scheduling",
+          "IP binaria",
+          "stadio-2",
+          "revisione_di_assicurazione_post_riparazione"
+        ]
+      }
+    ],
+    "semantic_count_total": 4,
+    "episodic_count_total": 4
+  },
+  "pending_handoff": null
+}

@@ -1,0 +1,63 @@
+{
+  "status": "CANCELLED_INFRASTRUCTURE_FALSE_POSITIVE",
+  "cancelled_at_utc": "2026-08-24T19:12:13.198624+00:00",
+  "reason": "Load_A e Load_B sono carichi derivati in modo deterministico dalle assegnazioni x e dai tempi di lavorazione; sono variabili ausiliarie del candidato, non decisioni operative aggiuntive. Ignorarle nella proiezione non modifica assegnazioni, ammissibilità, obiettivo o criterio di correttezza.",
+  "old_evaluation": {
+    "success": false,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "validazione_indipendente_fallita",
+    "detail": "sono presenti variabili operative non riconosciute",
+    "finish_reason": "stop",
+    "validation_public": {
+      "problem_id": "M06",
+      "correct": false,
+      "candidate_status": "OPTIMAL",
+      "feasible_in_original_problem": true,
+      "gap_within_tolerance": true,
+      "declared_objective_corrected_automatically": false,
+      "max_constraint_violation": 0.0,
+      "constraint_violations": [],
+      "bound_violations": [],
+      "integrality_violations": [],
+      "unknown_nonzero_variables": [
+        "Load_A",
+        "Load_B"
+      ],
+      "missing_variables_assumed_zero": [
+        "x_J7_A"
+      ]
+    },
+    "traceability": {
+      "present": true,
+      "valid": true,
+      "complete_ready": true,
+      "value": {
+        "status": "READY",
+        "unresolved": [],
+        "undefined_symbols": [],
+        "requirements_mapped": [
+          "Ogni lavoro va eseguito su una sola macchina -> vincolo di assegnazione univoca sum_m x[j,m]=1",
+          "J7 non è compatibile con la macchina A -> esclusione della variabile x[J7,A] dal modello",
+          "Tempi dipendono dalla macchina scelta -> parametro p[j,m] differenziato per macchina",
+          "Minimizzare il makespan tra i carichi delle due macchine -> variabile Cmax e vincoli Cmax>=Load[m] per ogni macchina",
+          "Macchine eseguono lavori in sequenza (carico = somma dei tempi) -> definizione Load[m]=sum_j p[j,m]*x[j,m]"
+        ]
+      },
+      "needs_expert": false,
+      "errors": []
+    }
+  },
+  "new_evaluation": {
+    "success": true,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "corretta",
+    "detail": "Soluzione ammissibile e gap entro tolleranza",
+    "finish_reason": "stop",
+    "declared_objective_corrected_automatically": false
+  },
+  "count_as_handoff": false,
+  "count_as_human_time": false,
+  "count_as_memory_event": false
+}

@@ -1,0 +1,265 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insieme dei fornitori**
+
+\[
+I=\{A,B,C,D\}.
+\]
+
+**Parametri**
+
+- \(D=180\): quantità totale da acquistare;
+- \(Q^{\min}=92\): qualità media minima;
+- \(E^{\max}=650\): emissioni totali massime;
+- \(c_i\): costo unitario;
+- \(f_i\): costo fisso di attivazione;
+- \(U_i\): capacità massima;
+- \(L_i\): ordine minimo;
+- \(q_i\): qualità;
+- \(e_i\): emissioni per unità.
+
+\[
+\begin{array}{c|rrrrrr}
+i & c_i & f_i & U_i & L_i & q_i & e_i\\ \hline
+A&11&80&80&20&96&3\\
+B&10&95&100&25&90&4\\
+C&12&60&70&15&98&2\\
+D&9&120&90&20&88&5
+\end{array}
+\]
+
+**Variabili decisionali**
+
+\[
+x_i\in\mathbb{Z}_{\ge 0}
+\]
+
+quantità acquistata dal fornitore \(i\);
+
+\[
+y_i\in\{0,1\}
+\]
+
+pari a 1 se il fornitore \(i\) viene attivato, 0 altrimenti.
+
+---
+
+## 2. Formulazione matematica completa
+
+### Funzione obiettivo
+
+\[
+\min \quad \sum_{i\in I} c_i x_i+\sum_{i\in I} f_i y_i
+\]
+
+ossia:
+
+\[
+\min\;
+11x_A+10x_B+12x_C+9x_D
++80y_A+95y_B+60y_C+120y_D.
+\]
+
+### Vincoli
+
+Acquisto esattamente pari a 180 unità:
+
+\[
+\sum_{i\in I}x_i=180.
+\]
+
+Attivazione di almeno due fornitori:
+
+\[
+\sum_{i\in I}y_i\ge 2.
+\]
+
+Ordine minimo e capacità per ogni fornitore:
+
+\[
+L_i y_i\le x_i\le U_i y_i
+\qquad \forall i\in I.
+\]
+
+Esplicitamente:
+
+\[
+20y_A\le x_A\le80y_A,
+\]
+
+\[
+25y_B\le x_B\le100y_B,
+\]
+
+\[
+15y_C\le x_C\le70y_C,
+\]
+
+\[
+20y_D\le x_D\le90y_D.
+\]
+
+Qualità media ponderata almeno pari a 92:
+
+\[
+\frac{\sum_{i\in I}q_i x_i}{180}\ge92,
+\]
+
+equivalentemente:
+
+\[
+96x_A+90x_B+98x_C+88x_D\ge 92\cdot180.
+\]
+
+Limite sulle emissioni totali:
+
+\[
+3x_A+4x_B+2x_C+5x_D\le650.
+\]
+
+Domini:
+
+\[
+x_i\in\mathbb{Z}_{\ge0},\qquad y_i\in\{0,1\}
+\qquad \forall i\in I.
+\]
+
+## 3. Codice Python eseguibile con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+suppliers = ["A", "B", "C", "D"]
+
+unit_cost = {"A": 11, "B": 10, "C": 12, "D": 9}
+fixed_cost = {"A": 80, "B": 95, "C": 60, "D": 120}
+capacity = {"A": 80, "B": 100, "C": 70, "D": 90}
+minimum_order = {"A": 20, "B": 25, "C": 15, "D": 20}
+quality = {"A": 96, "B": 90, "C": 98, "D": 88}
+emissions = {"A": 3, "B": 4, "C": 2, "D": 5}
+
+demand = 180
+minimum_quality = 92
+maximum_emissions = 650
+
+model = gp.Model("M07_supplier_selection")
+model.Params.OutputFlag = 0
+
+x = {
+    i: model.addVar(
+        vtype=GRB.INTEGER,
+        lb=0,
+        name="x_" + i
+    )
+    for i in suppliers
+}
+
+y = {
+    i: model.addVar(
+        vtype=GRB.BINARY,
+        name="y_" + i
+    )
+    for i in suppliers
+}
+
+model.setObjective(
+    gp.quicksum(unit_cost[i] * x[i] + fixed_cost[i] * y[i]
+                for i in suppliers),
+    GRB.MINIMIZE
+)
+
+model.addConstr(
+    gp.quicksum(x[i] for i in suppliers) == demand,
+    name="exact_demand"
+)
+
+model.addConstr(
+    gp.quicksum(y[i] for i in suppliers) >= 2,
+    name="minimum_two_suppliers"
+)
+
+for i in suppliers:
+    model.addConstr(
+        x[i] >= minimum_order[i] * y[i],
+        name="minimum_order_" + i
+    )
+    model.addConstr(
+        x[i] <= capacity[i] * y[i],
+        name="capacity_" + i
+    )
+
+model.addConstr(
+    gp.quicksum(quality[i] * x[i] for i in suppliers)
+    >= minimum_quality * demand,
+    name="minimum_weighted_quality"
+)
+
+model.addConstr(
+    gp.quicksum(emissions[i] * x[i] for i in suppliers)
+    <= maximum_emissions,
+    name="maximum_emissions"
+)
+
+model.optimize()
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+status = status_names.get(model.Status, "STATUS_" + str(model.Status))
+
+if model.Status == GRB.OPTIMAL:
+    variable_values = {}
+    for i in suppliers:
+        variable_values["x_" + i] = float(round(x[i].X))
+    for i in suppliers:
+        variable_values["y_" + i] = float(round(y[i].X))
+
+    result = {
+        "status": "OPTIMAL",
+        "objective": float(round(model.ObjVal, 10)),
+        "variables": variable_values
+    }
+else:
+    result = {
+        "status": status,
+        "objective": None,
+        "variables": {}
+    }
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato è **OPTIMAL** e il costo minimo è:
+
+\[
+z^*=2055.
+\]
+
+Vengono attivati i fornitori \(A\) e \(B\):
+
+\[
+x_A=80,\quad x_B=100,\quad y_A=y_B=1.
+\]
+
+La qualità media è \(92{,}67\), mentre le emissioni totali sono \(640\), quindi entrambi i limiti sono rispettati. I fornitori \(C\) e \(D\) non vengono attivati.

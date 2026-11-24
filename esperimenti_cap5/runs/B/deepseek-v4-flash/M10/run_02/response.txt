@@ -1,0 +1,122 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+
+- \(N = \{S, A, B, C, T\}\): nodi della rete.
+- \(E = \{(S,A), (S,B), (A,B), (A,C), (B,C), (B,T), (C,T)\}\): archi attivabili.
+
+**Parametri**
+
+- \(f_{ij}\): costo fisso di attivazione dell’arco \((i,j)\).
+- \(c_{ij}\): costo per unità di flusso sull’arco \((i,j)\).
+- \(q_{ij}\): capacità massima dell’arco \((i,j)\).
+- \(d_i\): domanda netta del nodo \(i\), con:
+  \[
+  d_S = 40,\quad d_A = d_B = d_C = 0,\quad d_T = -40
+  \]
+
+**Variabili decisionali**
+
+- \(x_{ij} \in \mathbb{Z}_{\ge 0}\): flusso sull’arco \((i,j)\).
+- \(y_{ij} \in \{0,1\}\): vale 1 se l’arco \((i,j)\) viene attivato, 0 altrimenti.
+
+## 2. Formulazione matematica
+
+\[
+\min \sum_{(i,j)\in E} \left( f_{ij} y_{ij} + c_{ij} x_{ij} \right)
+\]
+
+soggetto a:
+
+\[
+\sum_{j:(i,j)\in E} x_{ij} - \sum_{j:(j,i)\in E} x_{ji} = d_i
+\qquad \forall i \in N
+\]
+
+\[
+x_{ij} \le q_{ij} y_{ij}
+\qquad \forall (i,j)\in E
+\]
+
+\[
+x_{ij} \in \mathbb{Z}_{\ge 0}, \qquad y_{ij} \in \{0,1\}
+\]
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+archi = [
+    ("S", "A", 40, 2, 30),
+    ("S", "B", 35, 3, 35),
+    ("A", "B", 15, 1, 15),
+    ("A", "C", 30, 2, 25),
+    ("B", "C", 18, 2, 20),
+    ("B", "T", 45, 4, 25),
+    ("C", "T", 38, 2, 35),
+]
+
+nodi = ["S", "A", "B", "C", "T"]
+domanda = {"S": 40, "A": 0, "B": 0, "C": 0, "T": -40}
+
+m = gp.Model("rete_distributiva")
+m.setParam("OutputFlag", 0)
+
+x = {}
+y = {}
+
+for i, j, f, c, q in archi:
+    x[(i, j)] = m.addVar(lb=0, ub=q, vtype=GRB.INTEGER, name=f"x_{i}_{j}")
+    y[(i, j)] = m.addVar(vtype=GRB.BINARY, name=f"y_{i}_{j}")
+
+m.setObjective(
+    gp.quicksum(f * y[(i, j)] + c * x[(i, j)] for i, j, f, c, q in archi),
+    GRB.MINIMIZE
+)
+
+for n in nodi:
+    uscita = gp.quicksum(x[(i, j)] for i, j, _, _, _ in archi if i == n)
+    entrata = gp.quicksum(x[(i, j)] for i, j, _, _, _ in archi if j == n)
+    m.addConstr(uscita - entrata == domanda[n], name=f"flusso_{n}")
+
+for i, j, _, _, q in archi:
+    m.addConstr(x[(i, j)] <= q * y[(i, j)], name=f"capacita_{i}_{j}")
+
+m.optimize()
+
+if m.status == GRB.OPTIMAL:
+    status = "OPTIMAL"
+    objective = float(m.ObjVal)
+    variables = {v.VarName: float(v.X) for v in m.getVars()}
+else:
+    if m.status == GRB.INFEASIBLE:
+        status = "INFEASIBLE"
+    elif m.status == GRB.UNBOUNDED:
+        status = "UNBOUNDED"
+    else:
+        status = f"STATUS_{m.status}"
+    objective = None
+    variables = {}
+
+print("SOLUTION_JSON=" + json.dumps(
+    {"status": status, "objective": objective, "variables": variables},
+    separators=(",", ":")
+))
+```
+
+## 4. Sintesi della soluzione
+
+Il solver trova una soluzione ottima con costo totale \(443\).
+
+Archi effettivamente utilizzati:
+
+- \(S \to A\): 25 unità
+- \(S \to B\): 15 unità
+- \(A \to C\): 25 unità
+- \(B \to T\): 15 unità
+- \(C \to T\): 25 unità
+
+Gli archi \(A \to B\) e \(B \to C\) non vengono attivati.

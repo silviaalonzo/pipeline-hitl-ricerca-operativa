@@ -1,0 +1,31 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "sei periodi -> T={1,...,6}",
+        "scorta iniziale 10 -> I_0=10",
+        "assenza di arretrati -> I_t>=0",
+        "scorta finale almeno 5 -> I_6>=5",
+        "ordine minimo 10 se attivato -> 10y_t<=q_t",
+        "capacità periodale -> q_t<=U_ty_t",
+        "costo fisso di ordine -> 40y_t in obiettivo",
+        "integralità di ordini e scorte -> q_t,I_t interi"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

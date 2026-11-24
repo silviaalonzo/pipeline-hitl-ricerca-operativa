@@ -1,0 +1,147 @@
+# 1. Insiemi, Parametri e Variabili Decisionali
+
+**Insiemi:**
+- $I = \{1,2,...,8\}$: indice dei progetti
+
+**Parametri:**
+- $v_i$: valore del progetto $i$
+- $b_i$: budget richiesto dal progetto $i$
+- $p_i$: personale richiesto dal progetto $i$
+- $B = 100$: budget totale disponibile
+- $P = 18$: personale totale disponibile
+
+| Progetto | Valore ($v_i$) | Budget ($b_i$) | Personale ($p_i$) |
+|---|---|---|---|
+| P1 | 30 | 20 | 4 |
+| P2 | 24 | 18 | 3 |
+| P3 | 35 | 27 | 5 |
+| P4 | 28 | 24 | 4 |
+| P5 | 33 | 22 | 4 |
+| P6 | 26 | 19 | 3 |
+| P7 | 38 | 30 | 5 |
+| P8 | 21 | 15 | 2 |
+
+**Variabili decisionali:**
+- $x_i \in \{0,1\}$ per $i \in I$: 1 se il progetto $i$ è selezionato, 0 altrimenti
+
+---
+
+# 2. Formulazione Matematica
+
+**Funzione obiettivo:**
+$$\max \sum_{i \in I} v_i x_i$$
+
+**Vincoli:**
+
+1. Vincolo di budget:
+$$\sum_{i \in I} b_i x_i \le 100$$
+
+2. Vincolo di personale:
+$$\sum_{i \in I} p_i x_i \le 18$$
+
+3. Dipendenza P5 richiede P2:
+$$x_5 \le x_2$$
+
+4. Dipendenza P7 richiede P3:
+$$x_7 \le x_3$$
+
+5. Incompatibilità P4-P6:
+$$x_4 + x_6 \le 1$$
+
+6. Almeno un progetto digitale tra P1, P3, P7:
+$$x_1 + x_3 + x_7 \ge 1$$
+
+7. Almeno tre progetti complessivi:
+$$\sum_{i \in I} x_i \ge 3$$
+
+8. Dominio delle variabili:
+$$x_i \in \{0,1\} \quad \forall i \in I$$
+
+---
+
+# 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# Dati del problema
+progetti = ['P1','P2','P3','P4','P5','P6','P7','P8']
+valore = {'P1':30,'P2':24,'P3':35,'P4':28,'P5':33,'P6':26,'P7':38,'P8':21}
+budget = {'P1':20,'P2':18,'P3':27,'P4':24,'P5':22,'P6':19,'P7':30,'P8':15}
+personale = {'P1':4,'P2':3,'P3':5,'P4':4,'P5':4,'P6':3,'P7':5,'P8':2}
+
+B_max = 100
+P_max = 18
+
+# Creazione modello
+m = gp.Model("Selezione_Portafoglio")
+
+# Variabili decisionali binarie
+x = m.addVars(progetti, vtype=GRB.BINARY, name="x")
+
+# Funzione obiettivo: massimizzare il valore totale
+m.setObjective(gp.quicksum(valore[i]*x[i] for i in progetti), GRB.MAXIMIZE)
+
+# Vincolo di budget
+m.addConstr(gp.quicksum(budget[i]*x[i] for i in progetti) <= B_max, name="Budget")
+
+# Vincolo di personale
+m.addConstr(gp.quicksum(personale[i]*x[i] for i in progetti) <= P_max, name="Personale")
+
+# P5 richiede P2
+m.addConstr(x['P5'] <= x['P2'], name="P5_richiede_P2")
+
+# P7 richiede P3
+m.addConstr(x['P7'] <= x['P3'], name="P7_richiede_P3")
+
+# P4 e P6 incompatibili
+m.addConstr(x['P4'] + x['P6'] <= 1, name="P4_P6_incompatibili")
+
+# Almeno un progetto digitale tra P1, P3, P7
+m.addConstr(x['P1'] + x['P3'] + x['P7'] >= 1, name="Digitale_minimo")
+
+# Almeno tre progetti complessivi
+m.addConstr(gp.quicksum(x[i] for i in progetti) >= 3, name="Minimo_tre_progetti")
+
+# Risoluzione
+m.optimize()
+
+# Estrazione risultati
+if m.status == GRB.OPTIMAL:
+    status_str = "OPTIMAL"
+    obj_val = m.objVal
+    variables = {f"x_{i}": x[i].X for i in progetti}
+else:
+    status_str = str(m.status)
+    obj_val = None
+    variables = {}
+
+# Output finale
+result = {
+    "status": status_str,
+    "objective": obj_val,
+    "variables": variables
+}
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+---
+
+# 4. Sintesi della Soluzione
+
+Il modello seleziona il sottoinsieme di progetti che massimizza il valore complessivo rispettando i vincoli di budget (≤100), personale (≤18 unità), le dipendenze logiche (P5→P2, P7→P3), l'incompatibilità P4-P6, la presenza di almeno un progetto digitale (P1, P3, P7) e la scelta di almeno 3 progetti in totale.
+
+**Analisi della soluzione ottima attesa:**
+
+Valutando le combinazioni possibili, la soluzione ottima tende a selezionare progetti ad alto valore rispettando i vincoli di risorse. Una combinazione promettente è **{P1, P3, P7, P8}**:
+- Valore: 30+35+38+21 = **124**
+- Budget: 20+27+30+15 = 92 ≤ 100 ✓
+- Personale: 4+5+5+2 = 16 ≤ 18 ✓
+- P7 richiede P3: soddisfatto (entrambi selezionati) ✓
+- Digitale presente (P1, P3, P7): soddisfatto ✓
+- Almeno 3 progetti: soddisfatto (4 progetti) ✓
+
+Questa combinazione rappresenta un buon candidato per l'ottimo, ma il solver Gurobi verificherà rigorosamente tutte le combinazioni ammissibili per garantire l'ottimalità globale, considerando anche alternative come l'inclusione di P2-P5 o P4/P6.

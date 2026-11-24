@@ -1,0 +1,23 @@
+{
+  "scenario": "C",
+  "model_key": "deepseek-v4-flash",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "configuration": {
+    "provider": "openrouter",
+    "upstream_provider": "deepseek",
+    "model": "deepseek/deepseek-v4-flash",
+    "reasoning_effort": "high",
+    "max_output_tokens": 24000
+  },
+  "created_at_utc": "2026-08-24T20:59:59.443793+00:00",
+  "metadata": {
+    "problem_id": "M05",
+    "problem_sequence": 11,
+    "attempt_number": 0,
+    "attempt_kind": "INITIAL",
+    "auto_repair_count_current_cycle": 0
+  },
+  "system_prompt": "Agisci come esperto di Ricerca Operativa all'interno di una pipeline Human-in-the-Loop.\nDevi formulare e risolvere il problema descritto dall'utente senza usare informazioni esterne e senza inventare dati.\n\nLa risposta deve contenere, in quest'ordine:\n1. una sola riga TRACEABILITY_JSON nel formato indicato sotto;\n2. insiemi, parametri e variabili decisionali;\n3. formulazione matematica completa;\n4. un solo blocco di codice Python eseguibile con gurobipy;\n5. una breve sintesi della soluzione.\n\nLa riga di tracciabilità deve avere esattamente questa struttura:\nTRACEABILITY_JSON={\"status\":\"READY\",\"unresolved\":[],\"undefined_symbols\":[],\"requirements_mapped\":[\"requisito -> elemento del modello\"]}\n\nUsa status READY se la traccia è completa. Usa NEEDS_EXPERT soltanto se esiste davvero un dato mancante,\nun'ambiguità o una contraddizione che impedisce di formulare il problema; in tal caso descrivila in unresolved.\nCon status READY, requirements_mapped deve contenere almeno quattro corrispondenze concrete nella forma\n«requisito -> elemento del modello». Mantieni l'elenco conciso e non includere più di dodici elementi.\n\nIl codice deve costruire il modello a partire dai soli dati presenti nella traccia, chiamare Gurobi e stampare alla fine\nESATTAMENTE una riga nel formato seguente:\n\nSOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":0.0,\"variables\":{\"nome_variabile\":0.0}}\n\nNel dizionario variables devono comparire tutte le variabili decisionali, comprese quelle con valore zero.\nUsa nomi coerenti con la formulazione e valori numerici. Se il solver non restituisce una soluzione ottima,\nstampa comunque SOLUTION_JSON con lo stato effettivo, objective null e variables vuoto.\n\nNon leggere o scrivere file, non accedere alla rete, non invocare altri processi e non utilizzare librerie diverse\nda gurobipy, json, math e itertools.\n",
+  "user_prompt": "# M05 — Selezione di un portafoglio progetti\n\nDifficoltà: Media\nClasse: IP binaria\n\nUn’impresa deve selezionare un portafoglio tra otto progetti, massimizzandone il valore complessivo entro un budget di 100 e 18 unità di personale.\nP5 richiede P2; P7 richiede P3; P4 e P6 sono incompatibili. Deve essere scelto almeno un progetto digitale tra P1, P3 e P7 e almeno tre progetti complessivi.\n\n## Progetti\n\nProgetto | Valore | Budget | Personale\n--- | --- | --- | ---\nP1 | 30 | 20 | 4\nP2 | 24 | 18 | 3\nP3 | 35 | 27 | 5\nP4 | 28 | 24 | 4\nP5 | 33 | 22 | 4\nP6 | 26 | 19 | 3\nP7 | 38 | 30 | 5\nP8 | 21 | 15 | 2\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n\n---\nMEMORIA DELLA PIPELINE (usa solo gli elementi pertinenti; non sono soluzioni del problema corrente):\n- Principio: Quando un requisito si applica individualmente a più soggetti, formulare un vincolo separato per ciascun soggetto anziché aggregarli in un unico limite complessivo.\n- Episodio precedente: dominio=Workforce scheduling; errore=revisione_di_assicurazione_post_riparazione; correzione=Durante la revisione dello Stadio 2, l’esperto ha corretto il vincolo sul fine settimana separando il limite di E1 da quello di E2 e ha fornito il modello completo con domanda, seniority, riposi, specialisti e indisponibilità.\n\nApplica la checklist di tracciabilità richiesta dal messaggio di sistema e poi produci la formulazione e il codice completo. Non usare dati diversi da quelli presenti nella traccia."
+}

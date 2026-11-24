@@ -1,0 +1,41 @@
+{
+  "model": "claude-sonnet-5",
+  "problem_id": "H10",
+  "retrieved_at_utc": "2026-08-24T19:22:56.232969+00:00",
+  "semantic": [
+    {
+      "id": "S-001",
+      "created_at_utc": "2026-08-24T19:06:04.317849+00:00",
+      "source_episode": "H07-H01",
+      "principle": "Nei problemi di approvvigionamento con celle non disponibili, creare variabili soltanto per le coppie ammesse e collegare esplicitamente quantità, uso della coppia e attivazione del fornitore.",
+      "tags": [
+        "Procurement",
+        "MILP intera",
+        "stadio-2",
+        "revisione_di_assicurazione_post_riparazione"
+      ]
+    }
+  ],
+  "episodic": [
+    {
+      "id": "H07-H01",
+      "created_at_utc": "2026-08-24T19:06:04.317838+00:00",
+      "problem_id": "H07",
+      "domain": "Procurement",
+      "model_class": "MILP intera",
+      "stage": 2,
+      "failure_class": "revisione_di_assicurazione_post_riparazione",
+      "correction_summary": "Durante la revisione dello Stadio 2, l'esperto ha sostituito l'artefatto automatico con un codice completo e autonomo che definisce esplicitamente le sole coppie fornitore-componente disponibili, i legami quantità-uso-attivazione e tutti i controlli richiesti dalla traccia.",
+      "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+      "active_minutes": 20.0,
+      "tags": [
+        "Procurement",
+        "MILP intera",
+        "stadio-2",
+        "revisione_di_assicurazione_post_riparazione"
+      ]
+    }
+  ],
+  "semantic_count_total": 2,
+  "episodic_count_total": 2
+}

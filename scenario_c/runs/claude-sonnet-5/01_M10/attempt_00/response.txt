@@ -1,0 +1,126 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["inviare 40 unità da S a T -> vincolo di bilancio di flusso ai nodi S e T (domanda=40)","costo fisso di attivazione arco -> variabile binaria y_ij e termine f_ij*y_ij nell'obiettivo","costo per unità di trasporto -> variabile continua/intera x_ij e termine c_ij*x_ij nell'obiettivo","capacità dell'arco -> vincolo x_ij <= u_ij * y_ij","flusso intero -> dominio delle variabili x_ij (INTEGER)","conservazione del flusso nei nodi intermedi A,B,C -> vincoli di bilancio nodale (inflow=outflow)"]}
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- N = {S, A, B, C, T} : nodi della rete
+- Arc ⊆ N×N = {(S,A), (S,B), (A,B), (A,C), (B,C), (B,T), (C,T)} : archi attivabili
+
+**Parametri** (per ogni arco (i,j) ∈ Arc)
+- f_{ij} : costo fisso di attivazione dell'arco
+- c_{ij} : costo unitario di trasporto sull'arco
+- u_{ij} : capacità massima dell'arco
+- D = 40 : quantità totale da inviare da S a T
+
+Valori:
+
+| Arco | f_ij | c_ij | u_ij |
+|---|---|---|---|
+| S→A | 40 | 2 | 30 |
+| S→B | 35 | 3 | 35 |
+| A→B | 15 | 1 | 15 |
+| A→C | 30 | 2 | 25 |
+| B→C | 18 | 2 | 20 |
+| B→T | 45 | 4 | 25 |
+| C→T | 38 | 2 | 35 |
+
+**Variabili decisionali**
+- x_{ij} ∈ ℤ≥0 : flusso intero sull'arco (i,j), per ogni (i,j) ∈ Arc
+- y_{ij} ∈ {0,1} : 1 se l'arco (i,j) è attivato, 0 altrimenti, per ogni (i,j) ∈ Arc
+
+## 2. Formulazione matematica
+
+**Funzione obiettivo**
+
+min Σ_{(i,j)∈Arc} [ f_{ij}·y_{ij} + c_{ij}·x_{ij} ]
+
+**Vincoli**
+
+1. Capacità/attivazione:
+   x_{ij} ≤ u_{ij}·y_{ij}   ∀(i,j) ∈ Arc
+
+2. Bilancio di flusso al nodo sorgente S:
+   Σ_{(S,j)∈Arc} x_{Sj} − Σ_{(i,S)∈Arc} x_{iS} = D
+
+3. Bilancio di flusso al nodo destinazione T:
+   Σ_{(i,T)∈Arc} x_{iT} − Σ_{(T,j)∈Arc} x_{Tj} = D
+
+4. Conservazione del flusso nei nodi intermedi n ∈ {A, B, C}:
+   Σ_{(i,n)∈Arc} x_{in} − Σ_{(n,j)∈Arc} x_{nj} = 0   ∀n ∈ {A,B,C}
+
+5. Dominio delle variabili:
+   x_{ij} ∈ ℤ≥0, x_{ij} ≤ u_{ij}   ∀(i,j) ∈ Arc
+   y_{ij} ∈ {0,1}   ∀(i,j) ∈ Arc
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# Dati del problema
+arcs = {
+    ('S', 'A'): {'fixed': 40, 'unit': 2, 'cap': 30},
+    ('S', 'B'): {'fixed': 35, 'unit': 3, 'cap': 35},
+    ('A', 'B'): {'fixed': 15, 'unit': 1, 'cap': 15},
+    ('A', 'C'): {'fixed': 30, 'unit': 2, 'cap': 25},
+    ('B', 'C'): {'fixed': 18, 'unit': 2, 'cap': 20},
+    ('B', 'T'): {'fixed': 45, 'unit': 4, 'cap': 25},
+    ('C', 'T'): {'fixed': 38, 'unit': 2, 'cap': 35},
+}
+
+nodes = ['S', 'A', 'B', 'C', 'T']
+demand = 40
+
+model = gp.Model("network_design")
+model.setParam('OutputFlag', 0)
+
+# Variabili
+x = model.addVars(arcs.keys(), vtype=GRB.INTEGER, lb=0, name="x")
+y = model.addVars(arcs.keys(), vtype=GRB.BINARY, name="y")
+
+# Vincoli di capacità legati all'attivazione
+for (i, j), data in arcs.items():
+    model.addConstr(x[i, j] <= data['cap'] * y[i, j], name=f"cap_{i}_{j}")
+
+# Vincoli di conservazione del flusso
+for n in nodes:
+    inflow = gp.quicksum(x[i, j] for (i, j) in arcs if j == n)
+    outflow = gp.quicksum(x[i, j] for (i, j) in arcs if i == n)
+    if n == 'S':
+        model.addConstr(outflow - inflow == demand, name="balance_S")
+    elif n == 'T':
+        model.addConstr(inflow - outflow == demand, name="balance_T")
+    else:
+        model.addConstr(inflow - outflow == 0, name=f"balance_{n}")
+
+# Funzione obiettivo
+obj = gp.quicksum(arcs[a]['fixed'] * y[a] + arcs[a]['unit'] * x[a] for a in arcs)
+model.setObjective(obj, GRB.MINIMIZE)
+
+model.optimize()
+
+result = {"status": "UNKNOWN", "objective": None, "variables": {}}
+
+if model.status == GRB.OPTIMAL:
+    variables = {}
+    for (i, j) in arcs:
+        variables[f"x_{i}{j}"] = float(x[i, j].X)
+        variables[f"y_{i}{j}"] = float(y[i, j].X)
+    result = {
+        "status": "OPTIMAL",
+        "objective": float(model.ObjVal),
+        "variables": variables
+    }
+else:
+    result = {"status": str(model.status), "objective": None, "variables": {}}
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello MILP determina quali archi attivare (variabili binarie y_ij) e quanto flusso far transitare su ciascuno (variabili intere x_ij) per inviare esattamente 40 unità da S a T, minimizzando la somma dei costi fissi di attivazione e dei costi variabili di trasporto, nel rispetto delle capacità e della conservazione del flusso nei nodi intermedi A, B, C.
+
+Il codice Gurobi costruisce il grafo con i 7 archi indicati, impone i vincoli di capacità legati all'attivazione (x_ij ≤ u_ij·y_ij), i vincoli di bilancio ai nodi S, T e ai nodi intermedi, e risolve il problema di ottimizzazione intera. L'output finale (riga SOLUTION_JSON) riporta lo stato del solver, il valore ottimo della funzione obiettivo e i valori di tutte le variabili decisionali (flussi x_ij e attivazioni y_ij), inclusi quelli nulli, permettendo di identificare la topologia ottima della rete distributiva e la ripartizione del flusso tra i percorsi disponibili.

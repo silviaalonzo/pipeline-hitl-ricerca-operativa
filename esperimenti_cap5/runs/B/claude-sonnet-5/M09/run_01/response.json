@@ -1,0 +1,73 @@
+{
+  "id": "gen-1786388549-iCYQryaMut8XaLuzh3Yn",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "# M09 — Piano di riordino con costi fissi\n\n## 1. Insiemi, parametri e variabili decisionali\n\n**Insiemi**\n- $T = \\{1,2,3,4,5,6\\}$: periodi di pianificazione\n\n**Parametri**\n- $d_t$: domanda nel periodo $t$\n- $c_t$: costo unitario di acquisto nel periodo $t$\n- $Cap_t$: capacità massima di ordine nel periodo $t$\n- $f = 40$: costo fisso per ordine attivato\n- $h = 2$: costo di mantenimento per unità a fine periodo\n- $I_0 = 10$: scorta iniziale\n- $q_{min} = 10$: quantità minima di ordine se attivato\n- $I_{fin}^{min} = 5$: scorta finale minima richiesta\n\n| $t$ | $d_t$ | $c_t$ | $Cap_t$ |\n|---|---|---|---|\n|1|20|9|50|\n|2|30|8|50|\n|3|15|11|45|\n|4|35|7|55|\n|5|25|10|45|\n|6|20|9|50|\n\n**Variabili decisionali**\n- $x_t \\ge 0$, intera: quantità ordinata nel periodo $t$\n- $I_t \\ge 0$, intera: scorta di fine periodo $t$\n- $y_t \\in \\{0,1\\}$: 1 se viene attivato un ordine nel periodo $t$, 0 altrimenti\n\n## 2. Formulazione matematica\n\n$$\n\\min \\; Z = \\sum_{t \\in T} \\left( c_t x_t + f\\, y_t + h\\, I_t \\right)\n$$\n\nsoggetto a:\n\n$$\nI_t = I_{t-1} + x_t - d_t \\qquad \\forall t \\in T \\quad (I_0 \\text{ dato})\n$$\n\n$$\nI_t \\ge 0 \\qquad \\forall t \\in T\n$$\n\n$$\nI_{|T|} \\ge I_{fin}^{min}\n$$\n\n$$\nx_t \\le Cap_t \\, y_t \\qquad \\forall t \\in T\n$$\n\n$$\nx_t \\ge q_{min}\\, y_t \\qquad \\forall t \\in T\n$$\n\n$$\nx_t \\in \\mathbb{Z}_{\\ge 0}, \\quad I_t \\in \\mathbb{Z}_{\\ge 0}, \\quad y_t \\in \\{0,1\\} \\qquad \\forall t \\in T\n$$\n\n## 3. Codice Python (gurobipy)\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\n# Dati\nT = [1, 2, 3, 4, 5, 6]\ndemand = {1: 20, 2: 30, 3: 15, 4: 35, 5: 25, 6: 20}\ncost   = {1: 9,  2: 8,  3: 11, 4: 7,  5: 10, 6: 9}\ncap    = {1: 50, 2: 50, 3: 45, 4: 55, 5: 45, 6: 50}\n\nf = 40          # costo fisso ordine\nh = 2           # costo mantenimento\nI0 = 10         # scorta iniziale\nq_min = 10      # ordine minimo se attivato\nI_final_min = 5 # scorta finale minima\n\nm = gp.Model(\"Lot_sizing_costi_fissi\")\n\nx = m.addVars(T, vtype=GRB.INTEGER, lb=0, name=\"x\")\nI = m.addVars(T, vtype=GRB.INTEGER, lb=0, name=\"I\")\ny = m.addVars(T, vtype=GRB.BINARY, name=\"y\")\n\n# Funzione obiettivo\nm.setObjective(\n    gp.quicksum(cost[t] * x[t] + f * y[t] + h * I[t] for t in T),\n    GRB.MINIMIZE\n)\n\n# Vincoli di bilancio scorte\nprev = I0\nfor t in T:\n    m.addConstr(I[t] == prev + x[t] - demand[t], name=f\"balance_{t}\")\n    prev = I[t]\n\n# Scorta finale minima\nm.addConstr(I[T[-1]] >= I_final_min, name=\"final_inventory\")\n\n# Capacità e ordine minimo legati alla decisione y\nfor t in T:\n    m.addConstr(x[t] <= cap[t] * y[t], name=f\"cap_{t}\")\n    m.addConstr(x[t] >= q_min * y[t], name=f\"minorder_{t}\")\n\nm.optimize()\n\nstatus = m.Status\nresult = {\"status\": None, \"objective\": None, \"variables\": {}}\n\nif status == GRB.OPTIMAL:\n    result[\"status\"] = \"OPTIMAL\"\n    result[\"objective\"] = round(m.ObjVal, 4)\n    variables = {}\n    for t in T:\n        variables[f\"x_{t}\"] = float(round(x[t].X))\n        variables[f\"I_{t}\"] = float(round(I[t].X))\n        variables[f\"y_{t}\"] = float(round(y[t].X))\n    result[\"variables\"] = variables\nelse:\n    result[\"status\"] = m.Status\n    result[\"objective\"] = None\n    result[\"variables\"] = {}\n\nprint(\"SOLUTION_JSON=\" + json.dumps(result))\n```\n\n## 4. Sintesi della soluzione\n\nIl modello MILP risolve un problema di *lot-sizing* a costi fissi su 6 periodi con vincoli di capacità e ordine minimo. Il solver Gurobi trova la soluzione ottima intera che minimizza la somma di costi di acquisto, costi fissi di attivazione ordine e costi di mantenimento a scorta, rispettando il bilancio delle scorte periodo per periodo, la scorta finale minima di 5 unità e i vincoli di attivazione (big-M tramite $y_t$) che legano quantità ordinata, capacità massima e ordine minimo di 10 unità.\n\nEseguendo il codice, Gurobi determina lo stato **OPTIMAL**, il valore ottimo della funzione obiettivo e le decisioni non nulle (periodi in cui viene attivato un ordine, relative quantità $x_t$, e livelli di scorta $I_t$ a fine periodo), stampate nella riga `SOLUTION_JSON` richiesta.",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": "I'm setting up a lot-sizing optimization problem across six periods with demand, purchase costs, and capacity constraints for each period, along with fixed ordering costs, holding costs, initial inventory, and minimum order requirements.",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "I'm setting up a lot-sizing optimization problem across six periods with demand, purchase costs, and capacity constraints for each period, along with fixed ordering costs, holding costs, initial inventory, and minimum order requirements.",
+            "format": "anthropic-claude-v1",
+            "index": 0,
+            "signature": "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"
+          }
+        ]
+      },
+      "native_finish_reason": "end_turn"
+    }
+  ],
+  "created": 1786388549,
+  "model": "anthropic/claude-sonnet-5",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 2757,
+    "prompt_tokens": 968,
+    "total_tokens": 3725,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 60,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.029506,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.029506,
+      "upstream_inference_prompt_cost": 0.001936,
+      "upstream_inference_completions_cost": 0.02757
+    }
+  },
+  "provider": "Anthropic",
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "anthropic/claude-sonnet-5",
+    "required_provider": "anthropic",
+    "allow_fallbacks": false,
+    "require_parameters": true
+  },
+  "_experiment": {
+    "elapsed_seconds": 25.3594161660003,
+    "completed_at_utc": "2026-08-10T19:02:53.715062+00:00"
+  }
+}

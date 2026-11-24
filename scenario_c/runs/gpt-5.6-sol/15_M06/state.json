@@ -1,0 +1,64 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "gpt-5.6-sol",
+  "problem_id": "M06",
+  "problem_sequence": 15,
+  "domain": "Scheduling",
+  "difficulty": "Media",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-24T18:29:34.669520+00:00",
+  "updated_at_utc": "2026-08-24T18:30:47.989159+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:30:47.988340+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "assegnazione integrale dei lavori -> variabili binarie x[j,m]",
+              "ogni lavoro su una sola macchina -> vincoli di assegnazione",
+              "tempi dipendenti dalla macchina -> parametri p[j,m]",
+              "J7 incompatibile con A -> arco (J7,A) escluso dall'insieme E",
+              "esecuzione sequenziale -> carico macchina pari alla somma dei tempi assegnati",
+              "minimizzazione del makespan -> variabile C_max e obiettivo min C_max"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "gpt-5.6-sol",
+    "problem_id": "M06",
+    "retrieved_at_utc": "2026-08-24T18:29:34.669513+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

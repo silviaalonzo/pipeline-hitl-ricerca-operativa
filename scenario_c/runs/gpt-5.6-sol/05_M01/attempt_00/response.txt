@@ -1,0 +1,259 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["aprire esattamente due centri -> vincolo sum_i y_i = 2","assegnare ogni zona a un solo centro -> vincolo sum_i x_ji = 1","assegnare solo a centri aperti -> vincoli x_ji <= y_i","rispettare la capacità dei siti -> vincoli sum_j x_ji <= q_i y_i","minimizzare costi fissi e di servizio -> funzione obiettivo","decisioni binarie -> domini y_i e x_ji binari"]}
+
+## 1. Insiemi, parametri e variabili decisionali
+
+### Insiemi
+
+- Siti candidati:
+  \[
+  I=\{A,B,C,D\}.
+  \]
+- Zone commerciali:
+  \[
+  J=\{Z1,Z2,Z3,Z4,Z5,Z6\}.
+  \]
+
+### Parametri
+
+- Numero esatto di centri da aprire:
+  \[
+  K=2.
+  \]
+- Costo fisso \(f_i\), in migliaia di euro:
+  \[
+  f_A=38,\quad f_B=42,\quad f_C=35,\quad f_D=46.
+  \]
+- Capacità \(q_i\), espressa come numero massimo di zone:
+  \[
+  q_A=2,\quad q_B=3,\quad q_C=2,\quad q_D=3.
+  \]
+- Costo \(c_{ji}\) per assegnare la zona \(j\) al sito \(i\), in migliaia di euro:
+  \[
+  (c_{ji})=
+  \begin{array}{c|rrrr}
+       & A&B&C&D\\ \hline
+  Z1& 8&14&11&17\\
+  Z2&10& 9&13&15\\
+  Z3&12& 8&14&10\\
+  Z4&15&11& 9& 7\\
+  Z5& 9&13& 8&14\\
+  Z6&14&10& 7& 9
+  \end{array}.
+  \]
+
+### Variabili decisionali
+
+- Apertura dei centri:
+  \[
+  y_i=
+  \begin{cases}
+  1 & \text{se il centro nel sito }i\text{ viene aperto},\\
+  0 & \text{altrimenti}.
+  \end{cases}
+  \]
+- Assegnazione delle zone:
+  \[
+  x_{ji}=
+  \begin{cases}
+  1 & \text{se la zona }j\text{ è assegnata al sito }i,\\
+  0 & \text{altrimenti}.
+  \end{cases}
+  \]
+
+## 2. Formulazione matematica completa
+
+### Funzione obiettivo
+
+Minimizzare la somma dei costi fissi di apertura e dei costi di assegnazione:
+
+\[
+\min\quad
+\sum_{i\in I} f_i y_i+
+\sum_{j\in J}\sum_{i\in I}c_{ji}x_{ji}.
+\]
+
+### Vincoli
+
+Apertura di esattamente due centri:
+
+\[
+\sum_{i\in I}y_i=K.
+\]
+
+Assegnazione di ogni zona a un solo centro:
+
+\[
+\sum_{i\in I}x_{ji}=1
+\qquad \forall j\in J.
+\]
+
+Rispetto della capacità di ciascun sito e attivazione della capacità solo se il sito è aperto:
+
+\[
+\sum_{j\in J}x_{ji}\le q_i y_i
+\qquad \forall i\in I.
+\]
+
+Assegnazione consentita solo a centri aperti:
+
+\[
+x_{ji}\le y_i
+\qquad \forall j\in J,\ \forall i\in I.
+\]
+
+Dominio delle variabili:
+
+\[
+y_i\in\{0,1\}
+\qquad \forall i\in I,
+\]
+
+\[
+x_{ji}\in\{0,1\}
+\qquad \forall j\in J,\ \forall i\in I.
+\]
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+I = ["A", "B", "C", "D"]
+J = ["Z1", "Z2", "Z3", "Z4", "Z5", "Z6"]
+K = 2
+
+f = {
+    "A": 38,
+    "B": 42,
+    "C": 35,
+    "D": 46
+}
+
+q = {
+    "A": 2,
+    "B": 3,
+    "C": 2,
+    "D": 3
+}
+
+c = {
+    ("Z1", "A"): 8,  ("Z1", "B"): 14, ("Z1", "C"): 11, ("Z1", "D"): 17,
+    ("Z2", "A"): 10, ("Z2", "B"): 9,  ("Z2", "C"): 13, ("Z2", "D"): 15,
+    ("Z3", "A"): 12, ("Z3", "B"): 8,  ("Z3", "C"): 14, ("Z3", "D"): 10,
+    ("Z4", "A"): 15, ("Z4", "B"): 11, ("Z4", "C"): 9,  ("Z4", "D"): 7,
+    ("Z5", "A"): 9,  ("Z5", "B"): 13, ("Z5", "C"): 8,  ("Z5", "D"): 14,
+    ("Z6", "A"): 14, ("Z6", "B"): 10, ("Z6", "C"): 7,  ("Z6", "D"): 9
+}
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+def numeric_value(value):
+    if abs(value - round(value)) <= 1e-6:
+        return float(round(value))
+    return float(value)
+
+with gp.Env(empty=True) as env:
+    env.setParam("OutputFlag", 0)
+    env.start()
+
+    with gp.Model("localizzazione_centri", env=env) as model:
+        y = model.addVars(I, vtype=GRB.BINARY, name="y")
+        x = model.addVars(J, I, vtype=GRB.BINARY, name="x")
+
+        model.setObjective(
+            gp.quicksum(f[i] * y[i] for i in I)
+            + gp.quicksum(c[j, i] * x[j, i] for j in J for i in I),
+            GRB.MINIMIZE
+        )
+
+        model.addConstr(
+            gp.quicksum(y[i] for i in I) == K,
+            name="numero_centri"
+        )
+
+        model.addConstrs(
+            (gp.quicksum(x[j, i] for i in I) == 1 for j in J),
+            name="assegnazione_unica"
+        )
+
+        model.addConstrs(
+            (gp.quicksum(x[j, i] for j in J) <= q[i] * y[i] for i in I),
+            name="capacita"
+        )
+
+        model.addConstrs(
+            (x[j, i] <= y[i] for j in J for i in I),
+            name="collegamento_apertura"
+        )
+
+        model.optimize()
+
+        solver_status = status_names.get(
+            int(model.Status),
+            "STATUS_" + str(int(model.Status))
+        )
+
+        if model.Status == GRB.OPTIMAL:
+            variables = {}
+
+            for i in I:
+                variables[f"y[{i}]"] = numeric_value(y[i].X)
+
+            for j in J:
+                for i in I:
+                    variables[f"x[{j},{i}]"] = numeric_value(x[j, i].X)
+
+            result = {
+                "status": "OPTIMAL",
+                "objective": numeric_value(model.ObjVal),
+                "variables": variables
+            }
+        else:
+            result = {
+                "status": solver_status,
+                "objective": None,
+                "variables": {}
+            }
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":"), allow_nan=False))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato è **OPTIMAL** e il costo minimo è **149 migliaia di euro**. I centri aperti sono \(B\) e \(D\), gli unici due siti con capacità complessiva pari a sei zone.
+
+Le decisioni non nulle sono:
+
+\[
+y_B=y_D=1,
+\]
+
+\[
+x_{Z1,B}=x_{Z2,B}=x_{Z3,B}=1,
+\]
+
+\[
+x_{Z4,D}=x_{Z5,D}=x_{Z6,D}=1.
+\]
+
+Il costo fisso è \(42+46=88\), mentre il costo di assegnazione è \(61\), per un totale di \(149\) migliaia di euro.

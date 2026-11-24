@@ -1,0 +1,160 @@
+import gurobipy as gp
+from gurobipy import GRB
+import json
+import math
+
+P = ["A", "B", "C"]
+T = [1, 2, 3, 4, 5, 6]
+
+demand = {
+    "A": {1: 12, 2: 18, 3: 14, 4: 20, 5: 16, 6: 19},
+    "B": {1: 10, 2: 9, 3: 15, 4: 12, 5: 17, 6: 14},
+    "C": {1: 8, 2: 11, 3: 10, 4: 13, 5: 9, 6: 15},
+}
+
+production_cost = {
+    "A": {1: 7, 2: 8, 3: 9, 4: 7, 5: 10, 6: 8},
+    "B": {1: 9, 2: 8, 3: 8, 4: 10, 5: 7, 6: 9},
+    "C": {1: 11, 2: 10, 3: 12, 4: 9, 5: 11, 6: 8},
+}
+
+setup_cost = {"A": 35, "B": 40, "C": 45}
+holding_cost = {"A": 2, "B": 2, "C": 3}
+hours_per_unit = {"A": 2, "B": 3, "C": 4}
+minimum_lot = {"A": 5, "B": 4, "C": 3}
+
+base_capacity = {1: 120, 2: 115, 3: 125, 4: 110, 5: 120, 6: 115}
+max_overtime = 20.0
+overtime_cost = 18.0
+max_total_inventory = 40
+final_inventory = 2
+
+M = {
+    (p, t): math.floor((base_capacity[t] + max_overtime) / hours_per_unit[p])
+    for p in P for t in T
+}
+
+model = gp.Model("H09")
+model.Params.OutputFlag = 0
+
+x = model.addVars(P, T, vtype=GRB.INTEGER, lb=0, name="x")
+I = model.addVars(P, T, vtype=GRB.INTEGER, lb=0, name="I")
+y = model.addVars(P, T, vtype=GRB.BINARY, name="y")
+o = model.addVars(T, vtype=GRB.CONTINUOUS, lb=0, ub=max_overtime, name="o")
+
+model.setObjective(
+    gp.quicksum(
+        production_cost[p][t] * x[p, t]
+        + setup_cost[p] * y[p, t]
+        + holding_cost[p] * I[p, t]
+        for p in P for t in T
+    )
+    + gp.quicksum(overtime_cost * o[t] for t in T),
+    GRB.MINIMIZE
+)
+
+for p in P:
+    for t in T:
+        previous_inventory = 0 if t == 1 else I[p, t - 1]
+        model.addConstr(
+            previous_inventory + x[p, t] == demand[p][t] + I[p, t],
+            name=f"balance[{p},{t}]"
+        )
+
+for p in P:
+    model.addConstr(I[p, 6] >= final_inventory, name=f"final_inventory[{p}]")
+
+for t in T:
+    model.addConstr(
+        gp.quicksum(hours_per_unit[p] * x[p, t] for p in P)
+        <= base_capacity[t] + o[t],
+        name=f"capacity[{t}]"
+    )
+
+for p in P:
+    for t in T:
+        model.addConstr(
+            x[p, t] >= minimum_lot[p] * y[p, t],
+            name=f"minimum_lot[{p},{t}]"
+        )
+        model.addConstr(
+            x[p, t] <= M[p, t] * y[p, t],
+            name=f"setup_link[{p},{t}]"
+        )
+
+model.addConstr(
+    gp.quicksum(y[p, 1] for p in P) <= 3,
+    name="setup_limit[1]"
+)
+
+for t in T[1:]:
+    model.addConstr(
+        gp.quicksum(y[p, t] for p in P) <= 2,
+        name=f"setup_limit[{t}]"
+    )
+
+for t in T:
+    model.addConstr(
+        gp.quicksum(I[p, t] for p in P) <= max_total_inventory,
+        name=f"storage_capacity[{t}]"
+    )
+
+model.optimize()
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+status = status_names.get(model.Status, "UNKNOWN")
+
+if model.Status == GRB.OPTIMAL:
+    variables = {}
+
+    for p in P:
+        for t in T:
+            value = 0.0 if abs(x[p, t].X) < 1e-7 else float(round(x[p, t].X))
+            variables[f"x[{p},{t}]"] = value
+
+    for p in P:
+        for t in T:
+            value = 0.0 if abs(I[p, t].X) < 1e-7 else float(round(I[p, t].X))
+            variables[f"I[{p},{t}]"] = value
+
+    for p in P:
+        for t in T:
+            value = 0.0 if abs(y[p, t].X) < 1e-7 else float(round(y[p, t].X))
+            variables[f"y[{p},{t}]"] = value
+
+    for t in T:
+        value = 0.0 if abs(o[t].X) < 1e-7 else float(round(o[t].X, 10))
+        variables[f"o[{t}]"] = value
+
+    result = {
+        "status": "OPTIMAL",
+        "objective": float(round(model.ObjVal, 10)),
+        "variables": variables
+    }
+else:
+    result = {
+        "status": status,
+        "objective": None,
+        "variables": {}
+    }
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))

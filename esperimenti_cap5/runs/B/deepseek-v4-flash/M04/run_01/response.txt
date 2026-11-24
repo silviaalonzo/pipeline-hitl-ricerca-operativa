@@ -1,0 +1,160 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+Insieme dei tipi di veicolo:
+\[
+I=\{\text{Van},\text{Autocarro},\text{Refrigerato},\text{Elettrico},\text{Bilico}\}
+\]
+
+Parametri:
+- \(v_i\): volume del veicolo \(i\);
+- \(p_i\): portata del veicolo \(i\);
+- \(c_i\): costo giornaliero del veicolo \(i\);
+- \(e_i\): emissioni del veicolo \(i\);
+- \(d_i\): disponibilità massima del veicolo \(i\).
+
+Variabili decisionali:
+\[
+x_i \in \mathbb{Z},\qquad 0 \le x_i \le d_i
+\]
+numero di veicoli del tipo \(i\) impiegati nella giornata.
+
+## 2. Formulazione matematica
+
+\[
+\min \sum_{i\in I} c_i x_i
+\]
+
+soggetto a:
+
+\[
+\sum_{i\in I} v_i x_i \ge 180
+\]
+
+\[
+\sum_{i\in I} p_i x_i \ge 95
+\]
+
+\[
+x_{\text{Refrigerato}} \ge 1
+\]
+
+\[
+x_{\text{Elettrico}} \ge 1
+\]
+
+\[
+\sum_{i\in I} e_i x_i \le 145
+\]
+
+\[
+x_i \in \mathbb{Z}, \quad 0 \le x_i \le d_i \quad \forall i \in I
+\]
+
+## 3. Codice Python con Gurobi
+
+```python
+import json
+import gurobipy as gp
+from gurobipy import GRB
+
+tipi = ["Van", "Autocarro", "Refrigerato", "Elettrico", "Bilico"]
+
+volume = {
+    "Van": 18,
+    "Autocarro": 30,
+    "Refrigerato": 20,
+    "Elettrico": 16,
+    "Bilico": 42,
+}
+
+portata = {
+    "Van": 8,
+    "Autocarro": 18,
+    "Refrigerato": 10,
+    "Elettrico": 7,
+    "Bilico": 28,
+}
+
+costo = {
+    "Van": 120,
+    "Autocarro": 180,
+    "Refrigerato": 210,
+    "Elettrico": 150,
+    "Bilico": 260,
+}
+
+emissione = {
+    "Van": 12,
+    "Autocarro": 22,
+    "Refrigerato": 15,
+    "Elettrico": 4,
+    "Bilico": 32,
+}
+
+disponibilita = {
+    "Van": 8,
+    "Autocarro": 6,
+    "Refrigerato": 4,
+    "Elettrico": 5,
+    "Bilico": 3,
+}
+
+m = gp.Model("flotta_giornaliera")
+m.Params.OutputFlag = 0
+
+x = {}
+for t in tipi:
+    x[t] = m.addVar(
+        lb=0,
+        ub=disponibilita[t],
+        vtype=GRB.INTEGER,
+        name=f"x_{t}"
+    )
+
+m.addConstr(gp.quicksum(volume[t] * x[t] for t in tipi) >= 180, "volume_min")
+m.addConstr(gp.quicksum(portata[t] * x[t] for t in tipi) >= 95, "portata_min")
+m.addConstr(x["Refrigerato"] >= 1, "refrigerato_min")
+m.addConstr(x["Elettrico"] >= 1, "elettrico_min")
+m.addConstr(gp.quicksum(emissione[t] * x[t] for t in tipi) <= 145, "emissioni_max")
+
+m.setObjective(gp.quicksum(costo[t] * x[t] for t in tipi), GRB.MINIMIZE)
+
+m.optimize()
+
+status_names = {
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.INF_OR_UNBD: "INF_OR_UNBD",
+    GRB.UNBOUNDED: "UNBOUNDED",
+}
+
+if m.Status == GRB.OPTIMAL:
+    result = {
+        "status": "OPTIMAL",
+        "objective": m.ObjVal,
+        "variables": {v.VarName: v.X for v in m.getVars()},
+    }
+else:
+    result = {
+        "status": status_names.get(m.Status, str(m.Status)),
+        "objective": None,
+        "variables": {},
+    }
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Il solver restituisce lo stato **OPTIMAL** con costo giornaliero minimo **1240**.
+
+Decisioni non nulle:
+- \(x_{\text{Autocarro}} = 2\)
+- \(x_{\text{Bilico}} = 2\)
+- \(x_{\text{Refrigerato}} = 1\)
+- \(x_{\text{Elettrico}} = 1\)
+
+La soluzione soddisfa tutti i vincoli:
+- volume complessivo: \(60 + 84 + 20 + 16 = 180\);
+- portata complessiva: \(36 + 56 + 10 + 7 = 109\);
+- emissioni complessive: \(44 + 64 + 15 + 4 = 127 \le 145\).

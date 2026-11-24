@@ -1,0 +1,71 @@
+{
+  "frozen_at_utc": "2026-08-10T11:25:59.255219+00:00",
+  "scenario": "B",
+  "schedule_seed": 20260810,
+  "n_runs": 180,
+  "n_pilots_already_completed": 3,
+  "gateway": "OpenRouter",
+  "routing": {
+    "provider_official_only": true,
+    "allow_fallbacks": false,
+    "require_parameters": true,
+    "reasoning_effort": "high"
+  },
+  "models": {
+    "gpt-5.6-sol": {
+      "provider": "openrouter",
+      "upstream_provider": "openai",
+      "model": "openai/gpt-5.6-sol",
+      "reasoning_effort": "high",
+      "max_output_tokens": 24000
+    },
+    "claude-sonnet-5": {
+      "provider": "openrouter",
+      "upstream_provider": "anthropic",
+      "model": "anthropic/claude-sonnet-5",
+      "reasoning_effort": "high",
+      "max_output_tokens": 24000
+    },
+    "deepseek-v4-flash": {
+      "provider": "openrouter",
+      "upstream_provider": "deepseek",
+      "model": "deepseek/deepseek-v4-flash",
+      "reasoning_effort": "high",
+      "max_output_tokens": 24000
+    }
+  },
+  "runtime": {
+    "python": "3.11.7",
+    "gurobipy": "13.0.2",
+    "openai_sdk": "2.53.0"
+  },
+  "sha256": {
+    "esperimenti_cap5/system_prompt.txt": "8b83d1ef08de18dcb1e7e85f1f9988198d9c1326416357431d80317142c3d9ec",
+    "esperimenti_cap5/models.json": "90e8876993ec1198589dbed2a36a96a61b2f95f028f5393839f6734716f97ef4",
+    "esperimenti_cap5/run_scenario_b.py": "765688ef7fca68c18fac82ae43991a679948beb1f0be2c04de5376eaa69db6d9",
+    "esperimenti_cap5/execute_response.py": "2bf36e51189b923bc0f7ec44e0406968da4f91b4a1cac03e46fe7eee52e97792",
+    "esperimenti_cap5/validate_candidate.py": "fbdc8b2d7ad3d7ffe270ab6cae64cc4902b178978e52906850f8dc7e6715bdb1",
+    "dataset_cap4/ground_truth.json": "c176ee32772b1e0c85f3575a7b28ae452495446c32c63d738e10ea1906a23cad",
+    "dataset_cap4/prompts/H01.md": "b487035ba1ff1745499bed3b7389002374c9250f9330032a956bbdf5d5246129",
+    "dataset_cap4/prompts/H02.md": "9cede4c157c1b1e34906cb9c18ce37a8755df58105b970ee641fb7f5b5ef9d0e",
+    "dataset_cap4/prompts/H03.md": "803cb5b4e84f6d92b181e32a0b1b5718e0e95578686a7de9760042c0fd782022",
+    "dataset_cap4/prompts/H04.md": "ae0e9cd218fd3d0f7ccc6b9edee754d3612bba4e54f410f5b5a2809d28d07a7c",
+    "dataset_cap4/prompts/H05.md": "5753e11852639f3b7656a5b4dca9549c29049a5521a7633526aa3e24520225e8",
+    "dataset_cap4/prompts/H06.md": "b886b21ee5331840459e4459b620b56497464cf6266a004cbe5caa4e67e19eca",
+    "dataset_cap4/prompts/H07.md": "7a9adee3b706fe08e6e8c47e72b8c174aec4458384c1df7b7ba0372731d6bca7",
+    "dataset_cap4/prompts/H08.md": "b12ee060563fc648b1e2d6ab5c69770828a868f4f1d3e298a57c71d968c6b95a",
+    "dataset_cap4/prompts/H09.md": "e16b16e30c267b993d5793333d86c51d423cd085f6ce7c2aea7082bb0419833a",
+    "dataset_cap4/prompts/H10.md": "776bb4fbfe5dacd4183d46c7ed9933af3029e3769f29da59a02c64d3140caa1d",
+    "dataset_cap4/prompts/M01.md": "8b4ace0baffc36213bd9a662bf2b5f0749df2723395fcd3afc47957753f13bf0",
+    "dataset_cap4/prompts/M02.md": "c84b718c12c26abc61183c7f5c78dfc96e204c263e77817b179f5e7bb7f18d55",
+    "dataset_cap4/prompts/M03.md": "0df71cc16904d06ff89fbcf35c329ae6cf6b3bff5bbe7913ce08289a793061ef",
+    "dataset_cap4/prompts/M04.md": "740dac37af52fc919c534a53f474d572af704ff18fc28d6cbf8b1d7126fc2566",
+    "dataset_cap4/prompts/M05.md": "c29372c4e25e1f75d29218f80360d1b2ba7651131541b39b7f6bc35ff75ea271",
+    "dataset_cap4/prompts/M06.md": "9785a18c50a040660e9b1d887b7c8db14f18a0dfc6d1a2b6abf9aaefa664bf7d",
+    "dataset_cap4/prompts/M07.md": "a280f5292a6dc2f0bcc77e2717268df62cf627252b9cb7b1ab4b3a47a8271b6b",
+    "dataset_cap4/prompts/M08.md": "eabf926e8219cf04398d3ef9b6b7a2fd5296f824c80bd9a3e04837497ffc5268",
+    "dataset_cap4/prompts/M09.md": "a8bf0c44bfdbe15b932999ea9a0600088b2b312e15422ba89d841eaaf9070e66",
+    "dataset_cap4/prompts/M10.md": "d0e8e63ac37940ca8ee29104ddd3ba26e76e710939a33c7ca3f9dfd3381c1eb6"
+  },
+  "schedule_sha256": "f42026f7c6d0363f34074713cb6225115f2503eb7436b25b2f3a95950019d4ef"
+}

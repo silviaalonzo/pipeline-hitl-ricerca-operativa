@@ -1,0 +1,28 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "servire sei zone commerciali -> insieme J delle 6 zone",
+        "esattamente due centri da aprire -> vincolo sum_i y_i = 2",
+        "capacita massima di ogni sito -> vincoli sum_j x_ij <= cap_i y_i",
+        "ogni zona assegnata a un solo centro -> vincoli sum_i x_ij = 1",
+        "minimizzare costi fissi e di servizio -> funzione obiettivo"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

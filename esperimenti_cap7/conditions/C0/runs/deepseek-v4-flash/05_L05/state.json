@@ -1,0 +1,74 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "deepseek-v4-flash",
+  "problem_id": "L05",
+  "problem_sequence": 5,
+  "domain": "Assegnazione e qualificazione",
+  "difficulty": "Elevata",
+  "model_class": "IP binaria",
+  "created_at_utc": "2026-08-26T18:04:02.829051+00:00",
+  "updated_at_utc": "2026-08-26T18:06:54.474946+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-26T18:06:54.473996+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "copertura audit ordinari e ad alto rischio -> sum_i x_{i,a}=r_a",
+              "due ispettori distinti negli audit ad alto rischio -> r_a=2 e x_{i,a} binaria",
+              "almeno un senior negli audit ad alto rischio -> sum_{i in S} x_{i,a} >= 1",
+              "celle di qualificazione assente -> x_{i,a} definita solo per Q",
+              "monte ore -> sum_a d_a x_{i,a} <= h_i",
+              "numero massimo di audit -> sum_a x_{i,a} <= m_i",
+              "incompatibilita di coppia -> x_{i,p}+x_{i,q} <= 1",
+              "massimo 10 ispettori attivati -> sum_i y_i <= 10",
+              "minimizzazione costi fissi e di assegnazione -> funzione obiettivo"
+            ],
+            "memory_items_used": []
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "deepseek-v4-flash",
+    "problem_id": "L05",
+    "retrieved_at_utc": "2026-08-26T18:04:02.829045+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0,
+    "retrieval_policy": "full_frozen_snapshot",
+    "condition": "C0"
+  },
+  "pending_handoff": null,
+  "chapter": 7,
+  "condition": "C0",
+  "memory_frozen": true,
+  "memory_update_suppressed": true
+}

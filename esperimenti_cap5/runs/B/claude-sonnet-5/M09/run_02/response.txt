@@ -1,0 +1,136 @@
+# M09 — Piano di riordino con costi fissi
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $T = \{1,2,3,4,5,6\}$: periodi di pianificazione
+
+**Parametri**
+- $d_t$: domanda nel periodo $t$
+- $c_t$: costo unitario di acquisto nel periodo $t$
+- $Cap_t$: capacità massima di un ordine nel periodo $t$
+- $I_0 = 10$: scorta iniziale
+- $I_{min} = 5$: scorta minima richiesta a fine orizzonte (periodo 6)
+- $L = 10$: quantità minima di un ordine attivato
+- $K = 40$: costo fisso per ordine attivato
+- $h = 2$: costo di mantenimento per unità a fine periodo
+
+Valori numerici:
+
+| t | d_t | c_t | Cap_t |
+|---|-----|-----|-------|
+| 1 | 20  | 9   | 50    |
+| 2 | 30  | 8   | 50    |
+| 3 | 15  | 11  | 45    |
+| 4 | 35  | 7   | 55    |
+| 5 | 25  | 10  | 45    |
+| 6 | 20  | 9   | 50    |
+
+**Variabili decisionali**
+- $x_t \in \mathbb{Z}_{\ge 0}$: quantità ordinata nel periodo $t$
+- $I_t \in \mathbb{Z}_{\ge 0}$: scorta di fine periodo $t$
+- $y_t \in \{0,1\}$: 1 se nel periodo $t$ viene attivato un ordine, 0 altrimenti
+
+## 2. Formulazione matematica
+
+$$
+\min \sum_{t \in T} \left( c_t x_t + K y_t + h I_t \right)
+$$
+
+soggetto a:
+
+$$
+I_{t-1} + x_t - d_t = I_t \qquad \forall t \in T \quad (I_0 = 10 \text{ dato})
+$$
+
+$$
+I_6 \ge I_{min}
+$$
+
+$$
+x_t \le Cap_t \, y_t \qquad \forall t \in T
+$$
+
+$$
+x_t \ge L \, y_t \qquad \forall t \in T
+$$
+
+$$
+x_t \in \mathbb{Z}_{\ge 0}, \quad I_t \in \mathbb{Z}_{\ge 0}, \quad y_t \in \{0,1\} \qquad \forall t \in T
+$$
+
+I vincoli di non negatività su $I_t$ garantiscono l'assenza di arretrati (backlog).
+
+## 3. Codice Python con gurobipy
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# Dati
+T = [1, 2, 3, 4, 5, 6]
+demand = {1: 20, 2: 30, 3: 15, 4: 35, 5: 25, 6: 20}
+cost   = {1: 9,  2: 8,  3: 11, 4: 7,  5: 10, 6: 9}
+cap    = {1: 50, 2: 50, 3: 45, 4: 55, 5: 45, 6: 50}
+
+I0 = 10
+Imin_final = 5
+L = 10      # ordine minimo
+K = 40      # costo fisso
+h = 2       # costo mantenimento
+
+model = gp.Model("Lot_sizing_fixed_cost")
+
+# Variabili
+x = model.addVars(T, vtype=GRB.INTEGER, lb=0, name="x")
+I = model.addVars(T, vtype=GRB.INTEGER, lb=0, name="I")
+y = model.addVars(T, vtype=GRB.BINARY, name="y")
+
+# Funzione obiettivo
+model.setObjective(
+    gp.quicksum(cost[t] * x[t] + K * y[t] + h * I[t] for t in T),
+    GRB.MINIMIZE
+)
+
+# Vincoli di bilancio scorte
+for t in T:
+    prev_inv = I0 if t == 1 else I[t - 1]
+    model.addConstr(prev_inv + x[t] - demand[t] == I[t], name=f"balance_{t}")
+
+# Scorta finale minima
+model.addConstr(I[6] >= Imin_final, name="final_stock")
+
+# Capacità e minimo ordine legati all'attivazione
+for t in T:
+    model.addConstr(x[t] <= cap[t] * y[t], name=f"cap_{t}")
+    model.addConstr(x[t] >= L * y[t], name=f"minlot_{t}")
+
+model.optimize()
+
+status = model.Status
+result = {"status": None, "objective": None, "variables": {}}
+
+if status == GRB.OPTIMAL:
+    result["status"] = "OPTIMAL"
+    result["objective"] = model.ObjVal
+    variables = {}
+    for t in T:
+        variables[f"x_{t}"] = x[t].X
+        variables[f"I_{t}"] = I[t].X
+        variables[f"y_{t}"] = y[t].X
+    result["variables"] = variables
+else:
+    result["status"] = str(status)
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello determina il piano di riordino ottimale su 6 periodi che minimizza la somma di costi di acquisto, costi fissi di ordinazione e costi di mantenimento a scorta, rispettando:
+- il bilancio di magazzino periodo per periodo (senza arretrati),
+- la scorta finale minima di 5 unità,
+- il vincolo di ordine minimo (10 unità) e massimo (capacità del periodo) legato alla variabile binaria di attivazione.
+
+Il solver Gurobi risolve il problema MILP in tempi trascurabili data la dimensione ridotta. Alla fine dell'esecuzione viene stampata un'unica riga `SOLUTION_JSON` contenente lo stato di risoluzione (`OPTIMAL`), il valore ottimo della funzione obiettivo e i valori di tutte le variabili decisionali ($x_t$, $I_t$, $y_t$ per $t=1,\dots,6$), inclusi quelli nulli, in conformità con il formato richiesto.

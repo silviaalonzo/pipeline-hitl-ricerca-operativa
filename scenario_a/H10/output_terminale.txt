@@ -1,0 +1,66 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 24 rows, 27 columns and 74 nonzeros (Min)
+Model fingerprint: 0x0ba2e9a6
+Model has 27 linear objective coefficients
+Variable types: 0 continuous, 27 integer (9 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 4e+01]
+  Objective range  [1e+00, 6e+01]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 3e+01]
+
+Found heuristic solution: objective 655.0000000
+Presolve removed 6 rows and 8 columns
+Presolve time: 0.00s
+Presolved: 18 rows, 19 columns, 56 nonzeros
+Variable types: 0 continuous, 19 integer (5 binary)
+
+Root relaxation: objective 5.728267e+02, 11 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  572.82667    0    3  655.00000  572.82667  12.5%     -    0s
+H    0     0                     583.0000000  572.82667  1.74%     -    0s
+
+Cutting planes:
+  Cover: 1
+  MIR: 1
+  Flow cover: 1
+
+Explored 1 nodes (11 simplex iterations) in 0.01 seconds (0.00 work units)
+Thread count was 8 (of 8 available processors)
+
+Solution count 2: 583 655 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 5.830000000000e+02, best bound 5.830000000000e+02, gap 0.0000%
+
+======================================================================
+Stato finale Gurobi : 2
+Runtime Gurobi      : 0.0103 s
+Variabili           : 27
+Vincoli             : 24
+Valore obiettivo    : 583
+
+Archi attivati (7): SA, SB, AC, BC, CD, CT, DT  — costi fissi 277
+
+Flussi sugli archi attivi:
+  Arco      K1    K2   Totale  Capacità  Costo var.
+  SA        28     0       28        35          56
+  SB         0    22       22        35          44
+  AC        28    -0       28        30          56
+  BC        -0    22       22        25          22
+  CD        15    -0       15        20          15
+  CT        13    22       35        35          83
+  DT        15     0       15        35          30
+
+Costo variabile totale : 306
+======================================================================

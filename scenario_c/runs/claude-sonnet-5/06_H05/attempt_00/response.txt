@@ -1,0 +1,183 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["Budget annuali 110,100,90 -> vincoli sum costoA1/A2/A3 * x_p <= budget_t","Limite personale 28 -> vincolo sum personale_p * x_p <= 28","Rischio massimo 32 -> vincolo sum rischio_p * x_p <= 32","G richiede B, J richiede E, K richiede C -> vincoli di precedenza x_G<=x_B, x_J<=x_E, x_K<=x_C","D-H e F-L incompatibili -> vincoli x_D+x_H<=1, x_F+x_L<=1","Almeno due digitali tra A,C,G,J -> vincolo x_A+x_C+x_G+x_J>=2","Almeno un sostenibile tra E,H,K -> vincolo x_E+x_H+x_K>=1","Massimo otto progetti -> vincolo sum x_p<=8","Sinergia A-C (12) e E-K (10) -> variabili ausiliarie y_AC, y_EK linearizzate con vincoli McCormick"]}
+
+## 2. Insiemi, parametri e variabili
+
+**Insiemi**
+- P = {A, B, C, D, E, F, G, H, I, J, K, L} : insieme dei progetti candidabili.
+
+**Parametri** (per ogni p ∈ P)
+- van_p : valore attuale netto del progetto p
+- c1_p, c2_p, c3_p : costo del progetto p nell'anno 1, 2, 3
+- pers_p : fabbisogno di personale del progetto p
+- risk_p : rischio del progetto p
+
+Valori (tabella fornita):
+
+| p | van | c1 | c2 | c3 | pers | risk |
+|---|-----|----|----|----|------|------|
+| A | 42 | 18 | 12 | 10 | 4 | 5 |
+| B | 35 | 20 | 18 | 14 | 4 | 4 |
+| C | 48 | 25 | 20 | 18 | 5 | 6 |
+| D | 31 | 15 | 14 | 12 | 3 | 3 |
+| E | 40 | 22 | 16 | 15 | 4 | 4 |
+| F | 28 | 14 | 12 | 10 | 3 | 2 |
+| G | 55 | 30 | 25 | 22 | 6 | 7 |
+| H | 37 | 20 | 18 | 16 | 4 | 5 |
+| I | 33 | 17 | 15 | 12 | 3 | 3 |
+| J | 50 | 27 | 21 | 18 | 5 | 6 |
+| K | 46 | 24 | 19 | 17 | 5 | 5 |
+| L | 29 | 16 | 13 | 11 | 3 | 3 |
+
+Budget annuali: B1=110, B2=100, B3=90. Limite personale: PMAX=28. Limite rischio: RMAX=32.
+Sinergie: syn_AC = 12 (se A e C entrambi scelti), syn_EK = 10 (se E e K entrambi scelti).
+
+**Variabili decisionali**
+- x_p ∈ {0,1} per ogni p ∈ P : 1 se il progetto p è selezionato, 0 altrimenti.
+- y_AC ∈ {0,1} : variabile ausiliaria che vale 1 se A e C sono entrambi selezionati (attiva la sinergia).
+- y_EK ∈ {0,1} : variabile ausiliaria che vale 1 se E e K sono entrambi selezionati (attiva la sinergia).
+
+## 3. Formulazione matematica
+
+**Funzione obiettivo**
+
+max Z = Σ_{p∈P} van_p · x_p + 12 · y_AC + 10 · y_EK
+
+**Vincoli**
+
+Budget annuali:
+- Σ_{p∈P} c1_p · x_p ≤ 110
+- Σ_{p∈P} c2_p · x_p ≤ 100
+- Σ_{p∈P} c3_p · x_p ≤ 90
+
+Personale:
+- Σ_{p∈P} pers_p · x_p ≤ 28
+
+Rischio:
+- Σ_{p∈P} risk_p · x_p ≤ 32
+
+Precedenze:
+- x_G ≤ x_B
+- x_J ≤ x_E
+- x_K ≤ x_C
+
+Incompatibilità:
+- x_D + x_H ≤ 1
+- x_F + x_L ≤ 1
+
+Requisiti di composizione:
+- x_A + x_C + x_G + x_J ≥ 2  (digitali)
+- x_E + x_H + x_K ≥ 1        (sostenibili)
+
+Numero massimo di progetti:
+- Σ_{p∈P} x_p ≤ 8
+
+Linearizzazione sinergie (McCormick per prodotto di binarie):
+- y_AC ≤ x_A
+- y_AC ≤ x_C
+- y_AC ≥ x_A + x_C − 1
+- y_EK ≤ x_E
+- y_EK ≤ x_K
+- y_EK ≥ x_E + x_K − 1
+
+Dominio:
+- x_p ∈ {0,1} ∀p∈P
+- y_AC, y_EK ∈ {0,1}
+
+## 4. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+
+# --- Dati ---
+projects = ["A","B","C","D","E","F","G","H","I","J","K","L"]
+
+van  = {"A":42,"B":35,"C":48,"D":31,"E":40,"F":28,
+        "G":55,"H":37,"I":33,"J":50,"K":46,"L":29}
+c1   = {"A":18,"B":20,"C":25,"D":15,"E":22,"F":14,
+        "G":30,"H":20,"I":17,"J":27,"K":24,"L":16}
+c2   = {"A":12,"B":18,"C":20,"D":14,"E":16,"F":12,
+        "G":25,"H":18,"I":15,"J":21,"K":19,"L":13}
+c3   = {"A":10,"B":14,"C":18,"D":12,"E":15,"F":10,
+        "G":22,"H":16,"I":12,"J":18,"K":17,"L":11}
+pers = {"A":4,"B":4,"C":5,"D":3,"E":4,"F":3,
+        "G":6,"H":4,"I":3,"J":5,"K":5,"L":3}
+risk = {"A":5,"B":4,"C":6,"D":3,"E":4,"F":2,
+        "G":7,"H":5,"I":3,"J":6,"K":5,"L":3}
+
+B1, B2, B3 = 110, 100, 90
+PMAX = 28
+RMAX = 32
+SYN_AC = 12
+SYN_EK = 10
+
+model = gp.Model("portafoglio_pluriennale")
+
+# --- Variabili ---
+x = model.addVars(projects, vtype=GRB.BINARY, name="x")
+y_AC = model.addVar(vtype=GRB.BINARY, name="y_AC")
+y_EK = model.addVar(vtype=GRB.BINARY, name="y_EK")
+
+# --- Obiettivo ---
+model.setObjective(
+    gp.quicksum(van[p] * x[p] for p in projects) + SYN_AC * y_AC + SYN_EK * y_EK,
+    GRB.MAXIMIZE
+)
+
+# --- Vincoli di budget ---
+model.addConstr(gp.quicksum(c1[p] * x[p] for p in projects) <= B1, name="budget_anno1")
+model.addConstr(gp.quicksum(c2[p] * x[p] for p in projects) <= B2, name="budget_anno2")
+model.addConstr(gp.quicksum(c3[p] * x[p] for p in projects) <= B3, name="budget_anno3")
+
+# --- Personale ---
+model.addConstr(gp.quicksum(pers[p] * x[p] for p in projects) <= PMAX, name="personale")
+
+# --- Rischio ---
+model.addConstr(gp.quicksum(risk[p] * x[p] for p in projects) <= RMAX, name="rischio")
+
+# --- Precedenze ---
+model.addConstr(x["G"] <= x["B"], name="G_requires_B")
+model.addConstr(x["J"] <= x["E"], name="J_requires_E")
+model.addConstr(x["K"] <= x["C"], name="K_requires_C")
+
+# --- Incompatibilità ---
+model.addConstr(x["D"] + x["H"] <= 1, name="incompat_D_H")
+model.addConstr(x["F"] + x["L"] <= 1, name="incompat_F_L")
+
+# --- Requisiti di composizione ---
+model.addConstr(x["A"] + x["C"] + x["G"] + x["J"] >= 2, name="min_digitali")
+model.addConstr(x["E"] + x["H"] + x["K"] >= 1, name="min_sostenibili")
+
+# --- Numero massimo di progetti ---
+model.addConstr(gp.quicksum(x[p] for p in projects) <= 8, name="max_progetti")
+
+# --- Linearizzazione sinergie ---
+model.addConstr(y_AC <= x["A"], name="syn_AC_1")
+model.addConstr(y_AC <= x["C"], name="syn_AC_2")
+model.addConstr(y_AC >= x["A"] + x["C"] - 1, name="syn_AC_3")
+
+model.addConstr(y_EK <= x["E"], name="syn_EK_1")
+model.addConstr(y_EK <= x["K"], name="syn_EK_2")
+model.addConstr(y_EK >= x["E"] + x["K"] - 1, name="syn_EK_3")
+
+model.optimize()
+
+status = model.Status
+if status == GRB.OPTIMAL:
+    obj_val = model.ObjVal
+    variables = {}
+    for p in projects:
+        variables[f"x_{p}"] = x[p].X
+    variables["y_AC"] = y_AC.X
+    variables["y_EK"] = y_EK.X
+    sol = {"status": "OPTIMAL", "objective": obj_val, "variables": variables}
+else:
+    sol = {"status": model.Status, "objective": None, "variables": {}}
+
+import json
+print("SOLUTION_JSON=" + json.dumps(sol))
+```
+
+## 5. Sintesi della soluzione
+
+Il modello è un problema di programmazione lineare intera binaria che seleziona un sottoinsieme di 12 progetti su un orizzonte triennale, massimizzando il VAN totale (incluse le sinergie A-C e E-K linearizzate tramite variabili ausiliarie binarie con vincoli McCormick), nel rispetto dei budget annuali (110, 100, 90), del limite di personale (28), del limite di rischio (32), dei vincoli di precedenza (G→B, J→E, K→C), delle incompatibilità (D-H, F-L), dei requisiti minimi di composizione (almeno 2 progetti digitali tra A,C,G,J e almeno 1 progetto sostenibile tra E,H,K) e del limite massimo di 8 progetti selezionabili. Il codice Gurobi costruisce il modello, lo risolve e stampa lo stato, il valore ottimo del VAN complessivo (comprensivo delle sinergie attivate) e il valore di tutte le variabili decisionali, comprese quelle nulle.

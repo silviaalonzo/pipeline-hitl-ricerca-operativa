@@ -1,0 +1,64 @@
+{
+  "id": "gen-1786380125-9Iu96IG3lpDnEy4pkN3A",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "# Formulazione del problema\n\n## 1. Insiemi, parametri e variabili decisionali\n\n**Insiemi:**\n- $R = \\{R1, R2, R3, R4\\}$: insieme delle rotte\n- $T = \\{P, M, G\\}$: insieme dei tipi di veicolo (Piccolo, Medio, Grande)\n\n**Parametri:**\n- $d_r$: domanda della rotta $r \\in R$ (42, 55, 38, 64)\n- $cap_t$: capacità per viaggio del tipo $t \\in T$ (8, 14, 20)\n- $disp_t$: disponibilità totale del tipo $t \\in T$ (10, 9, 6)\n- $em_t$: emissioni per viaggio del tipo $t \\in T$ (5, 8, 11)\n- $c_{r,t}$: costo di un viaggio con tipo $t$ sulla rotta $r$ (matrice dei costi)\n- $E_{max} = 145$: limite massimo di emissioni totali\n- $K = 2$: numero massimo di tipi di veicolo utilizzabili per rotta\n\n**Variabili decisionali:**\n- $x_{r,t} \\in \\mathbb{Z}_{\\ge 0}$: numero di viaggi del tipo $t$ sulla rotta $r$\n- $y_{r,t} \\in \\{0,1\\}$: 1 se il tipo $t$ viene utilizzato (almeno un viaggio) sulla rotta $r$, 0 altrimenti\n\n## 2. Formulazione matematica completa\n\n**Funzione obiettivo:**\n$$\\min Z = \\sum_{r \\in R} \\sum_{t \\in T} c_{r,t} \\, x_{r,t}$$\n\n**Vincoli:**\n\n1. **Copertura della domanda per ogni rotta:**\n$$\\sum_{t \\in T} cap_t \\, x_{r,t} \\ge d_r \\qquad \\forall r \\in R$$\n\n2. **Disponibilità flotta per tipo (condivisa su tutte le rotte):**\n$$\\sum_{r \\in R} x_{r,t} \\le disp_t \\qquad \\forall t \\in T$$\n\n3. **Limite di emissioni totali:**\n$$\\sum_{r \\in R} \\sum_{t \\in T} em_t \\, x_{r,t} \\le E_{max}$$\n\n4. **Al massimo 2 tipi di veicolo per rotta (linking):**\n$$x_{r,t} \\le M_{r,t} \\, y_{r,t} \\qquad \\forall r \\in R, t \\in T$$\n$$\\sum_{t \\in T} y_{r,t} \\le 2 \\qquad \\forall r \\in R$$\n\ndove $M_{r,t} = \\lceil d_r / cap_t \\rceil$ è un big-M valido (numero massimo di viaggi utili di quel tipo su quella rotta).\n\n5. **Vincolo veicolo grande su R4:**\n$$x_{R4,G} \\ge 1$$\n\n6. **Dominio delle variabili:**\n$$x_{r,t} \\in \\mathbb{Z}_{\\ge 0}, \\quad y_{r,t} \\in \\{0,1\\} \\qquad \\forall r \\in R, t \\in T$$\n\n## 3. Codice Python con Gurobi\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\nimport math\n\n# Insiemi\nR = [\"R1\", \"R2\", \"R3\", \"R4\"]\nT = [\"P\", \"M\", \"G\"]\n\n# Parametri\ndemand = {\"R1\": 42, \"R2\": 55, \"R3\": 38, \"R4\": 64}\ncap = {\"P\": 8, \"M\": 14, \"G\": 20}\ndisp = {\"P\": 10, \"M\": 9, \"G\": 6}\nem = {\"P\": 5, \"M\": 8, \"G\": 11}\n\ncost = {\n    (\"R1\", \"P\"): 45, (\"R1\", \"M\"): 62, (\"R1\", \"G\"): 82,\n    (\"R2\", \"P\"): 52, (\"R2\", \"M\"): 68, (\"R2\", \"G\"): 88,\n    (\"R3\", \"P\"): 40, (\"R3\", \"M\"): 58, (\"R3\", \"G\"): 79,\n    (\"R4\", \"P\"): 60, (\"R4\", \"M\"): 77, (\"R4\", \"G\"): 96,\n}\n\nE_max = 145\nK = 2\n\n# Big-M per ogni (r,t): numero massimo di viaggi utili\nM_rt = {(r, t): math.ceil(demand[r] / cap[t]) for r in R for t in T}\n\n# Modello\nmodel = gp.Model(\"Allocazione_Flotta\")\n\nx = model.addVars(R, T, vtype=GRB.INTEGER, lb=0, name=\"x\")\ny = model.addVars(R, T, vtype=GRB.BINARY, name=\"y\")\n\n# Funzione obiettivo\nmodel.setObjective(gp.quicksum(cost[r, t] * x[r, t] for r in R for t in T), GRB.MINIMIZE)\n\n# Vincolo 1: copertura domanda\nfor r in R:\n    model.addConstr(gp.quicksum(cap[t] * x[r, t] for t in T) >= demand[r], name=f\"dom_{r}\")\n\n# Vincolo 2: disponibilità flotta\nfor t in T:\n    model.addConstr(gp.quicksum(x[r, t] for r in R) <= disp[t], name=f\"disp_{t}\")\n\n# Vincolo 3: emissioni totali\nmodel.addConstr(gp.quicksum(em[t] * x[r, t] for r in R for t in T) <= E_max, name=\"emissioni\")\n\n# Vincolo 4: linking x-y e massimo 2 tipi per rotta\nfor r in R:\n    for t in T:\n        model.addConstr(x[r, t] <= M_rt[r, t] * y[r, t], name=f\"link_{r}_{t}\")\n    model.addConstr(gp.quicksum(y[r, t] for t in T) <= K, name=f\"maxtipi_{r}\")\n\n# Vincolo 5: almeno un veicolo grande su R4\nmodel.addConstr(x[\"R4\", \"G\"] >= 1, name=\"grande_R4\")\n\n# Risoluzione\nmodel.optimize()\n\n# Estrazione risultati\nresult = {\"status\": None, \"objective\": None, \"variables\": {}}\n\nif model.status == GRB.OPTIMAL:\n    result[\"status\"] = \"OPTIMAL\"\n    result[\"objective\"] = round(model.objVal, 4)\n    variables = {}\n    for r in R:\n        for t in T:\n            variables[f\"x_{r}_{t}\"] = round(x[r, t].X, 4)\n    for r in R:\n        for t in T:\n            variables[f\"y_{r}_{t}\"] = round(y[r, t].X, 4)\n    result[\"variables\"] = variables\nelse:\n    result[\"status\"] = str(model.status)\n    result[\"objective\"] = None\n    result[\"variables\"] = {}\n\nprint(f\"SOLUTION_JSON={json.dumps(result)}\")\n```\n\n## 4. Sintesi della soluzione\n\nIl modello alloca i viaggi dei tre tipi di veicolo (Piccolo, Medio, Grande) alle quattro rotte, minimizzando il costo totale, rispettando:\n- la copertura della domanda su ogni rotta,\n- la disponibilità limitata e condivisa di ciascun tipo di veicolo,\n- il vincolo che ogni rotta usi al massimo 2 tipi di veicolo,\n- l'obbligo di almeno un veicolo grande su R4,\n- il limite massimo di 145 unità di emissioni totali.\n\nIl solver Gurobi risolve il problema MILP e determina l'assegnazione ottimale $x_{r,t}$ (numero di viaggi per tipo/rotta) e le variabili binarie $y_{r,t}$ che indicano quali tipi vengono attivati su ciascuna rotta. Lo stato, il valore della funzione obiettivo (costo minimo totale) e tutte le variabili (incluse quelle nulle) vengono riportati nel formato JSON richiesto, eseguendo direttamente lo script sopra.",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": null
+      },
+      "native_finish_reason": "end_turn"
+    }
+  ],
+  "created": 1786380125,
+  "model": "anthropic/claude-sonnet-5",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 2732,
+    "prompt_tokens": 1128,
+    "total_tokens": 3860,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.029576,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.029576,
+      "upstream_inference_prompt_cost": 0.002256,
+      "upstream_inference_completions_cost": 0.02732
+    }
+  },
+  "provider": "Anthropic",
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "anthropic/claude-sonnet-5",
+    "required_provider": "anthropic",
+    "allow_fallbacks": false,
+    "require_parameters": true
+  },
+  "_experiment": {
+    "elapsed_seconds": 23.367487041999993,
+    "completed_at_utc": "2026-08-10T16:42:27.684242+00:00"
+  }
+}

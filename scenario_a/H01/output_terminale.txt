@@ -1,0 +1,79 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 25 rows, 54 columns and 222 nonzeros (Min)
+Model fingerprint: 0x79771830
+Model has 54 linear objective coefficients
+Variable types: 0 continuous, 54 integer (6 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+02]
+  Objective range  [4e+00, 1e+02]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 5e+02]
+
+Found heuristic solution: objective 1679.0000000
+Presolve time: 0.00s
+Presolved: 25 rows, 54 columns, 213 nonzeros
+Variable types: 0 continuous, 54 integer (6 binary)
+
+Root relaxation: objective 1.209565e+03, 12 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0 1209.56466    0    6 1679.00000 1209.56466  28.0%     -    0s
+H    0     0                    1454.0000000 1209.56466  16.8%     -    0s
+H    0     0                    1452.0000000 1209.56466  16.7%     -    0s
+H    0     0                    1450.0000000 1209.56466  16.6%     -    0s
+H    0     0                    1397.0000000 1209.56466  13.4%     -    0s
+H    0     0                    1386.0000000 1209.56466  12.7%     -    0s
+H    0     0                    1377.0000000 1209.56466  12.2%     -    0s
+     0     0 1315.71977    0   15 1377.00000 1315.71977  4.45%     -    0s
+     0     0 1320.55520    0   17 1377.00000 1320.55520  4.10%     -    0s
+     0     0 1336.03566    0   12 1377.00000 1336.03566  2.97%     -    0s
+H    0     0                    1355.0000000 1338.55402  1.21%     -    0s
+     0     0 1338.55402    0   23 1355.00000 1338.55402  1.21%     -    0s
+
+Cutting planes:
+  Gomory: 3
+  Implied bound: 12
+  MIR: 1
+  Flow cover: 3
+
+Explored 1 nodes (35 simplex iterations) in 0.01 seconds (0.00 work units)
+Thread count was 8 (of 8 available processors)
+
+Solution count 8: 1355 1377 1386 ... 1679
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 1.355000000000e+03, best bound 1.355000000000e+03, gap 0.0000%
+
+======================================================================
+Stato finale Gurobi : 2
+Runtime Gurobi      : 0.0107 s
+Variabili           : 54
+Vincoli             : 25
+Valore obiettivo    : 1355
+
+Siti aperti:
+  A  (capacità 90, movimentate 55 unità)
+  C  (capacità 110, movimentate 87 unità)
+  F  (capacità 85, movimentate 78 unità)
+
+Assegnazioni non nulle (centro -> zona : quantità):
+  A -> Z1 : 30
+  A -> Z2 : 25
+  C -> Z3 : 35
+  C -> Z5 : 28
+  C -> Z7 : 24
+  F -> Z4 : 20
+  F -> Z6 : 32
+  F -> Z8 : 26
+
+Emissioni complessive : 293 / 470
+======================================================================

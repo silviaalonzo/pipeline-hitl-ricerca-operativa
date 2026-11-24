@@ -1,0 +1,98 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "deepseek-v4-flash",
+  "problem_id": "M05",
+  "problem_sequence": 11,
+  "domain": "Project portfolio",
+  "difficulty": "Media",
+  "model_class": "IP binaria",
+  "created_at_utc": "2026-08-24T20:59:59.040599+00:00",
+  "updated_at_utc": "2026-08-24T21:02:40.319614+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T21:02:40.318706+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "maximizzare il valore complessivo -> funzione obiettivo max somma v_i*x_i",
+              "budget 100 -> vincolo somma b_i*x_i <= 100",
+              "18 unità di personale -> vincolo somma p_i*x_i <= 18",
+              "P5 richiede P2 -> vincolo x_5 <= x_2",
+              "P7 richiede P3 -> vincolo x_7 <= x_3",
+              "P4 e P6 incompatibili -> vincolo x_4 + x_6 <= 1",
+              "almeno un progetto digitale tra P1,P3,P7 -> vincolo x_1+x_3+x_7 >= 1",
+              "almeno tre progetti complessivi -> vincolo somma x_i >= 3"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "deepseek-v4-flash",
+    "problem_id": "M05",
+    "retrieved_at_utc": "2026-08-24T20:59:59.040441+00:00",
+    "semantic": [
+      {
+        "id": "S-001",
+        "created_at_utc": "2026-08-24T19:52:07.274566+00:00",
+        "source_episode": "H03-H01",
+        "principle": "Quando un requisito si applica individualmente a più soggetti, formulare un vincolo separato per ciascun soggetto anziché aggregarli in un unico limite complessivo.",
+        "tags": [
+          "Workforce scheduling",
+          "IP binaria",
+          "stadio-2",
+          "revisione_di_assicurazione_post_riparazione"
+        ]
+      }
+    ],
+    "episodic": [
+      {
+        "id": "H03-H01",
+        "created_at_utc": "2026-08-24T19:52:07.274558+00:00",
+        "problem_id": "H03",
+        "domain": "Workforce scheduling",
+        "model_class": "IP binaria",
+        "stage": 2,
+        "failure_class": "revisione_di_assicurazione_post_riparazione",
+        "correction_summary": "Durante la revisione dello Stadio 2, l’esperto ha corretto il vincolo sul fine settimana separando il limite di E1 da quello di E2 e ha fornito il modello completo con domanda, seniority, riposi, specialisti e indisponibilità.",
+        "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+        "active_minutes": 20.0,
+        "tags": [
+          "Workforce scheduling",
+          "IP binaria",
+          "stadio-2",
+          "revisione_di_assicurazione_post_riparazione"
+        ]
+      }
+    ],
+    "semantic_count_total": 2,
+    "episodic_count_total": 2
+  },
+  "pending_handoff": null
+}

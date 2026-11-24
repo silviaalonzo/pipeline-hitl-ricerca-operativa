@@ -1,0 +1,136 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "deepseek-v4-flash",
+  "problem_id": "H07",
+  "problem_sequence": 12,
+  "domain": "Procurement",
+  "difficulty": "Elevata",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-24T21:02:40.321389+00:00",
+  "updated_at_utc": "2026-08-24T21:14:54.581567+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T21:06:34.663883+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "length"
+      }
+    },
+    {
+      "number": 1,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_01",
+      "created_at_utc": "2026-08-24T21:09:36.114998+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "codice_non_estratto",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "stop"
+      }
+    },
+    {
+      "number": 2,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_02",
+      "created_at_utc": "2026-08-24T21:12:18.450652+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false
+      }
+    },
+    {
+      "number": 3,
+      "kind": "EXPERT_DIRECT_CODE",
+      "directory": "attempt_03",
+      "created_at_utc": "2026-08-24T21:14:54.580101+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "expert_direct_artifact",
+        "source_sha256": "e9d411cfcd2be8e06610db5241e96f914c1a8c3be0e6c149d1a7d3af6284ff85",
+        "candidate_source": "stdout:SOLUTION_JSON"
+      }
+    }
+  ],
+  "interventions": [
+    {
+      "handoff_number": 1,
+      "stage": 2,
+      "failure_class": "revisione_di_assicurazione_post_riparazione",
+      "active_minutes": 20.0,
+      "action": "CORRECT",
+      "correction_mode": "DIRECT_CODE",
+      "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+      "correction_summary": "Durante la revisione dello Stadio 2, l’esperto ha sostituito l’artefatto automatico con un codice completo e autonomo che definisce esplicitamente le sole coppie fornitore-componente disponibili, i legami quantità-uso-attivazione e tutti i controlli richiesti dalla traccia.",
+      "semantic_principle": "Nei problemi di approvvigionamento con celle non disponibili, creare variabili soltanto per le coppie ammesse e collegare esplicitamente quantità, uso della coppia e attivazione del fornitore.",
+      "expert_artifact_source": "/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/12_H07/handoffs/handoff_01/expert_code_H07.py",
+      "expert_artifact_sha256": "e9d411cfcd2be8e06610db5241e96f914c1a8c3be0e6c149d1a7d3af6284ff85",
+      "submitted_at_utc": "2026-08-24T21:14:54.580101+00:00",
+      "memory_committed": true
+    }
+  ],
+  "memory_retrieval": {
+    "model": "deepseek-v4-flash",
+    "problem_id": "H07",
+    "retrieved_at_utc": "2026-08-24T21:02:40.321356+00:00",
+    "semantic": [
+      {
+        "id": "S-002",
+        "created_at_utc": "2026-08-24T20:18:42.444653+00:00",
+        "source_episode": "H02-H01",
+        "principle": "Nei problemi di produzione multi-periodo, indicizzare esplicitamente anche la scorta iniziale e collegare periodi consecutivi mediante il bilancio produzione più scorta precedente uguale domanda più scorta finale; completare poi il collegamento tra produzione e setup con limiti minimo e massimo di lotto.",
+        "tags": [
+          "Produzione e scorte",
+          "MILP intera",
+          "stadio-3",
+          "output_troncato_o_senza_codice"
+        ]
+      }
+    ],
+    "episodic": [
+      {
+        "id": "H02-H01",
+        "created_at_utc": "2026-08-24T20:18:42.444642+00:00",
+        "problem_id": "H02",
+        "domain": "Produzione e scorte",
+        "model_class": "MILP intera",
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "correction_summary": "Dopo tre riparazioni automatiche concluse senza codice eseguibile, l’esperto ha completato il modello MILP introducendo variabili di produzione, scorta e setup, bilanci intertemporali, condizioni iniziali e finali, capacità, limite ai setup e vincoli di lotto.",
+        "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+        "active_minutes": 20.0,
+        "tags": [
+          "Produzione e scorte",
+          "MILP intera",
+          "stadio-3",
+          "output_troncato_o_senza_codice"
+        ]
+      }
+    ],
+    "semantic_count_total": 2,
+    "episodic_count_total": 2
+  },
+  "pending_handoff": null
+}

@@ -1,0 +1,17 @@
+{
+  "scenario": "B",
+  "provider": "openrouter",
+  "model": "openai/gpt-5.6-sol",
+  "problem_id": "H06",
+  "replicate": 1,
+  "started_at_utc": "2026-08-10T12:53:22.267525+00:00",
+  "configuration": {
+    "provider": "openrouter",
+    "upstream_provider": "openai",
+    "model": "openai/gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "max_output_tokens": 24000
+  },
+  "system_prompt": "Agisci come esperto di Ricerca Operativa. Devi formulare e risolvere il problema descritto dall'utente senza chiedere chiarimenti e senza usare informazioni esterne.\n\nLa risposta deve contenere, in quest'ordine:\n1. insiemi, parametri e variabili decisionali;\n2. formulazione matematica completa;\n3. un solo blocco di codice Python eseguibile con gurobipy;\n4. una breve sintesi della soluzione.\n\nIl codice deve costruire il modello a partire dai dati presenti nella traccia, chiamare Gurobi e stampare alla fine ESATTAMENTE una riga nel formato seguente:\n\nSOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":0.0,\"variables\":{\"nome_variabile\":0.0}}\n\nNel dizionario \"variables\" devono comparire tutte le variabili decisionali, comprese quelle con valore zero. Usa i nomi indicati nella formulazione e valori numerici, non espressioni testuali. Se il solver non restituisce una soluzione ottima, stampa comunque la riga SOLUTION_JSON con lo stato effettivo, objective null e variables vuoto.\n\nNon leggere o scrivere file, non accedere alla rete, non invocare altri processi e non utilizzare librerie diverse da gurobipy, json, math e itertools.\n\n",
+  "problem_prompt": "# H06 — Sequenziamento con ritardi pesati\n\nDifficoltà: Elevata\nClasse: MILP intera\n\nSette lavori devono essere sequenziati senza sovrapposizioni su una sola macchina. Ogni lavoro ha durata, data di disponibilità, scadenza e peso di priorità.\nJ1 deve terminare prima dell’inizio di J2; J3 deve terminare prima dell’inizio di J5. Il ritardo di un lavoro è max(0, completamento − scadenza).\nMinimizzare la somma dei ritardi moltiplicati per i rispettivi pesi. Modellare la non sovrapposizione mediante variabili binarie di ordinamento e una costante big-M giustificata.\n\n## Dati dei lavori\n\nLavoro | Durata | Disponibilità | Scadenza | Peso\n--- | --- | --- | --- | ---\nJ1 | 5 | 0 | 9 | 4\nJ2 | 7 | 0 | 17 | 3\nJ3 | 4 | 2 | 12 | 5\nJ4 | 6 | 3 | 22 | 2\nJ5 | 3 | 5 | 15 | 6\nJ6 | 8 | 0 | 28 | 2\nJ7 | 5 | 6 | 25 | 4\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n"
+}

@@ -1,0 +1,111 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "claude-sonnet-5",
+  "problem_id": "H01",
+  "problem_sequence": 16,
+  "domain": "Localizzazione e distribuzione",
+  "difficulty": "Elevata",
+  "model_class": "MILP",
+  "created_at_utc": "2026-08-24T19:12:18.306674+00:00",
+  "updated_at_utc": "2026-08-24T19:19:24.143957+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T19:12:51.415698+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "soluzione_non_leggibile",
+        "detail": "Expecting property name enclosed in double quotes: line 1 column 53 (char 52)",
+        "finish_reason": "stop",
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "Domanda soddisfatta integralmente per ogni zona -> vincolo di bilancio della domanda sum_j x_ij = d_i",
+              "Apertura tra 3 e 4 centri su 6 -> vincoli 3<=sum_j y_j<=4",
+              "Movimentazione minima 20 unità per centro aperto -> vincolo sum_i x_ij >= 20*y_j",
+              "Capacità massima dei centri -> vincolo sum_i x_ij <= cap_j*y_j",
+              "Almeno un sito aperto nel gruppo Nord e uno nel gruppo Sud -> vincoli sum_{j in Nord} y_j>=1 e sum_{j in Sud} y_j>=1",
+              "Limite massimo di emissioni complessive -> vincolo sum_i sum_j e_ij*x_ij <= 470",
+              "Costo totale (fissi + distribuzione) da minimizzare -> funzione obiettivo min sum f_j*y_j + sum c_ij*x_ij"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    },
+    {
+      "number": 1,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_01",
+      "created_at_utc": "2026-08-24T19:13:06.146564+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false
+      }
+    },
+    {
+      "number": 2,
+      "kind": "EXPERT_DIRECT_CODE",
+      "directory": "attempt_02",
+      "created_at_utc": "2026-08-24T19:19:24.142713+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "expert_direct_artifact",
+        "source_sha256": "fabb0ae9488203c8bd4ad2c8944eded672898b37e340142135a0b4b9da52c858",
+        "candidate_source": "H01.sol"
+      }
+    }
+  ],
+  "interventions": [
+    {
+      "handoff_number": 1,
+      "stage": 2,
+      "failure_class": "revisione_di_assicurazione_post_riparazione",
+      "active_minutes": 15.0,
+      "action": "CORRECT",
+      "correction_mode": "DIRECT_CODE",
+      "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+      "correction_summary": "Durante la revisione dello Stadio 2, l'esperto ha fornito una formulazione verificata che separa le aperture binarie dei siti dai flussi interi verso le zone e rende espliciti domanda, numero di centri, resilienza geografica, movimentazione minima, capacità ed emissioni.",
+      "semantic_principle": "Nei modelli di localizzazione capacitada, collegare ogni apertura sia al limite massimo di capacità sia alla movimentazione minima e verificare separatamente copertura della domanda, numero di siti e vincoli geografici.",
+      "expert_artifact_source": "/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/16_H01/handoffs/handoff_01/expert_code_H01.py",
+      "expert_artifact_sha256": "fabb0ae9488203c8bd4ad2c8944eded672898b37e340142135a0b4b9da52c858",
+      "submitted_at_utc": "2026-08-24T19:19:24.142713+00:00",
+      "memory_committed": true
+    }
+  ],
+  "memory_retrieval": {
+    "model": "claude-sonnet-5",
+    "problem_id": "H01",
+    "retrieved_at_utc": "2026-08-24T19:12:18.306534+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 1,
+    "episodic_count_total": 1
+  },
+  "pending_handoff": null
+}

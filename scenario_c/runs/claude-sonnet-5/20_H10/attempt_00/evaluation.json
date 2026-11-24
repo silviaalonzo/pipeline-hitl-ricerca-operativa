@@ -1,0 +1,29 @@
+{
+  "success": false,
+  "repairable": true,
+  "stage": 3,
+  "failure_class": "errore_di_esecuzione",
+  "detail": "Traceback (most recent call last):\n  File \"/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/20_H10/attempt_00/generated.py\", line 42, in <module>\n    gp.quicksum(cost[a][k] * x[a, k] for a in ARCS for k in PRODUCTS)\n  File \"src/gurobipy/_helpers.pyx\", line 41, in gurobipy._helpers.quicksum\n  File \"/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/20_H10/attempt_00/generated.py\", line 42, in <genexpr>\n    gp.quicksum(cost[a][k] * x[a, k] for a in ARCS for k in PRODUCTS)\n                             ~^^^^^^\nKeyError: (('S', 'A'), 'K1')",
+  "finish_reason": "stop",
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "Trasporto di 28 unità di K1 e 22 di K2 da S a T -> vincoli di conservazione del flusso con domanda per prodotto k",
+        "Archi condividono la capacità tra i due prodotti -> vincolo di capacità congiunta sum_k x[a,k] <= cap[a]*y[a]",
+        "Entrambi gli archi in uscita da S devono essere attivati -> vincoli y[S,A]=1, y[S,B]=1",
+        "Al massimo sette archi attivabili complessivamente -> vincolo sum_a y[a] <= 7",
+        "Costi unitari dipendenti dal prodotto -> parametro cost[a,k] nella funzione obiettivo",
+        "Flussi interi -> dominio intero delle variabili x[a,k]",
+        "Minimizzare costi fissi e di flusso -> funzione obiettivo con termini fixed[a]*y[a] + cost[a,k]*x[a,k]"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

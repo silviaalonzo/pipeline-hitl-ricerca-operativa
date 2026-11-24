@@ -1,0 +1,121 @@
+{
+  "status": "CANCELLED_INFRASTRUCTURE_FALSE_POSITIVE",
+  "cancelled_at_utc": "2026-08-24T18:44:48.604426+00:00",
+  "reason": "Il simbolo s usato da Claude per la scorta è semanticamente equivalente al simbolo I della ground truth; la normalizzazione modifica esclusivamente i nomi delle variabili, non valori, decisioni, obiettivo o criterio di correttezza.",
+  "old_evaluation": {
+    "success": false,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "validazione_indipendente_fallita",
+    "detail": "la soluzione viola almeno un requisito del problema originale; il gap supera la soglia dello 0,1%; sono presenti variabili operative non riconosciute",
+    "finish_reason": "stop",
+    "validation_public": {
+      "problem_id": "H02",
+      "correct": false,
+      "candidate_status": "OPTIMAL",
+      "feasible_in_original_problem": false,
+      "gap_within_tolerance": false,
+      "declared_objective_corrected_automatically": false,
+      "max_constraint_violation": 14.0,
+      "constraint_violations": [
+        {
+          "constraint": "bilancio_A_1",
+          "lhs": 20.0,
+          "sense": "=",
+          "rhs": 8.0,
+          "violation": 12.0
+        },
+        {
+          "constraint": "bilancio_A_2",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 12.0,
+          "violation": 12.0
+        },
+        {
+          "constraint": "bilancio_A_3",
+          "lhs": 24.0,
+          "sense": "=",
+          "rhs": 10.0,
+          "violation": 14.0
+        },
+        {
+          "constraint": "bilancio_A_4",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 14.0,
+          "violation": 14.0
+        },
+        {
+          "constraint": "bilancio_C_2",
+          "lhs": 16.0,
+          "sense": "=",
+          "rhs": 9.0,
+          "violation": 7.0
+        },
+        {
+          "constraint": "bilancio_C_3",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 7.0,
+          "violation": 7.0
+        }
+      ],
+      "bound_violations": [],
+      "integrality_violations": [],
+      "unknown_nonzero_variables": [
+        "s_A_1",
+        "s_A_3",
+        "s_C_2"
+      ],
+      "missing_variables_assumed_zero": [
+        "I_A_1",
+        "I_A_2",
+        "I_A_3",
+        "I_A_4",
+        "I_B_1",
+        "I_B_2",
+        "I_B_3",
+        "I_B_4",
+        "I_C_1",
+        "I_C_2",
+        "I_C_3",
+        "I_C_4"
+      ]
+    },
+    "traceability": {
+      "present": true,
+      "valid": true,
+      "complete_ready": true,
+      "value": {
+        "status": "READY",
+        "unresolved": [],
+        "undefined_symbols": [],
+        "requirements_mapped": [
+          "Domanda soddisfatta senza arretrati -> vincolo di bilancio scorte s[i,t-1]+x[i,t]-d[i,t]=s[i,t]",
+          "Setup per attivazione produzione -> variabile binaria y[i,t] e vincolo x[i,t]<=M*y[i,t]",
+          "Massimo due articoli attivi per periodo -> vincolo sum_i y[i,t] <= 2",
+          "Scorta totale massima 20 unità -> vincolo sum_i s[i,t] <= 20",
+          "Scorte finali nulle -> vincolo s[i,T]=0",
+          "Capacità oraria per periodo -> vincolo sum_i hours[i]*x[i,t] <= capacity[t]",
+          "Lotto minimo di produzione -> vincolo x[i,t]>=minlot[i]*y[i,t]",
+          "Minimizzazione costi di produzione, setup e mantenimento -> funzione obiettivo"
+        ]
+      },
+      "needs_expert": false,
+      "errors": []
+    }
+  },
+  "new_evaluation": {
+    "success": true,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "corretta",
+    "detail": "Soluzione ammissibile e gap entro tolleranza",
+    "finish_reason": "stop",
+    "declared_objective_corrected_automatically": false
+  },
+  "count_as_handoff": false,
+  "count_as_human_time": false,
+  "count_as_memory_event": false
+}

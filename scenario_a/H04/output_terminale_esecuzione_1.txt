@@ -1,0 +1,64 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 37 rows, 24 columns and 97 nonzeros (Min)
+Model fingerprint: 0xf7664a3b
+Model has 12 linear objective coefficients
+Variable types: 0 continuous, 24 integer (12 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+01]
+  Objective range  [4e+01, 1e+02]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+02]
+
+Presolve removed 3 rows and 1 columns
+Presolve time: 0.00s
+
+Explored 0 nodes (0 simplex iterations) in 0.00 seconds (0.00 work units)
+Thread count was 1 (of 8 available processors)
+
+Solution count 0
+
+Model is infeasible
+Best objective -, best bound -, gap -
+
+======================================================================
+Stato finale Gurobi : 3
+Runtime Gurobi      : 0.0021 s
+Variabili           : 24
+Vincoli             : 37
+Modello INFEASIBLE: nessuna soluzione ammissibile.
+Calcolo dell'Irreducible Infeasible Subsystem (IIS)…
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+
+Computing Irreducible Inconsistent Subsystem (IIS)...
+
+           Constraints          |            Bounds           |  Runtime
+      Min       Max     Guess   |   Min       Max     Guess   |
+--------------------------------------------------------------------------
+        0        37         -         0        12         -           0s
+        7         7         7         0         0         0           0s
+
+IIS computed: 7 constraints, 0 bounds
+IIS runtime: 0.00 seconds (0.00 work units)
+
+Vincoli appartenenti all'IIS:
+  domanda[R1]
+  domanda[R2]
+  domanda[R3]
+  domanda[R4]
+  disponibilita[Piccolo]
+  disponibilita[Medio]
+  emissioni
+
+Bound appartenenti all'IIS:
+======================================================================

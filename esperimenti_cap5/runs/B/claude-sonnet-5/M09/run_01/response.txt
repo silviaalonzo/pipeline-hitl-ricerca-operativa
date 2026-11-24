@@ -1,0 +1,135 @@
+# M09 — Piano di riordino con costi fissi
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $T = \{1,2,3,4,5,6\}$: periodi di pianificazione
+
+**Parametri**
+- $d_t$: domanda nel periodo $t$
+- $c_t$: costo unitario di acquisto nel periodo $t$
+- $Cap_t$: capacità massima di ordine nel periodo $t$
+- $f = 40$: costo fisso per ordine attivato
+- $h = 2$: costo di mantenimento per unità a fine periodo
+- $I_0 = 10$: scorta iniziale
+- $q_{min} = 10$: quantità minima di ordine se attivato
+- $I_{fin}^{min} = 5$: scorta finale minima richiesta
+
+| $t$ | $d_t$ | $c_t$ | $Cap_t$ |
+|---|---|---|---|
+|1|20|9|50|
+|2|30|8|50|
+|3|15|11|45|
+|4|35|7|55|
+|5|25|10|45|
+|6|20|9|50|
+
+**Variabili decisionali**
+- $x_t \ge 0$, intera: quantità ordinata nel periodo $t$
+- $I_t \ge 0$, intera: scorta di fine periodo $t$
+- $y_t \in \{0,1\}$: 1 se viene attivato un ordine nel periodo $t$, 0 altrimenti
+
+## 2. Formulazione matematica
+
+$$
+\min \; Z = \sum_{t \in T} \left( c_t x_t + f\, y_t + h\, I_t \right)
+$$
+
+soggetto a:
+
+$$
+I_t = I_{t-1} + x_t - d_t \qquad \forall t \in T \quad (I_0 \text{ dato})
+$$
+
+$$
+I_t \ge 0 \qquad \forall t \in T
+$$
+
+$$
+I_{|T|} \ge I_{fin}^{min}
+$$
+
+$$
+x_t \le Cap_t \, y_t \qquad \forall t \in T
+$$
+
+$$
+x_t \ge q_{min}\, y_t \qquad \forall t \in T
+$$
+
+$$
+x_t \in \mathbb{Z}_{\ge 0}, \quad I_t \in \mathbb{Z}_{\ge 0}, \quad y_t \in \{0,1\} \qquad \forall t \in T
+$$
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# Dati
+T = [1, 2, 3, 4, 5, 6]
+demand = {1: 20, 2: 30, 3: 15, 4: 35, 5: 25, 6: 20}
+cost   = {1: 9,  2: 8,  3: 11, 4: 7,  5: 10, 6: 9}
+cap    = {1: 50, 2: 50, 3: 45, 4: 55, 5: 45, 6: 50}
+
+f = 40          # costo fisso ordine
+h = 2           # costo mantenimento
+I0 = 10         # scorta iniziale
+q_min = 10      # ordine minimo se attivato
+I_final_min = 5 # scorta finale minima
+
+m = gp.Model("Lot_sizing_costi_fissi")
+
+x = m.addVars(T, vtype=GRB.INTEGER, lb=0, name="x")
+I = m.addVars(T, vtype=GRB.INTEGER, lb=0, name="I")
+y = m.addVars(T, vtype=GRB.BINARY, name="y")
+
+# Funzione obiettivo
+m.setObjective(
+    gp.quicksum(cost[t] * x[t] + f * y[t] + h * I[t] for t in T),
+    GRB.MINIMIZE
+)
+
+# Vincoli di bilancio scorte
+prev = I0
+for t in T:
+    m.addConstr(I[t] == prev + x[t] - demand[t], name=f"balance_{t}")
+    prev = I[t]
+
+# Scorta finale minima
+m.addConstr(I[T[-1]] >= I_final_min, name="final_inventory")
+
+# Capacità e ordine minimo legati alla decisione y
+for t in T:
+    m.addConstr(x[t] <= cap[t] * y[t], name=f"cap_{t}")
+    m.addConstr(x[t] >= q_min * y[t], name=f"minorder_{t}")
+
+m.optimize()
+
+status = m.Status
+result = {"status": None, "objective": None, "variables": {}}
+
+if status == GRB.OPTIMAL:
+    result["status"] = "OPTIMAL"
+    result["objective"] = round(m.ObjVal, 4)
+    variables = {}
+    for t in T:
+        variables[f"x_{t}"] = float(round(x[t].X))
+        variables[f"I_{t}"] = float(round(I[t].X))
+        variables[f"y_{t}"] = float(round(y[t].X))
+    result["variables"] = variables
+else:
+    result["status"] = m.Status
+    result["objective"] = None
+    result["variables"] = {}
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello MILP risolve un problema di *lot-sizing* a costi fissi su 6 periodi con vincoli di capacità e ordine minimo. Il solver Gurobi trova la soluzione ottima intera che minimizza la somma di costi di acquisto, costi fissi di attivazione ordine e costi di mantenimento a scorta, rispettando il bilancio delle scorte periodo per periodo, la scorta finale minima di 5 unità e i vincoli di attivazione (big-M tramite $y_t$) che legano quantità ordinata, capacità massima e ordine minimo di 10 unità.
+
+Eseguendo il codice, Gurobi determina lo stato **OPTIMAL**, il valore ottimo della funzione obiettivo e le decisioni non nulle (periodi in cui viene attivato un ordine, relative quantità $x_t$, e livelli di scorta $I_t$ a fine periodo), stampate nella riga `SOLUTION_JSON` richiesta.

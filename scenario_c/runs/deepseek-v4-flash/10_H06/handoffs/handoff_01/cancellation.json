@@ -1,0 +1,162 @@
+{
+  "status": "CANCELLED_INFRASTRUCTURE_FALSE_POSITIVE",
+  "cancelled_at_utc": "2026-08-24T20:59:53.061419+00:00",
+  "reason": "DeepSeek ha usato gli indici Python 0-6 per rappresentare i lavori J1-J7 e la famiglia y per le binarie di ordinamento. La normalizzazione applica lo spostamento univoco di una posizione e rinomina y_ij in o_Ji_Jj; non modifica tempi di inizio, completamenti, ritardi, ordinamenti, obiettivo o criterio di correttezza.",
+  "old_evaluation": {
+    "success": false,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "validazione_indipendente_fallita",
+    "detail": "la soluzione viola almeno un requisito del problema originale; il gap supera la soglia dello 0,1%; sono presenti variabili operative non riconosciute",
+    "finish_reason": "stop",
+    "validation_public": {
+      "problem_id": "H06",
+      "correct": false,
+      "candidate_status": "OPTIMAL",
+      "feasible_in_original_problem": false,
+      "gap_within_tolerance": false,
+      "declared_objective_corrected_automatically": false,
+      "max_constraint_violation": 14.0,
+      "constraint_violations": [
+        {
+          "constraint": "completion_J1",
+          "lhs": 7.0,
+          "sense": "=",
+          "rhs": 5.0,
+          "violation": 2.0
+        },
+        {
+          "constraint": "tardiness_J1",
+          "lhs": -17.0,
+          "sense": ">=",
+          "rhs": -9.0,
+          "violation": 8.0
+        },
+        {
+          "constraint": "completion_J2",
+          "lhs": 4.0,
+          "sense": "=",
+          "rhs": 7.0,
+          "violation": 3.0
+        },
+        {
+          "constraint": "completion_J3",
+          "lhs": 6.0,
+          "sense": "=",
+          "rhs": 4.0,
+          "violation": 2.0
+        },
+        {
+          "constraint": "tardiness_J3",
+          "lhs": -22.0,
+          "sense": ">=",
+          "rhs": -12.0,
+          "violation": 10.0
+        },
+        {
+          "constraint": "completion_J4",
+          "lhs": 3.0,
+          "sense": "=",
+          "rhs": 6.0,
+          "violation": 3.0
+        },
+        {
+          "constraint": "completion_J5",
+          "lhs": 8.0,
+          "sense": "=",
+          "rhs": 3.0,
+          "violation": 5.0
+        },
+        {
+          "constraint": "tardiness_J5",
+          "lhs": -28.0,
+          "sense": ">=",
+          "rhs": -15.0,
+          "violation": 13.0
+        },
+        {
+          "constraint": "completion_J6",
+          "lhs": 5.0,
+          "sense": "=",
+          "rhs": 8.0,
+          "violation": 3.0
+        },
+        {
+          "constraint": "completion_J7",
+          "lhs": 0.0,
+          "sense": "=",
+          "rhs": 5.0,
+          "violation": 5.0
+        },
+        {
+          "constraint": "ordine2_J1_J4",
+          "lhs": 3.0,
+          "sense": ">=",
+          "rhs": 6.0,
+          "violation": 3.0
+        },
+        {
+          "constraint": "ordine1_J2_J4",
+          "lhs": -40.0,
+          "sense": ">=",
+          "rhs": -37.0,
+          "violation": 3.0
+        },
+        {
+          "constraint": "ordine2_J3_J6",
+          "lhs": 5.0,
+          "sense": ">=",
+          "rhs": 8.0,
+          "violation": 3.0
+        },
+        {
+          "constraint": "precedenza_J1_J2",
+          "lhs": -14.0,
+          "sense": ">=",
+          "rhs": 0.0,
+          "violation": 14.0
+        }
+      ],
+      "bound_violations": [
+        {
+          "variable": "S_J7",
+          "value": 0.0,
+          "violation": 6.0
+        }
+      ],
+      "integrality_violations": [],
+      "unknown_nonzero_variables": [
+        "C_J0",
+        "o_J0_J1",
+        "o_J0_J2",
+        "o_J0_J3",
+        "o_J0_J4",
+        "o_J0_J5",
+        "o_J0_J6"
+      ],
+      "missing_variables_assumed_zero": [
+        "C_J7",
+        "S_J7",
+        "T_J7",
+        "o_J1_J7",
+        "o_J2_J7",
+        "o_J3_J7",
+        "o_J4_J7",
+        "o_J5_J7",
+        "o_J6_J7"
+      ]
+    }
+  },
+  "new_evaluation": {
+    "success": true,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "corretta",
+    "detail": "Soluzione ammissibile e gap entro tolleranza",
+    "finish_reason": "stop",
+    "declared_objective_corrected_automatically": false
+  },
+  "count_as_handoff": false,
+  "count_as_human_time": false,
+  "count_as_memory_event": false
+}

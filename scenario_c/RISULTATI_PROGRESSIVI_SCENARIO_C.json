@@ -1,0 +1,72 @@
+{
+  "scenario": "C",
+  "models": {
+    "gpt-5.6-sol": {
+      "completed": 20,
+      "correct": 20,
+      "accuracy": 1.0,
+      "human_minutes": 0.0,
+      "efficiency_correct_problems_per_human_hour": null,
+      "automatic_repairs": 0,
+      "completed_handoffs": 0,
+      "pending_handoffs": 0,
+      "handoffs_by_stage": {},
+      "handoffs_by_action": {},
+      "assurance_review_minutes": 0.0,
+      "correction_minutes": 0.0,
+      "api_cost_usd": 1.6565275000000004,
+      "response_seconds": 2568.9157909609876,
+      "total_tokens": 180668
+    },
+    "claude-sonnet-5": {
+      "completed": 20,
+      "correct": 20,
+      "accuracy": 1.0,
+      "human_minutes": 50.0,
+      "efficiency_correct_problems_per_human_hour": 24.0,
+      "automatic_repairs": 5,
+      "completed_handoffs": 3,
+      "pending_handoffs": 0,
+      "handoffs_by_stage": {
+        "2": 3
+      },
+      "handoffs_by_action": {
+        "CORRECT": 3
+      },
+      "assurance_review_minutes": 0.0,
+      "correction_minutes": 50.0,
+      "api_cost_usd": 1.0379639999999999,
+      "response_seconds": 756.2914037510018,
+      "total_tokens": 142918
+    },
+    "deepseek-v4-flash": {
+      "completed": 20,
+      "correct": 20,
+      "accuracy": 1.0,
+      "human_minutes": 120.0,
+      "efficiency_correct_problems_per_human_hour": 10.0,
+      "automatic_repairs": 23,
+      "completed_handoffs": 8,
+      "pending_handoffs": 0,
+      "handoffs_by_stage": {
+        "2": 5,
+        "3": 3
+      },
+      "handoffs_by_action": {
+        "APPROVE": 3,
+        "CORRECT": 5
+      },
+      "assurance_review_minutes": 35.0,
+      "correction_minutes": 85.0,
+      "api_cost_usd": 0.6353008400000001,
+      "response_seconds": 8299.619210915997,
+      "total_tokens": 1003604
+    }
+  },
+  "total": {
+    "completed": 60,
+    "correct": 60,
+    "human_minutes": 170.0,
+    "api_cost_usd": 3.3297923400000005
+  }
+}

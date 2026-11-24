@@ -1,0 +1,62 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 61 rows, 43 columns and 173 nonzeros (Min)
+Model fingerprint: 0x9411a839
+Model has 43 linear objective coefficients
+Variable types: 0 continuous, 43 integer (43 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 5e+01]
+  Objective range  [2e+01, 1e+02]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 4e+00]
+
+Found heuristic solution: objective 770.0000000
+Presolve removed 61 rows and 43 columns
+Presolve time: 0.00s
+Presolve: All rows and columns removed
+
+Explored 0 nodes (0 simplex iterations) in 0.00 seconds (0.00 work units)
+Thread count was 1 (of 8 available processors)
+
+Solution count 2: 697 770 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 6.970000000000e+02, best bound 6.970000000000e+02, gap 0.0000%
+
+======================================================================
+Stato finale Gurobi : 2
+Runtime Gurobi      : 0.0039 s
+Variabili           : 43
+Vincoli             : 61
+Valore obiettivo    : 697
+
+Stazioni aperte (4): A, B, D, H  — costi fissi 128
+
+Assegnazione delle zone:
+  Z1   → A   domanda  8 × tempo  3 =   24
+  Z2   → A   domanda  7 × tempo  6 =   42
+  Z3   → D   domanda 10 × tempo  6 =   60
+  Z4   → D   domanda  6 × tempo  9 =   54
+  Z5   → D   domanda  9 × tempo  3 =   27
+  Z6   → B   domanda  8 × tempo 11 =   88
+  Z7   → H   domanda  7 × tempo  8 =   56
+  Z8   → D   domanda 11 × tempo  3 =   33
+  Z9   → H   domanda  6 × tempo  5 =   30
+  Z10  → H   domanda  9 × tempo  8 =   72
+  Z11  → A   domanda  8 × tempo  6 =   48
+  Z12  → H   domanda  7 × tempo  5 =   35
+
+Costo di percorrenza totale : 569
+
+Carico delle stazioni aperte:
+  A:    23 / 42
+  B:     8 / 44
+  D:    36 / 40
+  H:    29 / 42
+======================================================================

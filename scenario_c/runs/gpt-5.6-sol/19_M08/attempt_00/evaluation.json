@@ -1,0 +1,28 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "copertura delle dieci zone -> vincoli di copertura",
+        "doppia copertura di Z3 e Z7 -> requisiti r_Z3=r_Z7=2",
+        "apertura di al massimo cinque centri -> vincolo di cardinalità",
+        "minimizzazione dei costi di apertura -> funzione obiettivo",
+        "decisione di apertura dei centri -> variabili binarie x_j"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

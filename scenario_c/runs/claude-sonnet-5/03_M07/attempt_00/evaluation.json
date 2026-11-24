@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "acquisto esatto di 180 unità -> vincolo di bilancio sum_i x_i = 180",
+        "attivazione con almeno due fornitori -> vincolo sum_i y_i >= 2",
+        "costo fisso e ordine minimo se attivato -> vincoli x_i <= cap_i*y_i, x_i >= min_i*y_i e termine f_i*y_i in obiettivo",
+        "qualità media ponderata >= 92 -> vincolo sum_i q_i*x_i >= 92 * sum_i x_i",
+        "emissioni totali <= 650 -> vincolo sum_i e_i*x_i <= 650",
+        "minimizzare costi variabili e fissi -> funzione obiettivo min sum_i (c_i*x_i + f_i*y_i)"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

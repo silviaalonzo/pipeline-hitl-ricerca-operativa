@@ -1,0 +1,66 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "gpt-5.6-sol",
+  "problem_id": "H03",
+  "problem_sequence": 2,
+  "domain": "Workforce scheduling",
+  "difficulty": "Elevata",
+  "model_class": "IP binaria",
+  "created_at_utc": "2026-08-24T17:58:46.773087+00:00",
+  "updated_at_utc": "2026-08-24T18:01:42.876841+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:01:42.876100+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "domanda giornaliera minima -> vincoli di copertura",
+              "almeno un senior al giorno -> vincoli senior",
+              "da tre a cinque giorni per dipendente -> vincoli di carico settimanale",
+              "divieto di quattro giorni consecutivi -> vincoli sulle finestre di quattro giorni",
+              "specialista presente giovedì e venerdì -> vincoli su E7 ed E8",
+              "E1 ed E2 al massimo un giorno nel weekend -> vincoli di fine settimana",
+              "indisponibilità indicate da trattino -> fissaggio delle variabili a zero",
+              "minimizzazione del costo settimanale -> funzione obiettivo"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "gpt-5.6-sol",
+    "problem_id": "H03",
+    "retrieved_at_utc": "2026-08-24T17:58:46.773076+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

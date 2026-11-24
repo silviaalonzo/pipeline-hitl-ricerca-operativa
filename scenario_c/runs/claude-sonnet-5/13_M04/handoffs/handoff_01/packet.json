@@ -1,0 +1,90 @@
+{
+  "schema_version": 2,
+  "created_at_utc": "2026-08-24T19:06:43.151406+00:00",
+  "model": "claude-sonnet-5",
+  "problem_id": "M04",
+  "problem_sequence": 13,
+  "handoff_number": 1,
+  "stage": 4,
+  "failure_class": "validazione_indipendente_fallita",
+  "failure_detail": "la soluzione viola almeno un requisito del problema originale; il gap supera la soglia dello 0,1%; sono presenti variabili operative non riconosciute",
+  "handoff_mode": "CORRECTION",
+  "allowed_actions": [
+    "CORRECT",
+    "ACCEPT_FAILURE"
+  ],
+  "automatic_repairs_exhausted": 0,
+  "problem_prompt": "# M04 — Composizione di una flotta giornaliera\n\nDifficoltà: Media\nClasse: IP intera\n\nUn operatore deve scegliere quanti veicoli di ciascun tipo impiegare in una giornata. La flotta deve offrire almeno 180 unità di volume e 95 unità di portata, utilizzando almeno un mezzo refrigerato e un mezzo elettrico.\nLe emissioni complessive non possono superare 145 unità. Minimizzare il costo giornaliero.\n\n## Caratteristiche dei veicoli\n\nTipo | Volume | Portata | Costo | Emissioni | Disponibilità\n--- | --- | --- | --- | --- | ---\nVan | 18 | 8 | 120 | 12 | 8\nAutocarro | 30 | 18 | 180 | 22 | 6\nRefrigerato | 20 | 10 | 210 | 15 | 4\nElettrico | 16 | 7 | 150 | 4 | 5\nBilico | 42 | 28 | 260 | 32 | 3\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n",
+  "last_code": "import gurobipy as gp\nfrom gurobipy import GRB\n\n# Dati\ntypes = [\"Van\", \"Autocarro\", \"Refrigerato\", \"Elettrico\", \"Bilico\"]\n\nvolume = {\"Van\": 18, \"Autocarro\": 30, \"Refrigerato\": 20, \"Elettrico\": 16, \"Bilico\": 42}\nportata = {\"Van\": 8, \"Autocarro\": 18, \"Refrigerato\": 10, \"Elettrico\": 7, \"Bilico\": 28}\ncosto = {\"Van\": 120, \"Autocarro\": 180, \"Refrigerato\": 210, \"Elettrico\": 150, \"Bilico\": 260}\nemissioni = {\"Van\": 12, \"Autocarro\": 22, \"Refrigerato\": 15, \"Elettrico\": 4, \"Bilico\": 32}\ndisponibilita = {\"Van\": 8, \"Autocarro\": 6, \"Refrigerato\": 4, \"Elettrico\": 5, \"Bilico\": 3}\n\n# Modello\nm = gp.Model(\"composizione_flotta\")\n\nx = m.addVars(types, vtype=GRB.INTEGER, lb=0, name=\"x\")\n\n# Vincoli di disponibilità\nfor t in types:\n    x[t].ub = disponibilita[t]\n\n# Vincoli di volume e portata\nm.addConstr(gp.quicksum(volume[t] * x[t] for t in types) >= 180, name=\"volume_min\")\nm.addConstr(gp.quicksum(portata[t] * x[t] for t in types) >= 95, name=\"portata_min\")\n\n# Almeno un refrigerato e un elettrico\nm.addConstr(x[\"Refrigerato\"] >= 1, name=\"min_refrigerato\")\nm.addConstr(x[\"Elettrico\"] >= 1, name=\"min_elettrico\")\n\n# Vincolo di emissioni\nm.addConstr(gp.quicksum(emissioni[t] * x[t] for t in types) <= 145, name=\"emissioni_max\")\n\n# Obiettivo: minimizzare il costo totale\nm.setObjective(gp.quicksum(costo[t] * x[t] for t in types), GRB.MINIMIZE)\n\nm.optimize()\n\nstatus = m.Status\nif status == GRB.OPTIMAL:\n    obj_val = m.ObjVal\n    variables = {t: x[t].X for t in types}\n    import json\n    print(\"SOLUTION_JSON=\" + json.dumps({\n        \"status\": \"OPTIMAL\",\n        \"objective\": obj_val,\n        \"variables\": variables\n    }))\nelse:\n    import json\n    status_map = {\n        GRB.INFEASIBLE: \"INFEASIBLE\",\n        GRB.UNBOUNDED: \"UNBOUNDED\",\n        GRB.INF_OR_UNBD: \"INF_OR_UNBD\"\n    }\n    status_str = status_map.get(status, str(status))\n    print(\"SOLUTION_JSON=\" + json.dumps({\n        \"status\": status_str,\n        \"objective\": None,\n        \"variables\": {}\n    }))\n",
+  "last_response_excerpt": "TRACEABILITY_JSON={\"status\":\"READY\",\"unresolved\":[],\"undefined_symbols\":[],\"requirements_mapped\":[\"almeno 180 unità di volume -> vincolo sum(volume_t*x_t)>=180\",\"almeno 95 unità di portata -> vincolo sum(portata_t*x_t)>=95\",\"almeno un mezzo refrigerato -> vincolo x_Refrigerato>=1\",\"almeno un mezzo elettrico -> vincolo x_Elettrico>=1\",\"emissioni complessive <=145 -> vincolo sum(emissioni_t*x_t)<=145\",\"disponibilità limitata per tipo -> vincolo x_t<=disp_t\",\"minimizzare costo giornaliero -> funzione obiettivo min sum(costo_t*x_t)\"]}\n\n## 2. Insiemi, parametri e variabili decisionali\n\n**Insiemi**\n- $T = \\{Van, Autocarro, Refrigerato, Elettrico, Bilico\\}$ : tipi di veicolo disponibili.\n\n**Parametri** (per ogni $t \\in T$)\n- $vol_t$ : volume offerto da un veicolo di tipo $t$\n- $port_t$ : portata offerta da un veicolo di tipo $t$\n- $cost_t$ : costo giornaliero di un veicolo di tipo $t$\n- $emis_t$ : emissioni di un veicolo di tipo $t$\n- $disp_t$ : disponibilità massima (numero di veicoli) di tipo $t$\n\nValori:\n\n| t | vol | port | cost | emis | disp |\n|---|---|---|---|---|---|\n| Van | 18 | 8 | 120 | 12 | 8 |\n| Autocarro | 30 | 18 | 180 | 22 | 6 |\n| Refrigerato | 20 | 10 | 210 | 15 | 4 |\n| Elettrico | 16 | 7 | 150 | 4 | 5 |\n| Bilico | 42 | 28 | 260 | 32 | 3 |\n\n**Variabili decisionali**\n- $x_t \\in \\mathbb{Z}_{\\ge 0}$ : numero di veicoli di tipo $t$ impiegati nella giornata, $\\forall t \\in T$.\n\n## 3. Formulazione matematica\n\n$$\n\\min \\sum_{t \\in T} cost_t \\, x_t\n$$\n\nsoggetto a:\n\n$$\n\\sum_{t \\in T} vol_t \\, x_t \\ge 180\n$$\n\n$$\n\\sum_{t \\in T} port_t \\, x_t \\ge 95\n$$\n\n$$\n\\sum_{t \\in T} emis_t \\, x_t \\le 145\n$$\n\n$$\nx_{Refrigerato} \\ge 1\n$$\n\n$$\nx_{Elettrico} \\ge 1\n$$\n\n$$\n0 \\le x_t \\le disp_t \\qquad \\forall t \\in T\n$$\n\n$$\nx_t \\in \\mathbb{Z} \\qquad \\forall t \\in T\n$$\n\n## 4. Codice Python (gurobipy)\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\n\n# Dati\ntypes = [\"Van\", \"Autocarro\", \"Refrigerato\", \"Elettrico\", \"Bilico\"]\n\nvolume = {\"Van\": 18, \"Autocarro\": 30, \"Refrigerato\": 20, \"Elettrico\": 16, \"Bilico\": 42}\nportata = {\"Van\": 8, \"Autocarro\": 18, \"Refrigerato\": 10, \"Elettrico\": 7, \"Bilico\": 28}\ncosto = {\"Van\": 120, \"Autocarro\": 180, \"Refrigerato\": 210, \"Elettrico\": 150, \"Bilico\": 260}\nemissioni = {\"Van\": 12, \"Autocarro\": 22, \"Refrigerato\": 15, \"Elettrico\": 4, \"Bilico\": 32}\ndisponibilita = {\"Van\": 8, \"Autocarro\": 6, \"Refrigerato\": 4, \"Elettrico\": 5, \"Bilico\": 3}\n\n# Modello\nm = gp.Model(\"composizione_flotta\")\n\nx = m.addVars(types, vtype=GRB.INTEGER, lb=0, name=\"x\")\n\n# Vincoli di disponibilità\nfor t in types:\n    x[t].ub = disponibilita[t]\n\n# Vincoli di volume e portata\nm.addConstr(gp.quicksum(volume[t] * x[t] for t in types) >= 180, name=\"volume_min\")\nm.addConstr(gp.quicksum(portata[t] * x[t] for t in types) >= 95, name=\"portata_min\")\n\n# Almeno un refrigerato e un elettrico\nm.addConstr(x[\"Refrigerato\"] >= 1, name=\"min_refrigerato\")\nm.addConstr(x[\"Elettrico\"] >= 1, name=\"min_elettrico\")\n\n# Vincolo di emissioni\nm.addConstr(gp.quicksum(emissioni[t] * x[t] for t in types) <= 145, name=\"emissioni_max\")\n\n# Obiettivo: minimizzare il costo totale\nm.setObjective(gp.quicksum(costo[t] * x[t] for t in types), GRB.MINIMIZE)\n\nm.optimize()\n\nstatus = m.Status\nif status == GRB.OPTIMAL:\n    obj_val = m.ObjVal\n    variables = {t: x[t].X for t in types}\n    import json\n    print(\"SOLUTION_JSON=\" + json.dumps({\n        \"status\": \"OPTIMAL\",\n        \"objective\": obj_val,\n        \"variables\": variables\n    }))\nelse:\n    import json\n    status_map = {\n        GRB.INFEASIBLE: \"INFEASIBLE\",\n        GRB.UNBOUNDED: \"UNBOUNDED\",\n        GRB.INF_OR_UNBD: \"INF_OR_UNBD\"\n    }\n    status_str = status_map.get(status, str(status))\n    print(\"SOLUTION_JSON=\" + json.dumps({\n        \"status\": status_str,\n        \"objective\": None,\n        \"variables\": {}\n    }))\n```\n\n## 5. Sintesi della soluzione\n\nIl modello è un problema di programmazione lineare intera che seleziona il numero di veicoli di ciascun tipo da impiegare in giornata, rispettando i vincoli minimi di volume (≥180), portata (≥95), la presenza obbligatoria di almeno un veicolo refrigerato e uno elettrico, il tetto massimo di emissioni (≤145) e i limiti di disponibilità per tipo, minimizzando il costo totale giornaliero. Il codice Gurobi costruisce il modello con i dati forniti, risolve il problema e stampa lo stato ottimale, il costo minimo trovato e il numero di veicoli di ciascun tipo selezionati (inclusi quelli a zero) nel formato richiesto.",
+  "response_source_attempt": 0,
+  "validation": {
+    "problem_id": "M04",
+    "correct": false,
+    "candidate_status": "OPTIMAL",
+    "feasible_in_original_problem": false,
+    "gap_within_tolerance": false,
+    "declared_objective_corrected_automatically": false,
+    "max_constraint_violation": 180.0,
+    "constraint_violations": [
+      {
+        "constraint": "volume",
+        "lhs": 0.0,
+        "sense": ">=",
+        "rhs": 180.0,
+        "violation": 180.0
+      },
+      {
+        "constraint": "peso",
+        "lhs": 0.0,
+        "sense": ">=",
+        "rhs": 95.0,
+        "violation": 95.0
+      },
+      {
+        "constraint": "refrigerato",
+        "lhs": 0.0,
+        "sense": ">=",
+        "rhs": 1.0,
+        "violation": 1.0
+      },
+      {
+        "constraint": "elettrico",
+        "lhs": 0.0,
+        "sense": ">=",
+        "rhs": 1.0,
+        "violation": 1.0
+      }
+    ],
+    "bound_violations": [],
+    "integrality_violations": [],
+    "unknown_nonzero_variables": [
+      "Autocarro",
+      "Refrigerato",
+      "Elettrico",
+      "Bilico"
+    ],
+    "missing_variables_assumed_zero": [
+      "x_Autocarro",
+      "x_Bilico",
+      "x_Elettrico",
+      "x_Refrigerato",
+      "x_Van"
+    ]
+  },
+  "attempt_history": [
+    {
+      "attempt_number": 0,
+      "attempt_kind": "INITIAL",
+      "finish_reason": "stop",
+      "content_characters": 4428,
+      "completion_tokens": 2532,
+      "reasoning_tokens": 214,
+      "code_extracted": true,
+      "failure_class": "validazione_indipendente_fallita",
+      "failure_detail": "la soluzione viola almeno un requisito del problema originale; il gap supera la soglia dello 0,1%; sono presenti variabili operative non riconosciute"
+    }
+  ],
+  "automatic_diagnosis": "Il codice è stato eseguito, ma la soluzione non ha superato la validazione indipendente. Esaminare le violazioni e il codice riportati nel pacchetto.",
+  "ground_truth_disclosed": false
+}

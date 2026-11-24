@@ -1,0 +1,178 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["Domanda soddisfatta senza arretrati -> vincolo di bilancio scorte I[p,t]=I[p,t-1]+x[p,t]-d[p,t] con I>=0","Scorta finale minima 2 unità -> vincolo I[p,6]>=2","Setup e lotto minimo -> vincoli x[p,t]<=M_p*y[p,t] e x[p,t]>=minlot_p*y[p,t]","Limite prodotti attivi per periodo (3 in T1, 2 altrove) -> vincolo sum_p y[p,t]<=3 (t=1) / <=2 (t>1)","Capacità con straordinario fino a 20 ore a 18/ora -> vincolo capacità sum_p hours_p*x[p,t] <= cap[t]+O[t], O[t]<=20, costo 18*O[t] in obiettivo","Scorta totale di fine periodo <=40 -> vincolo sum_p I[p,t] <= 40","Produzione e scorte intere, straordinario continuo -> domini delle variabili x,I interi, O continuo"]}
+
+## 1. Insiemi, parametri e variabili
+
+**Insiemi**
+- P = {A, B, C} — prodotti
+- T = {1,...,6} — periodi
+
+**Parametri**
+- d[p,t] — domanda del prodotto p nel periodo t
+- c[p,t] — costo unitario di produzione
+- setup[p] — costo fisso di setup
+- hold[p] — costo unitario di mantenimento a scorta
+- hours[p] — ore richieste per unità di p
+- minlot[p] — lotto minimo di produzione se attivato
+- cap[t] — capacità base (ore) nel periodo t
+- OC = 18 — costo per ora di straordinario
+- OMAX = 20 — massimo straordinario per periodo
+- STOCKMAX = 40 — scorta totale massima di fine periodo
+- ENDMIN = 2 — scorta minima finale per ciascun prodotto
+- maxset[t] = 3 se t=1, altrimenti 2 — massimo numero di prodotti attivabili nel periodo
+- M[p] = (Σ_t d[p,t]) + ENDMIN — big-M per il linking produzione/setup
+
+**Variabili decisionali**
+- x[p,t] ∈ ℤ≥0 — quantità prodotta
+- I[p,t] ∈ ℤ≥0 — scorta di fine periodo (I[p,0]=0)
+- y[p,t] ∈ {0,1} — 1 se il prodotto p è attivato (setup) nel periodo t
+- O[t] ∈ ℝ≥0 — ore di straordinario usate nel periodo t
+
+## 2. Formulazione matematica
+
+**Funzione obiettivo**
+
+min Σ_{p,t} c[p,t]·x[p,t] + Σ_{p,t} setup[p]·y[p,t] + Σ_{p,t} hold[p]·I[p,t] + Σ_t OC·O[t]
+
+**Vincoli**
+
+1. Bilancio di magazzino:
+   I[p,t] = I[p,t-1] + x[p,t] − d[p,t]  ∀p∈P, t∈T  (I[p,0]=0)
+
+2. Scorta finale minima:
+   I[p,6] ≥ ENDMIN  ∀p∈P
+
+3. Scorta totale massima per periodo:
+   Σ_p I[p,t] ≤ STOCKMAX  ∀t∈T
+
+4. Collegamento produzione/setup (attivazione e lotto minimo):
+   x[p,t] ≤ M[p]·y[p,t]  ∀p∈P, t∈T
+   x[p,t] ≥ minlot[p]·y[p,t]  ∀p∈P, t∈T
+
+5. Numero massimo di prodotti attivi per periodo:
+   Σ_p y[p,t] ≤ maxset[t]  ∀t∈T
+
+6. Capacità produttiva con straordinario:
+   Σ_p hours[p]·x[p,t] ≤ cap[t] + O[t]  ∀t∈T
+   O[t] ≤ OMAX  ∀t∈T
+
+7. Domini:
+   x[p,t] ∈ ℤ≥0, I[p,t] ∈ ℤ≥0, y[p,t] ∈ {0,1}, O[t] ∈ ℝ≥0
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+
+# ---------------- Dati ----------------
+P = ["A", "B", "C"]
+T = [1, 2, 3, 4, 5, 6]
+
+demand = {
+    ("A",1):12, ("A",2):18, ("A",3):14, ("A",4):20, ("A",5):16, ("A",6):19,
+    ("B",1):10, ("B",2):9,  ("B",3):15, ("B",4):12, ("B",5):17, ("B",6):14,
+    ("C",1):8,  ("C",2):11, ("C",3):10, ("C",4):13, ("C",5):9,  ("C",6):15,
+}
+
+cost = {
+    ("A",1):7, ("A",2):8, ("A",3):9, ("A",4):7, ("A",5):10, ("A",6):8,
+    ("B",1):9, ("B",2):8, ("B",3):8, ("B",4):10,("B",5):7,  ("B",6):9,
+    ("C",1):11,("C",2):10,("C",3):12,("C",4):9, ("C",5):11, ("C",6):8,
+}
+
+setup   = {"A":35, "B":40, "C":45}
+holding = {"A":2,  "B":2,  "C":3}
+hours   = {"A":2,  "B":3,  "C":4}
+minlot  = {"A":5,  "B":4,  "C":3}
+
+cap = {1:120, 2:115, 3:125, 4:110, 5:120, 6:115}
+
+OC = 18.0
+OMAX = 20.0
+STOCKMAX = 40
+ENDMIN = 2
+
+maxset = {t: (3 if t == 1 else 2) for t in T}
+
+bigM = {p: sum(demand[p, t] for t in T) + ENDMIN for p in P}
+
+# ---------------- Modello ----------------
+m = gp.Model("H09_multiprodotto_scorte")
+
+x = m.addVars(P, T, vtype=GRB.INTEGER, lb=0, name="x")
+I = m.addVars(P, T, vtype=GRB.INTEGER, lb=0, name="I")
+y = m.addVars(P, T, vtype=GRB.BINARY, name="y")
+O = m.addVars(T, vtype=GRB.CONTINUOUS, lb=0.0, ub=OMAX, name="O")
+
+# Bilancio di magazzino
+for p in P:
+    prev = 0
+    for t in T:
+        m.addConstr(I[p, t] == prev + x[p, t] - demand[p, t], name=f"bal_{p}_{t}")
+        prev = I[p, t]
+
+# Scorta finale minima
+for p in P:
+    m.addConstr(I[p, 6] >= ENDMIN, name=f"endmin_{p}")
+
+# Scorta totale massima per periodo
+for t in T:
+    m.addConstr(gp.quicksum(I[p, t] for p in P) <= STOCKMAX, name=f"stockmax_{t}")
+
+# Linking produzione/setup e lotto minimo
+for p in P:
+    for t in T:
+        m.addConstr(x[p, t] <= bigM[p] * y[p, t], name=f"link_{p}_{t}")
+        m.addConstr(x[p, t] >= minlot[p] * y[p, t], name=f"minlot_{p}_{t}")
+
+# Numero massimo di prodotti attivi per periodo
+for t in T:
+    m.addConstr(gp.quicksum(y[p, t] for p in P) <= maxset[t], name=f"maxset_{t}")
+
+# Capacità con straordinario
+for t in T:
+    m.addConstr(
+        gp.quicksum(hours[p] * x[p, t] for p in P) <= cap[t] + O[t],
+        name=f"cap_{t}"
+    )
+
+# ---------------- Obiettivo ----------------
+obj = (
+    gp.quicksum(cost[p, t] * x[p, t] for p in P for t in T)
+    + gp.quicksum(setup[p] * y[p, t] for p in P for t in T)
+    + gp.quicksum(holding[p] * I[p, t] for p in P for t in T)
+    + gp.quicksum(OC * O[t] for t in T)
+)
+m.setObjective(obj, GRB.MINIMIZE)
+
+m.optimize()
+
+# ---------------- Output ----------------
+status_map = {
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.UNBOUNDED: "UNBOUNDED",
+}
+status = status_map.get(m.Status, str(m.Status))
+
+result = {"status": status, "objective": None, "variables": {}}
+
+if m.Status == GRB.OPTIMAL:
+    variables = {}
+    for p in P:
+        for t in T:
+            variables[f"x_{p}_{t}"] = round(x[p, t].X, 4)
+            variables[f"I_{p}_{t}"] = round(I[p, t].X, 4)
+            variables[f"y_{p}_{t}"] = round(y[p, t].X, 4)
+    for t in T:
+        variables[f"O_{t}"] = round(O[t].X, 4)
+    result["objective"] = round(m.ObjVal, 4)
+    result["variables"] = variables
+
+import json
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello MILP determina il piano di produzione, i setup, le scorte e lo straordinario per i tre prodotti (A, B, C) sui sei periodi, minimizzando il costo totale (produzione + setup + mantenimento a scorta + straordinario) nel rispetto di: domanda senza arretrati, scorta iniziale nulla e finale ≥2 per ciascun prodotto, lotto minimo se il prodotto è attivato, al massimo 3 prodotti attivi nel primo periodo e 2 nei successivi, capacità oraria di base incrementabile fino a 20 ore di straordinario a 18 €/ora, e scorta totale di fine periodo ≤40 unità. Eseguendo lo script Gurobi si ottiene lo stato del solver (atteso OPTIMAL), il valore ottimo della funzione obiettivo e tutti i valori delle variabili decisionali (produzioni, scorte, setup attivati, ore di straordinario) tramite l'unica riga di output SOLUTION_JSON.

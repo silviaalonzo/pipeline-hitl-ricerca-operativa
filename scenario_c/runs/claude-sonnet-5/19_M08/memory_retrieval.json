@@ -1,0 +1,9 @@
+{
+  "model": "claude-sonnet-5",
+  "problem_id": "M08",
+  "retrieved_at_utc": "2026-08-24T19:22:34.956126+00:00",
+  "semantic": [],
+  "episodic": [],
+  "semantic_count_total": 2,
+  "episodic_count_total": 2
+}

@@ -1,0 +1,23 @@
+{
+  "scenario": "C",
+  "model_key": "deepseek-v4-flash",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "configuration": {
+    "provider": "openrouter",
+    "upstream_provider": "deepseek",
+    "model": "deepseek/deepseek-v4-flash",
+    "reasoning_effort": "high",
+    "max_output_tokens": 24000
+  },
+  "created_at_utc": "2026-08-24T20:44:51.759741+00:00",
+  "metadata": {
+    "problem_id": "H06",
+    "problem_sequence": 10,
+    "attempt_number": 1,
+    "attempt_kind": "AUTO_REPAIR",
+    "auto_repair_count_current_cycle": 1
+  },
+  "system_prompt": "Correggi un programma Python/gurobipy all'interno di una pipeline di Ricerca Operativa.\nUsa soltanto la traccia, la formulazione o l'istruzione dell'esperto e il messaggio di errore forniti.\nNon usare informazioni esterne e non inventare dati.\n\nRestituisci ESCLUSIVAMENTE un solo blocco di codice Python eseguibile, senza testo prima o dopo.\nIl codice deve costruire e risolvere il modello con Gurobi e stampare alla fine esattamente una riga:\n\nSOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":0.0,\"variables\":{\"nome_variabile\":0.0}}\n\nNel dizionario variables devono comparire tutte le variabili decisionali, comprese quelle nulle.\nSe il solver non restituisce una soluzione ottima, usa lo stato effettivo, objective null e variables vuoto.\nNon leggere o scrivere file, non accedere alla rete, non invocare altri processi e non importare librerie diverse\nda gurobipy, json, math e itertools.\n",
+  "user_prompt": "TRACCIA ORIGINALE:\n# H06 — Sequenziamento con ritardi pesati\n\nDifficoltà: Elevata\nClasse: MILP intera\n\nSette lavori devono essere sequenziati senza sovrapposizioni su una sola macchina. Ogni lavoro ha durata, data di disponibilità, scadenza e peso di priorità.\nJ1 deve terminare prima dell’inizio di J2; J3 deve terminare prima dell’inizio di J5. Il ritardo di un lavoro è max(0, completamento − scadenza).\nMinimizzare la somma dei ritardi moltiplicati per i rispettivi pesi. Modellare la non sovrapposizione mediante variabili binarie di ordinamento e una costante big-M giustificata.\n\n## Dati dei lavori\n\nLavoro | Durata | Disponibilità | Scadenza | Peso\n--- | --- | --- | --- | ---\nJ1 | 5 | 0 | 9 | 4\nJ2 | 7 | 0 | 17 | 3\nJ3 | 4 | 2 | 12 | 5\nJ4 | 6 | 3 | 22 | 2\nJ5 | 3 | 5 | 15 | 6\nJ6 | 8 | 0 | 28 | 2\nJ7 | 5 | 6 | 25 | 4\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n\nMEMORIA DELLA PIPELINE (usa solo gli elementi pertinenti; non sono soluzioni del problema corrente):\n- Principio: Nei problemi di produzione multi-periodo, indicizzare esplicitamente anche la scorta iniziale e collegare periodi consecutivi mediante il bilancio produzione più scorta precedente uguale domanda più scorta finale; completare poi il collegamento tra produzione e setup con limiti minimo e massimo di lotto.\n- Episodio precedente: dominio=Produzione e scorte; errore=output_troncato_o_senza_codice; correzione=Dopo tre riparazioni automatiche concluse senza codice eseguibile, l’esperto ha completato il modello MILP introducendo variabili di produzione, scorta e setup, bilanci intertemporali, condizioni iniziali e finali, capacità, limite ai setup e vincoli di lotto.\n\nCICLO DI SELF-REPAIR 1/3\nCategoria: output_troncato_o_senza_codice\nDettaglio verificabile:\nAtteso un solo blocco Python, trovati 0\n\nLa risposta precedente non ha prodotto codice estraibile. Non ripeterne le spiegazioni.\n\nCorreggi soltanto ciò che impedisce l'esecuzione o la soluzione del modello. Restituisci esclusivamente il singolo blocco Python richiesto."
+}

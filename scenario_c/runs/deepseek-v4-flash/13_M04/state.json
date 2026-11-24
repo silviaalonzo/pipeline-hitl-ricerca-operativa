@@ -1,0 +1,65 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "deepseek-v4-flash",
+  "problem_id": "M04",
+  "problem_sequence": 13,
+  "domain": "Trasporto",
+  "difficulty": "Media",
+  "model_class": "IP intera",
+  "created_at_utc": "2026-08-24T21:15:00.855897+00:00",
+  "updated_at_utc": "2026-08-24T21:18:07.359029+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T21:18:07.358253+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "almeno 180 unita di volume -> sum_i V_i x_i >= 180",
+              "almeno 95 unita di portata -> sum_i Q_i x_i >= 95",
+              "almeno un mezzo refrigerato -> x_Refrigerato >= 1",
+              "almeno un mezzo elettrico -> x_Elettrico >= 1",
+              "emissioni massime 145 -> sum_i G_i x_i <= 145",
+              "minimizzare costo giornaliero -> min sum_i C_i x_i",
+              "disponibilita veicoli -> 0 <= x_i <= A_i"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "deepseek-v4-flash",
+    "problem_id": "M04",
+    "retrieved_at_utc": "2026-08-24T21:15:00.855761+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 3,
+    "episodic_count_total": 3
+  },
+  "pending_handoff": null
+}

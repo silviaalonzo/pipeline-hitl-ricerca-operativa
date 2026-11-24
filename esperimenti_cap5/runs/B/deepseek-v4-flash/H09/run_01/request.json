@@ -1,0 +1,17 @@
+{
+  "scenario": "B",
+  "provider": "openrouter",
+  "model": "deepseek/deepseek-v4-flash",
+  "problem_id": "H09",
+  "replicate": 1,
+  "started_at_utc": "2026-08-10T15:17:33.166094+00:00",
+  "configuration": {
+    "provider": "openrouter",
+    "upstream_provider": "deepseek",
+    "model": "deepseek/deepseek-v4-flash",
+    "reasoning_effort": "high",
+    "max_output_tokens": 24000
+  },
+  "system_prompt": "Agisci come esperto di Ricerca Operativa. Devi formulare e risolvere il problema descritto dall'utente senza chiedere chiarimenti e senza usare informazioni esterne.\n\nLa risposta deve contenere, in quest'ordine:\n1. insiemi, parametri e variabili decisionali;\n2. formulazione matematica completa;\n3. un solo blocco di codice Python eseguibile con gurobipy;\n4. una breve sintesi della soluzione.\n\nIl codice deve costruire il modello a partire dai dati presenti nella traccia, chiamare Gurobi e stampare alla fine ESATTAMENTE una riga nel formato seguente:\n\nSOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":0.0,\"variables\":{\"nome_variabile\":0.0}}\n\nNel dizionario \"variables\" devono comparire tutte le variabili decisionali, comprese quelle con valore zero. Usa i nomi indicati nella formulazione e valori numerici, non espressioni testuali. Se il solver non restituisce una soluzione ottima, stampa comunque la riga SOLUTION_JSON con lo stato effettivo, objective null e variables vuoto.\n\nNon leggere o scrivere file, non accedere alla rete, non invocare altri processi e non utilizzare librerie diverse da gurobipy, json, math e itertools.\n\n",
+  "problem_prompt": "# H09 — Produzione e scorte multi-prodotto con straordinario\n\nDifficoltà: Elevata\nClasse: MILP\n\nUn impianto pianifica tre prodotti per sei periodi. La domanda deve essere soddisfatta senza arretrati; le scorte iniziali sono nulle e a fine orizzonte devono restare almeno 2 unità di ciascun prodotto.\nOgni prodotto richiede un setup nel periodo in cui viene prodotto e un lotto minimo. Nel primo periodo possono essere attivati tutti e tre i prodotti; nei periodi successivi se ne possono attivare al massimo due. La capacità base può essere aumentata con al massimo 20 ore di straordinario al costo di 18 per ora.\nLa scorta totale a fine periodo non può superare 40. Produzione e scorte sono intere; lo straordinario è continuo. Minimizzare tutti i costi.\n\n## Domanda\n\nProdotto | T1 | T2 | T3 | T4 | T5 | T6\n--- | --- | --- | --- | --- | --- | ---\nA | 12 | 18 | 14 | 20 | 16 | 19\nB | 10 | 9 | 15 | 12 | 17 | 14\nC | 8 | 11 | 10 | 13 | 9 | 15\n\n## Costo unitario di produzione\n\nProdotto | T1 | T2 | T3 | T4 | T5 | T6\n--- | --- | --- | --- | --- | --- | ---\nA | 7 | 8 | 9 | 7 | 10 | 8\nB | 9 | 8 | 8 | 10 | 7 | 9\nC | 11 | 10 | 12 | 9 | 11 | 8\n\n## Parametri di prodotto\n\nProdotto | Setup | Holding | Ore/unità | Lotto min.\n--- | --- | --- | --- | ---\nA | 35 | 2 | 2 | 5\nB | 40 | 2 | 3 | 4\nC | 45 | 3 | 4 | 3\n\n## Capacità base\n\nPeriodo | T1 | T2 | T3 | T4 | T5 | T6\n--- | --- | --- | --- | --- | --- | ---\nOre | 120 | 115 | 125 | 110 | 120 | 115\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n"
+}

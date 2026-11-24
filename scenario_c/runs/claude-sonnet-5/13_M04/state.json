@@ -1,0 +1,44 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "claude-sonnet-5",
+  "problem_id": "M04",
+  "problem_sequence": 13,
+  "domain": "Trasporto",
+  "difficulty": "Media",
+  "model_class": "IP intera",
+  "created_at_utc": "2026-08-24T19:06:21.081127+00:00",
+  "updated_at_utc": "2026-08-24T19:07:43.481285+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T19:06:43.150784+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "claude-sonnet-5",
+    "problem_id": "M04",
+    "retrieved_at_utc": "2026-08-24T19:06:21.080993+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 1,
+    "episodic_count_total": 1
+  },
+  "pending_handoff": null
+}

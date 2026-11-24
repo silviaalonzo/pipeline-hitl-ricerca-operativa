@@ -1,0 +1,125 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["Costo fisso di setup -> parametro setup_i e variabile binaria y_i nel termine obiettivo","Lotto minimo se prodotto -> vincolo x_i >= lotmin_i * y_i","Domanda massima -> vincolo x_i <= dmax_i * y_i","Ore macchina disponibili (90) -> vincolo sum(mach_i * x_i) <= 90","Ore lavoro disponibili (100) -> vincolo sum(lab_i * x_i) <= 100","Almeno due articoli diversi prodotti -> vincolo sum(y_i) >= 2","Massimizzare margine netto -> funzione obiettivo max sum(margin_i*x_i - setup_i*y_i)"]}
+
+## 2. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- I = {A, B, C, D} : insieme dei prodotti
+
+**Parametri**
+- m_i : margine unitario del prodotto i (42, 36, 50, 31)
+- s_i : costo fisso di setup del prodotto i (80, 65, 90, 50)
+- mac_i : ore macchina per unità di i (3, 2, 4, 1)
+- lav_i : ore lavoro per unità di i (2, 3, 2, 2)
+- Lmin_i : lotto minimo se i è prodotto (4, 5, 3, 6)
+- Dmax_i : domanda massima di i (20, 25, 16, 30)
+- MAC_TOT = 90 : ore macchina disponibili
+- LAV_TOT = 100 : ore lavoro disponibili
+- K_MIN = 2 : numero minimo di prodotti diversi da avviare
+
+**Variabili decisionali**
+- x_i ∈ ℤ≥0 : quantità prodotta dell'articolo i (unità intere)
+- y_i ∈ {0,1} : 1 se l'articolo i viene avviato (setup attivato), 0 altrimenti
+
+## 3. Formulazione matematica
+
+**Funzione obiettivo**
+
+max Z = Σ_{i∈I} ( m_i · x_i − s_i · y_i )
+
+**Vincoli**
+
+1. Capacità macchina:
+ Σ_{i∈I} mac_i · x_i ≤ MAC_TOT
+
+2. Capacità lavoro:
+ Σ_{i∈I} lav_i · x_i ≤ LAV_TOT
+
+3. Lotto minimo se avviato:
+ x_i ≥ Lmin_i · y_i , ∀ i ∈ I
+
+4. Domanda massima e collegamento a setup:
+ x_i ≤ Dmax_i · y_i , ∀ i ∈ I
+
+5. Almeno due articoli diversi prodotti:
+ Σ_{i∈I} y_i ≥ K_MIN
+
+6. Dominio:
+ x_i ∈ ℤ≥0 , y_i ∈ {0,1} , ∀ i ∈ I
+
+## 4. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+
+# Dati
+products = ["A", "B", "C", "D"]
+margin   = {"A": 42, "B": 36, "C": 50, "D": 31}
+setup    = {"A": 80, "B": 65, "C": 90, "D": 50}
+machine  = {"A": 3,  "B": 2,  "C": 4,  "D": 1}
+labor    = {"A": 2,  "B": 3,  "C": 2,  "D": 2}
+lot_min  = {"A": 4,  "B": 5,  "C": 3,  "D": 6}
+dem_max  = {"A": 20, "B": 25, "C": 16, "D": 30}
+
+MAC_TOT = 90
+LAV_TOT = 100
+K_MIN = 2
+
+model = gp.Model("Piano_produzione_setup")
+
+# Variabili
+x = model.addVars(products, vtype=GRB.INTEGER, lb=0, name="x")
+y = model.addVars(products, vtype=GRB.BINARY, name="y")
+
+# Funzione obiettivo
+model.setObjective(
+    gp.quicksum(margin[i] * x[i] - setup[i] * y[i] for i in products),
+    GRB.MAXIMIZE
+)
+
+# Vincoli
+model.addConstr(
+    gp.quicksum(machine[i] * x[i] for i in products) <= MAC_TOT,
+    name="capacita_macchina"
+)
+
+model.addConstr(
+    gp.quicksum(labor[i] * x[i] for i in products) <= LAV_TOT,
+    name="capacita_lavoro"
+)
+
+for i in products:
+    model.addConstr(x[i] >= lot_min[i] * y[i], name=f"lotto_min_{i}")
+    model.addConstr(x[i] <= dem_max[i] * y[i], name=f"domanda_max_{i}")
+
+model.addConstr(
+    gp.quicksum(y[i] for i in products) >= K_MIN,
+    name="min_prodotti_diversi"
+)
+
+model.optimize()
+
+status_map = {
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.UNBOUNDED: "UNBOUNDED"
+}
+status = status_map.get(model.status, str(model.status))
+
+if model.status == GRB.OPTIMAL:
+    objective = model.ObjVal
+    variables = {}
+    for i in products:
+        variables[f"x_{i}"] = x[i].X
+        variables[f"y_{i}"] = y[i].X
+else:
+    objective = None
+    variables = {}
+
+import json
+print(f"SOLUTION_JSON={json.dumps({'status': status, 'objective': objective, 'variables': variables})}")
+```
+
+## 5. Sintesi della soluzione
+
+Il modello determina le quantità intere da produrre per i quattro articoli (A, B, C, D), attivando i relativi setup solo se conveniente, nel rispetto dei vincoli di capacità (90 ore macchina, 100 ore lavoro), dei lotti minimi, delle domande massime e del requisito commerciale di produrre almeno due articoli diversi. La funzione obiettivo massimizza il margine totale al netto dei costi fissi di setup. Il codice Gurobi costruisce il MILP con variabili intere x_i (quantità) e binarie y_i (attivazione), risolve il problema e stampa lo stato, il valore ottimo della funzione obiettivo e tutti i valori delle variabili decisionali nel formato SOLUTION_JSON richiesto.

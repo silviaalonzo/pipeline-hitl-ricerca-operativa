@@ -1,0 +1,134 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "deepseek-v4-flash",
+  "problem_id": "H10",
+  "problem_sequence": 20,
+  "domain": "Network design",
+  "difficulty": "Elevata",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-24T22:21:51.773865+00:00",
+  "updated_at_utc": "2026-08-24T22:31:16.143932+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": true,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T22:25:28.470855+00:00",
+      "evaluation": {
+        "success": false,
+        "repairable": true,
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "detail": "Atteso un solo blocco Python, trovati 0",
+        "finish_reason": "length"
+      }
+    },
+    {
+      "number": 1,
+      "kind": "AUTO_REPAIR",
+      "directory": "attempt_01",
+      "created_at_utc": "2026-08-24T22:28:45.446901+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false
+      }
+    }
+  ],
+  "interventions": [
+    {
+      "handoff_number": 1,
+      "stage": 2,
+      "failure_class": "revisione_di_assicurazione_post_riparazione",
+      "handoff_mode": "ASSURANCE_REVIEW",
+      "active_minutes": 10.0,
+      "action": "APPROVE",
+      "expert_instruction": "",
+      "correction_summary": "L’esperto ha riesaminato variabili, funzione obiettivo, conservazione dei flussi, capacità condivise, attivazioni obbligatorie degli archi in uscita da S e limite complessivo agli archi, approvando senza modifiche il modello prodotto dopo la riparazione automatica.",
+      "semantic_principle": "",
+      "submitted_at_utc": "2026-08-24T22:31:00.209314+00:00",
+      "memory_committed": false
+    }
+  ],
+  "memory_retrieval": {
+    "model": "deepseek-v4-flash",
+    "problem_id": "H10",
+    "retrieved_at_utc": "2026-08-24T22:21:51.773855+00:00",
+    "semantic": [
+      {
+        "id": "S-003",
+        "created_at_utc": "2026-08-24T21:14:54.580945+00:00",
+        "source_episode": "H07-H01",
+        "principle": "Nei problemi di approvvigionamento con celle non disponibili, creare variabili soltanto per le coppie ammesse e collegare esplicitamente quantità, uso della coppia e attivazione del fornitore.",
+        "tags": [
+          "Procurement",
+          "MILP intera",
+          "stadio-2",
+          "revisione_di_assicurazione_post_riparazione"
+        ]
+      },
+      {
+        "id": "S-002",
+        "created_at_utc": "2026-08-24T20:18:42.444653+00:00",
+        "source_episode": "H02-H01",
+        "principle": "Nei problemi di produzione multi-periodo, indicizzare esplicitamente anche la scorta iniziale e collegare periodi consecutivi mediante il bilancio produzione più scorta precedente uguale domanda più scorta finale; completare poi il collegamento tra produzione e setup con limiti minimo e massimo di lotto.",
+        "tags": [
+          "Produzione e scorte",
+          "MILP intera",
+          "stadio-3",
+          "output_troncato_o_senza_codice"
+        ]
+      }
+    ],
+    "episodic": [
+      {
+        "id": "H07-H01",
+        "created_at_utc": "2026-08-24T21:14:54.580937+00:00",
+        "problem_id": "H07",
+        "domain": "Procurement",
+        "model_class": "MILP intera",
+        "stage": 2,
+        "failure_class": "revisione_di_assicurazione_post_riparazione",
+        "correction_summary": "Durante la revisione dello Stadio 2, l’esperto ha sostituito l’artefatto automatico con un codice completo e autonomo che definisce esplicitamente le sole coppie fornitore-componente disponibili, i legami quantità-uso-attivazione e tutti i controlli richiesti dalla traccia.",
+        "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+        "active_minutes": 20.0,
+        "tags": [
+          "Procurement",
+          "MILP intera",
+          "stadio-2",
+          "revisione_di_assicurazione_post_riparazione"
+        ]
+      },
+      {
+        "id": "H02-H01",
+        "created_at_utc": "2026-08-24T20:18:42.444642+00:00",
+        "problem_id": "H02",
+        "domain": "Produzione e scorte",
+        "model_class": "MILP intera",
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "correction_summary": "Dopo tre riparazioni automatiche concluse senza codice eseguibile, l’esperto ha completato il modello MILP introducendo variabili di produzione, scorta e setup, bilanci intertemporali, condizioni iniziali e finali, capacità, limite ai setup e vincoli di lotto.",
+        "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+        "active_minutes": 20.0,
+        "tags": [
+          "Produzione e scorte",
+          "MILP intera",
+          "stadio-3",
+          "output_troncato_o_senza_codice"
+        ]
+      }
+    ],
+    "semantic_count_total": 5,
+    "episodic_count_total": 5
+  },
+  "pending_handoff": null
+}

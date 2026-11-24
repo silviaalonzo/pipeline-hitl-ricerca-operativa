@@ -1,0 +1,102 @@
+### 1. Insiemi, parametri e variabili decisionali
+
+Insiemi:  
+- \(I = \{Z1,\dots,Z12\}\): zone.  
+- \(J = \{A,\dots,H\}\): stazioni.  
+- \(J^O = \{A,B,C,D\}\): stazioni Ovest.  
+- \(J^E = \{E,F,G,H\}\): stazioni Est.  
+- \(K = \{Z3,Z8,Z11\}\): zone critiche.  
+- \(R_i \subseteq J\): stazioni raggiungibili dalla zona \(i\).
+
+Parametri:  
+- \(d_i\): domanda della zona \(i\).  
+- \(f_j\): costo fisso di apertura della stazione \(j\).  
+- \(q_j\): capacità della stazione \(j\).  
+- \(t_{ij}\): tempo di percorrenza tra zona \(i\) e stazione \(j\), per \(j \in R_i\).
+
+Variabili decisionali:  
+- \(y_j \in \{0,1\}\): vale 1 se la stazione \(j\) viene aperta.  
+- \(x_{ij} \in \{0,1\}\), per \(j \in R_i\): vale 1 se la zona \(i\) è assegnata alla stazione \(j\).
+
+---
+
+### 2. Formulazione matematica completa
+
+\[
+\min \sum_{j \in J} f_j y_j + \sum_{i \in I} \sum_{j \in R_i} d_i t_{ij} x_{ij}
+\]
+
+vincoli:
+
+\[
+\sum_{j \in R_i} x_{ij} = 1 \qquad \forall i \in I
+\]
+
+\[
+x_{ij} \le y_j \qquad \forall i \in I,\ j \in R_i
+\]
+
+\[
+\sum_{i \in I: j \in R_i} d_i x_{ij} \le q_j y_j \qquad \forall j \in J
+\]
+
+\[
+\sum_{j \in J} y_j = 4
+\]
+
+\[
+\sum_{j \in J^O} y_j \ge 1
+\]
+
+\[
+\sum_{j \in J^E} y_j \ge 1
+\]
+
+\[
+\sum_{j \in R_i} y_j \ge 2 \qquad \forall i \in K
+\]
+
+\[
+y_j \in \{0,1\}, \quad x_{ij} \in \{0,1\}
+\]
+
+---
+
+### 3. Codice Python eseguibile con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+stations = ["A", "B", "C", "D", "E", "F", "G", "H"]
+
+fixed_cost = {
+    "A": 35, "B": 32, "C": 40, "D": 30,
+    "E": 38, "F": 33, "G": 36, "H": 31
+}
+
+capacity = {
+    "A": 42, "B": 44, "C": 46, "D": 40,
+    "E": 45, "F": 43, "G": 44, "H": 42
+}
+
+zones = ["Z1", "Z2", "Z3", "Z4", "Z5", "Z6", "Z7", "Z8", "Z9", "Z10", "Z11", "Z12"]
+
+demand = {
+    "Z1": 8, "Z2": 7, "Z3": 10, "Z4": 6,
+    "Z5": 9, "Z6": 8, "Z7": 7, "Z8": 11,
+    "Z9": 6, "Z10": 9, "Z11": 8, "Z12": 7
+}
+
+reach = {
+    "Z1": [("A", 3), ("B", 5)],
+    "Z2": [("A", 6), ("B", 8), ("C", 10)],
+    "Z3": [("B", 11), ("C", 4), ("D", 6)],
+    "Z4": [("C", 7), ("D", 9)],
+    "Z5": [("A", 6), ("D", 3), ("E", 5)],
+    "Z6": [("B", 11), ("E", 8), ("F", 10)],
+    "Z7": [("C", 7), ("F", 4), ("G", 6), ("H", 8)],
+    "Z8": [("D", 3), ("G", 9), ("H", 11)],
+    "Z9": [("E", 8), ("F", 10), ("H", 5)],
+    "Z10": [("F", 4), ("G", 6), ("H

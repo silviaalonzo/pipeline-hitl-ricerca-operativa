@@ -1,0 +1,143 @@
+# M02 — Piano di produzione con costi di setup
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $I = \{A, B, C, D\}$ : insieme dei prodotti
+
+**Parametri**
+
+| Simbolo | Significato | A | B | C | D |
+|---|---|---|---|---|---|
+| $m_i$ | margine unitario | 42 | 36 | 50 | 31 |
+| $s_i$ | costo fisso di setup | 80 | 65 | 90 | 50 |
+| $a_i$ | ore macchina/unità | 3 | 2 | 4 | 1 |
+| $b_i$ | ore lavoro/unità | 2 | 3 | 2 | 2 |
+| $L_i$ | lotto minimo | 4 | 5 | 3 | 6 |
+| $U_i$ | domanda massima | 20 | 25 | 16 | 30 |
+
+- $M = 90$ (ore-macchina disponibili)
+- $W = 100$ (ore lavoro disponibili)
+- $K = 2$ (numero minimo di articoli diversi da produrre)
+
+**Variabili decisionali**
+- $x_i \in \mathbb{Z}_{\ge 0}$ : quantità prodotta dell'articolo $i \in I$
+- $y_i \in \{0,1\}$ : 1 se l'articolo $i$ viene avviato (setup effettuato), 0 altrimenti
+
+## 2. Formulazione matematica
+
+$$
+\max \; Z = \sum_{i \in I} m_i x_i - \sum_{i \in I} s_i y_i
+$$
+
+soggetto a:
+
+$$
+\sum_{i \in I} a_i x_i \le M \qquad \text{(capacità ore-macchina)}
+$$
+
+$$
+\sum_{i \in I} b_i x_i \le W \qquad \text{(capacità ore lavoro)}
+$$
+
+$$
+L_i \, y_i \le x_i \le U_i \, y_i \qquad \forall i \in I \qquad \text{(lotto minimo/domanda max legato al setup)}
+$$
+
+$$
+\sum_{i \in I} y_i \ge K \qquad \text{(almeno 2 articoli diversi)}
+$$
+
+$$
+x_i \in \mathbb{Z}_{\ge 0}, \quad y_i \in \{0,1\} \qquad \forall i \in I
+$$
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# --- Dati ---
+prodotti = ['A', 'B', 'C', 'D']
+margine   = {'A': 42, 'B': 36, 'C': 50, 'D': 31}
+setup     = {'A': 80, 'B': 65, 'C': 90, 'D': 50}
+ore_macc  = {'A': 3,  'B': 2,  'C': 4,  'D': 1}
+ore_lav   = {'A': 2,  'B': 3,  'C': 2,  'D': 2}
+lotto_min = {'A': 4,  'B': 5,  'C': 3,  'D': 6}
+dom_max   = {'A': 20, 'B': 25, 'C': 16, 'D': 30}
+
+CAP_MACCHINA = 90
+CAP_LAVORO   = 100
+MIN_ARTICOLI = 2
+
+# --- Modello ---
+m = gp.Model("Piano_produzione_setup")
+
+x = m.addVars(prodotti, vtype=GRB.INTEGER, lb=0, name="x")
+y = m.addVars(prodotti, vtype=GRB.BINARY, name="y")
+
+# Funzione obiettivo
+m.setObjective(
+    gp.quicksum(margine[i] * x[i] for i in prodotti)
+    - gp.quicksum(setup[i] * y[i] for i in prodotti),
+    GRB.MAXIMIZE
+)
+
+# Vincoli di capacità
+m.addConstr(gp.quicksum(ore_macc[i] * x[i] for i in prodotti) <= CAP_MACCHINA, name="ore_macchina")
+m.addConstr(gp.quicksum(ore_lav[i] * x[i] for i in prodotti) <= CAP_LAVORO, name="ore_lavoro")
+
+# Vincoli lotto minimo / domanda massima legati al setup
+for i in prodotti:
+    m.addConstr(x[i] >= lotto_min[i] * y[i], name=f"lotto_min_{i}")
+    m.addConstr(x[i] <= dom_max[i] * y[i], name=f"dom_max_{i}")
+
+# Almeno 2 articoli diversi
+m.addConstr(gp.quicksum(y[i] for i in prodotti) >= MIN_ARTICOLI, name="min_articoli")
+
+m.optimize()
+
+# --- Output ---
+status = m.Status
+if status == GRB.OPTIMAL:
+    variables = {}
+    for i in prodotti:
+        variables[f"x_{i}"] = float(x[i].X)
+        variables[f"y_{i}"] = float(y[i].X)
+    result = {
+        "status": "OPTIMAL",
+        "objective": float(m.ObjVal),
+        "variables": variables
+    }
+else:
+    result = {
+        "status": str(status),
+        "objective": None,
+        "variables": {}
+    }
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello raggiunge lo **stato OTTIMO (OPTIMAL)**.
+
+**Decisioni non nulle:**
+- Produrre **20 unità di A** (setup attivato, $y_A = 1$)
+- Produrre **30 unità di D** (setup attivato, $y_D = 1$)
+- B e C non vengono prodotti ($x_B = x_C = 0$, $y_B = y_C = 0$)
+
+**Verifica dei vincoli:**
+- Ore macchina utilizzate: $3(20) + 1(30) = 90$ → capacità satura
+- Ore lavoro utilizzate: $2(20) + 2(30) = 100$ → capacità satura
+- Articoli diversi prodotti: 2 (A, D) → vincolo minimo rispettato
+
+**Valore ottimo della funzione obiettivo:**
+$$
+Z^* = 42(20) + 31(30) - 80 - 50 = 840 + 930 - 130 = \mathbf{1640}
+$$
+
+La soluzione sfrutta pienamente entrambe le risorse produttive concentrandosi sui due articoli con la migliore combinazione di margine ed efficienza nell'uso delle risorse (D è molto efficiente in ore-macchina, A ha un buon margine per ora-lavoro), minimizzando al contempo i costi fissi di setup attivando solo i due articoli strettamente necessari.

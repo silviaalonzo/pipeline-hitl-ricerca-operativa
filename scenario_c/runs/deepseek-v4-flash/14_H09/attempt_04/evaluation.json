@@ -1,0 +1,10 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "expert_direct_artifact",
+  "source_sha256": "0e8a715b03966d2ac909824a60c50d28ae2be80968533fff7720797618408ab0",
+  "candidate_source": "H09.sol"
+}

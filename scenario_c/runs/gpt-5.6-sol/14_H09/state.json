@@ -1,0 +1,66 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "gpt-5.6-sol",
+  "problem_id": "H09",
+  "problem_sequence": 14,
+  "domain": "Production-inventory",
+  "difficulty": "Elevata",
+  "model_class": "MILP",
+  "created_at_utc": "2026-08-24T18:24:09.339409+00:00",
+  "updated_at_utc": "2026-08-24T18:29:34.668009+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:29:34.667114+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "domanda senza arretrati -> bilanci di scorta e I_it >= 0",
+              "scorte iniziali nulle -> I_i0 = 0",
+              "scorta finale minima -> I_i6 >= 2",
+              "setup e lotto minimo -> L_i y_it <= x_it <= M_it y_it",
+              "massimo due prodotti dopo T1 -> somma_i y_it <= 2 per t=2,...,6",
+              "capacità e straordinario -> somma_i a_i x_it <= K_t + o_t, 0 <= o_t <= 20",
+              "scorta totale massima -> somma_i I_it <= 40",
+              "minimizzazione di tutti i costi -> costi di produzione, setup, holding e straordinario nell'obiettivo"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "gpt-5.6-sol",
+    "problem_id": "H09",
+    "retrieved_at_utc": "2026-08-24T18:24:09.339400+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "aprire esattamente quattro stazioni -> vincolo sum_s y_s = 4",
+        "assegnare ogni zona a una stazione raggiungibile -> vincolo sum_{s in R_z} x_{z,s} = 1 con x_{z,s} definita solo per s in R_z",
+        "domanda consuma capacità della stazione -> vincolo sum_z d_z x_{z,s} <= cap_s y_s",
+        "almeno una stazione aperta nel gruppo Ovest e una nel gruppo Est -> vincoli sum_{s in West} y_s >=1, sum_{s in East} y_s >=1",
+        "zone critiche Z3,Z8,Z11 devono avere almeno due stazioni raggiungibili aperte -> vincolo sum_{s in R_z} y_s >= 2 per z critiche",
+        "minimizzare costi fissi più domanda per tempo di percorrenza -> funzione obiettivo min sum_s f_s y_s + sum_z sum_{s in R_z} d_z t_{z,s} x_{z,s}"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

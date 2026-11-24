@@ -1,0 +1,36 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "domanda esatta -> vincolo di uguaglianza su x per ogni componente",
+        "2-3 fornitori per componente -> 2 <= sum y <= 3 per componente",
+        "lotto minimo su coppia usata -> x_ij >= l_j y_ij",
+        "capacità condivisa e attivazione fornitore -> sum_j x_ij <= cap_i z_i",
+        "al massimo sei fornitori -> sum_i z_i <= 6",
+        "almeno uno tra S1 e S2 -> z_S1 + z_S2 >= 1",
+        "qualità media per componente >= 95 -> sum_i q_ij x_ij >= 95 d_j",
+        "rischio complessivo <= 1300 -> sum_ij r_i x_ij <= 1300",
+        "minimizzare costi fissi e acquisto -> min sum_i f_i z_i + sum_ij c_ij x_ij"
+      ],
+      "memory_items_used": [
+        "S-003",
+        "H07-H01"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

@@ -1,0 +1,243 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["Ogni rotta affidata a un solo veicolo -> sum_i x_ij = 1 per ogni rotta j","Veicolo usato solo se attivato -> x_ij <= y_i","Capacità complessiva di carico -> sum_j load_j x_ij <= capacity_i y_i","Numero massimo di rotte -> sum_j x_ij <= max_routes_i y_i","Al massimo sette veicoli -> sum_i y_i <= 7","Almeno due elettrici attivi -> sum_{i in E} y_i >= 2","Limite elettrici su rotte lunghe -> sum_{j in L} x_ij <= 1","Limite diesel su rotte centro -> sum_{j in C} x_ij <= 2","Limite emissioni -> sum_i sum_j dist_j emission_i x_ij <= 1050","Minimizzare costi fissi e di assegnazione -> min sum_i f_i y_i + sum_i sum_j c_ij x_ij"],"memory_items_used":["S-001"]}
+
+## Insiemi, parametri e variabili decisionali
+
+### Insiemi
+- \(V = \{E1,E2,E3,D1,D2,D3,D4,D5\}\)
+- \(R = \{R01,\dots,R16\}\)
+- \(\mathcal{E} = \{E1,E2,E3\}\) veicoli elettrici
+- \(\mathcal{D} = \{D1,\dots,D5\}\) veicoli diesel
+- \(\mathcal{L} = \{R06,R09,R11,R13,R15,R16\}\) rotte lunghe
+- \(\mathcal{C} = \{R01,R03,R05,R08,R12\}\) rotte di centro
+
+### Parametri
+- \(f_i\): costo fisso del veicolo \(i\)
+- \(q_i\): capacità di carico del veicolo \(i\)
+- \(n_i\): numero massimo di rotte del veicolo \(i\)
+- \(e_i\): fattore di emissione del veicolo \(i\)
+- \(p_j\): carico della rotta \(j\)
+- \(d_j\): distanza della rotta \(j\)
+- \(c_{ij}\): costo di assegnazione della rotta \(j\) al veicolo \(i\)
+
+### Variabili
+- \(y_i \in \{0,1\}\): vale 1 se il veicolo \(i\) è attivato
+- \(x_{ij} \in \{0,1\}\): vale 1 se la rotta \(j\) è assegnata al veicolo \(i\)
+
+## Formulazione matematica
+
+\[
+\min \sum_{i\in V} f_i y_i + \sum_{i\in V}\sum_{j\in R} c_{ij} x_{ij}
+\]
+
+soggetto a:
+
+\[
+\sum_{i\in V} x_{ij} = 1 \quad \forall j\in R
+\]
+
+\[
+x_{ij} \le y_i \quad \forall i\in V,\; j\in R
+\]
+
+\[
+\sum_{j\in R} p_j x_{ij} \le q_i y_i \quad \forall i\in V
+\]
+
+\[
+\sum_{j\in R} x_{ij} \le n_i y_i \quad \forall i\in V
+\]
+
+\[
+\sum_{i\in V} y_i \le 7
+\]
+
+\[
+\sum_{i\in \mathcal{E}} y_i \ge 2
+\]
+
+\[
+\sum_{j\in \mathcal{L}} x_{ij} \le 1 \quad \forall i\in \mathcal{E}
+\]
+
+\[
+\sum_{j\in \mathcal{C}} x_{ij} \le 2 \quad \forall i\in \mathcal{D}
+\]
+
+\[
+\sum_{i\in V}\sum_{j\in R} d_j e_i x_{ij} \le 1050
+\]
+
+\[
+x_{ij}\in\{0,1\}, \quad y_i\in\{0,1\}
+\]
+
+## Codice Python eseguibile con Gurobi
+
+```python
+import json
+import gurobipy as gp
+from gurobipy import GRB
+
+vehicles = ["E1", "E2", "E3", "D1", "D2", "D3", "D4", "D5"]
+routes = ["R01", "R02", "R03", "R04", "R05", "R06", "R07", "R08",
+          "R09", "R10", "R11", "R12", "R13", "R14", "R15", "R16"]
+
+electric = {"E1", "E2", "E3"}
+diesel = {"D1", "D2", "D3", "D4", "D5"}
+long_routes = {"R06", "R09", "R11", "R13", "R15", "R16"}
+center_routes = {"R01", "R03", "R05", "R08", "R12"}
+
+load = {
+    "R01": 5, "R02": 7, "R03": 4, "R04": 8, "R05": 6, "R06": 9,
+    "R07": 5, "R08": 7, "R09": 8, "R10": 6, "R11": 9, "R12": 7,
+    "R13": 10, "R14": 6, "R15": 8, "R16": 5
+}
+
+distance = {
+    "R01": 18, "R02": 28, "R03": 16, "R04": 34, "R05": 22, "R06": 51,
+    "R07": 26, "R08": 20, "R09": 48, "R10": 31, "R11": 55, "R12": 24,
+    "R13": 52, "R14": 29, "R15": 47, "R16": 45
+}
+
+fixed_cost = {
+    "E1": 62, "E2": 58, "E3": 55,
+    "D1": 46, "D2": 44, "D3": 41, "D4": 49, "D5": 43
+}
+
+capacity = {
+    "E1": 30, "E2": 32, "E3": 28,
+    "D1": 38, "D2": 40, "D3": 36, "D4": 42, "D5": 35
+}
+
+max_routes = {
+    "E1": 3, "E2": 3, "E3": 3,
+    "D1": 4, "D2": 4, "D3": 4, "D4": 4, "D5": 4
+}
+
+emission_factor = {
+    "E1": 0, "E2": 0, "E3": 0,
+    "D1": 3, "D2": 2, "D3": 3, "D4": 2, "D5": 3
+}
+
+cost_rows = {
+    "E1": [9, 12, 15, 18, 21, 2, 14, 17, 10, 10, 3, 16, 9, 9, 2, 5],
+    "E2": [16, 19, 9, 12, 15, 9, 21, 11, 5, 17, 11, 10, 4, 16, 10, 3],
+    "E3": [10, 13, 16, 19, 9, 3, 15, 18, 11, 11, 4, 17, 10, 10, 3, 6],
+    "D1": [17, 20, 10, 13, 16, 19, 9, 12, 15, 18, 21, 11, 14, 17, 20, 10],
+    "D2": [11, 14, 17, 20, 10, 13, 16, 19, 9, 12, 15, 18, 21, 11, 14, 17],
+    "D3": [18, 21, 11, 14, 17, 20, 10, 13, 16, 19, 9, 12, 15, 18, 21, 11],
+    "D4": [12, 15, 18, 21, 11, 14, 17, 20, 10, 13, 16, 19, 9, 12, 15, 18],
+    "D5": [19, 9, 12, 15, 18, 21, 11, 14, 17, 20, 10, 13, 16, 19, 9, 12]
+}
+
+cost = {}
+for i in vehicles:
+    for j, r in enumerate(routes):
+        cost[i, r] = cost_rows[i][j]
+
+m = gp.Model("route_assignment")
+m.Params.OutputFlag = 0
+
+y = {}
+for i in vehicles:
+    y[i] = m.addVar(vtype=GRB.BINARY, name=f"y_{i}")
+
+x = {}
+for i in vehicles:
+    for r in routes:
+        x[i, r] = m.addVar(vtype=GRB.BINARY, name=f"x_{i}_{r}")
+
+m.setObjective(
+    gp.quicksum(fixed_cost[i] * y[i] for i in vehicles) +
+    gp.quicksum(cost[i, r] * x[i, r] for i in vehicles for r in routes),
+    GRB.MINIMIZE
+)
+
+# Ogni rotta assegnata esattamente a un veicolo
+for r in routes:
+    m.addConstr(gp.quicksum(x[i, r] for i in vehicles) == 1, name=f"assign_{r}")
+
+# Veicolo usato solo se attivato
+for i in vehicles:
+    for r in routes:
+        m.addConstr(x[i, r] <= y[i], name=f"link_{i}_{r}")
+
+# Capacità complessiva di carico
+for i in vehicles:
+    m.addConstr(
+        gp.quicksum(load[r] * x[i, r] for r in routes) <= capacity[i] * y[i],
+        name=f"capacity_{i}"
+    )
+
+# Numero massimo di rotte per veicolo
+for i in vehicles:
+    m.addConstr(
+        gp.quicksum(x[i, r] for r in routes) <= max_routes[i] * y[i],
+        name=f"max_routes_{i}"
+    )
+
+# Numero massimo di veicoli attivati
+m.addConstr(gp.quicksum(y[i] for i in vehicles) <= 7, name="max_active_vehicles")
+
+# Almeno due veicoli elettrici attivi
+m.addConstr(gp.quicksum(y[i] for i in electric) >= 2, name="min_electric")
+
+# Ogni elettrico può servire al massimo una rotta lunga
+for i in electric:
+    m.addConstr(
+        gp.quicksum(x[i, r] for r in long_routes) <= 1,
+        name=f"long_limit_{i}"
+    )
+
+# Ogni diesel può servire al massimo due rotte di centro
+for i in diesel:
+    m.addConstr(
+        gp.quicksum(x[i, r] for r in center_routes) <= 2,
+        name=f"center_limit_{i}"
+    )
+
+# Limite complessivo di emissioni
+m.addConstr(
+    gp.quicksum(distance[r] * emission_factor[i] * x[i, r]
+                for i in vehicles for r in routes) <= 1050,
+    name="emission_limit"
+)
+
+m.optimize()
+
+if m.Status == GRB.OPTIMAL:
+    status = "OPTIMAL"
+    objective = float(m.ObjVal)
+    variables = {}
+    for i in vehicles:
+        variables[f"y_{i}"] = float(y[i].X)
+    for i in vehicles:
+        for r in routes:
+            variables[f"x_{i}_{r}"] = float(x[i, r].X)
+else:
+    status = str(m.Status)
+    objective = None
+    variables = {}
+
+print("SOLUTION_JSON=" + json.dumps({
+    "status": status,
+    "objective": objective,
+    "variables": variables
+}))
+```
+
+## Sintesi della soluzione
+
+Stato del solver: **OPTIMAL**  
+Valore ottimo: **394.0**
+
+Una soluzione ottima (non necessariamente unica) attiva i veicoli **E2, E3, D2, D3, D5**; i veicoli E1, D1, D4 non sono attivati.
+
+Assegnazioni non nulle:
+- E2 → R03, R12, R13
+- E3 → R05, R06, R14
+- D2 → R01, R09, R10
+- D3 → R04, R07, R08, R16
+- D5 → R02, R11, R15
+
+Il codice stampa inoltre la riga `SOLUTION_JSON` con tutte le variabili decisionali, incluse quelle a zero.

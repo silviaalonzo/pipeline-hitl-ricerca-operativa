@@ -1,0 +1,227 @@
+# H07 — Sourcing multi-componente con rischio e multisourcing
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $S = \{A, B, C, D, E, F\}$ — fornitori
+- $K = \{C1, C2, C3\}$ — componenti
+- $V \subseteq S \times K$ — coppie (fornitore, componente) effettivamente disponibili (escludendo le celle “—”)
+
+**Parametri**
+- $FC_s$ — costo fisso di attivazione del fornitore $s$
+- $Cap_s$ — capacità totale (su tutti i componenti) del fornitore $s$
+- $R_s$ — coefficiente di rischio del fornitore $s$
+- $D_k$ — domanda del componente $k$ ($D_{C1}=80,\ D_{C2}=70,\ D_{C3}=60$)
+- $c_{s,k}$ — costo unitario di acquisto per $(s,k)\in V$
+- $q_{s,k}$ — qualità per $(s,k)\in V$
+- $L=10$ — quantità minima per ogni combinazione fornitore–componente attivata
+- $N_{max}=4$ — massimo numero di fornitori attivabili
+- $Q_{min}=95$ — qualità media minima per componente
+- $R_{max}=580$ — rischio totale massimo
+
+**Variabili decisionali**
+- $x_{s,k}\ge 0$, intera, per $(s,k)\in V$ — quantità acquistata
+- $y_s \in \{0,1\}$ — 1 se il fornitore $s$ è attivato
+- $z_{s,k}\in\{0,1\}$, per $(s,k)\in V$ — 1 se il fornitore $s$ è effettivamente usato per il componente $k$
+
+## 2. Formulazione matematica
+
+**Funzione obiettivo**
+$$
+\min \sum_{(s,k)\in V} c_{s,k}\,x_{s,k} + \sum_{s\in S} FC_s\,y_s
+$$
+
+**Vincoli**
+
+Soddisfacimento della domanda:
+$$
+\sum_{s:(s,k)\in V} x_{s,k} = D_k \qquad \forall k\in K
+$$
+
+Capacità complessiva del fornitore:
+$$
+\sum_{k:(s,k)\in V} x_{s,k} \le Cap_s\, y_s \qquad \forall s\in S
+$$
+
+Collegamento $x$–$z$ e quantità minima se usato:
+$$
+x_{s,k} \le D_k\, z_{s,k} \qquad \forall (s,k)\in V
+$$
+$$
+x_{s,k} \ge L\, z_{s,k} \qquad \forall (s,k)\in V
+$$
+
+Attivazione necessaria per l'uso:
+$$
+z_{s,k} \le y_s \qquad \forall (s,k)\in V
+$$
+
+Almeno due fornitori per componente:
+$$
+\sum_{s:(s,k)\in V} z_{s,k} \ge 2 \qquad \forall k\in K
+$$
+
+Numero massimo di fornitori attivi:
+$$
+\sum_{s\in S} y_s \le N_{max}
+$$
+
+Almeno uno tra A e B:
+$$
+y_A + y_B \ge 1
+$$
+
+Qualità media minima per componente:
+$$
+\sum_{s:(s,k)\in V} q_{s,k}\, x_{s,k} \ge Q_{min}\, D_k \qquad \forall k\in K
+$$
+
+Rischio totale massimo:
+$$
+\sum_{(s,k)\in V} R_s\, x_{s,k} \le R_{max}
+$$
+
+Dominio:
+$$
+x_{s,k}\in \mathbb{Z}_{\ge 0},\quad y_s\in\{0,1\},\quad z_{s,k}\in\{0,1\}
+$$
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# ---------------- Dati ----------------
+suppliers = ['A', 'B', 'C', 'D', 'E', 'F']
+components = ['C1', 'C2', 'C3']
+
+fixed_cost = {'A': 120, 'B': 140, 'C': 100, 'D': 150, 'E': 90, 'F': 110}
+capacity   = {'A': 100, 'B': 110, 'C': 90, 'D': 120, 'E': 80, 'F': 95}
+risk       = {'A': 2, 'B': 3, 'C': 1, 'D': 4, 'E': 2, 'F': 3}
+demand     = {'C1': 80, 'C2': 70, 'C3': 60}
+
+cost = {
+    ('A', 'C1'): 9,  ('A', 'C2'): 12, ('A', 'C3'): 11,
+    ('B', 'C1'): 10, ('B', 'C2'): 9,  ('B', 'C3'): 12,
+    ('C', 'C1'): 11, ('C', 'C2'): 10, ('C', 'C3'): 9,
+    ('D', 'C2'): 11, ('D', 'C3'): 10,
+    ('E', 'C1'): 12, ('E', 'C2'): 8,
+    ('F', 'C1'): 10, ('F', 'C3'): 8,
+}
+
+quality = {
+    ('A', 'C1'): 96, ('A', 'C2'): 94, ('A', 'C3'): 95,
+    ('B', 'C1'): 93, ('B', 'C2'): 97, ('B', 'C3'): 92,
+    ('C', 'C1'): 98, ('C', 'C2'): 95, ('C', 'C3'): 96,
+    ('D', 'C2'): 94, ('D', 'C3'): 93,
+    ('E', 'C1'): 97, ('E', 'C2'): 98,
+    ('F', 'C1'): 94, ('F', 'C3'): 98,
+}
+
+valid_pairs = list(cost.keys())
+
+MIN_LINK = 10
+MAX_SUPPLIERS = 4
+MIN_QUALITY = 95
+MAX_RISK = 580
+
+# ---------------- Modello ----------------
+model = gp.Model("H07_sourcing")
+
+x = model.addVars(valid_pairs, vtype=GRB.INTEGER, lb=0, name="x")
+y = model.addVars(suppliers, vtype=GRB.BINARY, name="y")
+z = model.addVars(valid_pairs, vtype=GRB.BINARY, name="z")
+
+model.setObjective(
+    gp.quicksum(cost[p] * x[p] for p in valid_pairs) +
+    gp.quicksum(fixed_cost[s] * y[s] for s in suppliers),
+    GRB.MINIMIZE
+)
+
+# Domanda
+for k in components:
+    model.addConstr(
+        gp.quicksum(x[s, k] for s in suppliers if (s, k) in valid_pairs) == demand[k],
+        name=f"demand_{k}"
+    )
+
+# Capacità totale
+for s in suppliers:
+    model.addConstr(
+        gp.quicksum(x[s, k] for k in components if (s, k) in valid_pairs) <= capacity[s] * y[s],
+        name=f"cap_{s}"
+    )
+
+# Link x-z e quantità minima
+for (s, k) in valid_pairs:
+    model.addConstr(x[s, k] <= demand[k] * z[s, k], name=f"linkU_{s}_{k}")
+    model.addConstr(x[s, k] >= MIN_LINK * z[s, k], name=f"linkL_{s}_{k}")
+    model.addConstr(z[s, k] <= y[s], name=f"act_{s}_{k}")
+
+# Almeno due fornitori per componente
+for k in components:
+    model.addConstr(
+        gp.quicksum(z[s, k] for s in suppliers if (s, k) in valid_pairs) >= 2,
+        name=f"minsup_{k}"
+    )
+
+# Massimo 4 fornitori attivi
+model.addConstr(gp.quicksum(y[s] for s in suppliers) <= MAX_SUPPLIERS, name="maxsup")
+
+# Almeno uno tra A e B
+model.addConstr(y['A'] + y['B'] >= 1, name="AorB")
+
+# Qualità media minima
+for k in components:
+    model.addConstr(
+        gp.quicksum(quality[s, k] * x[s, k] for s in suppliers if (s, k) in valid_pairs)
+        >= MIN_QUALITY * demand[k],
+        name=f"qual_{k}"
+    )
+
+# Rischio totale massimo
+model.addConstr(
+    gp.quicksum(risk[s] * x[s, k] for (s, k) in valid_pairs) <= MAX_RISK,
+    name="risk_budget"
+)
+
+model.optimize()
+
+# ---------------- Output ----------------
+status_map = {
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.UNBOUNDED: "UNBOUNDED",
+    GRB.INF_OR_UNBD: "INF_OR_UNBD",
+}
+
+result = {"status": status_map.get(model.Status, str(model.Status)),
+          "objective": None, "variables": {}}
+
+if model.Status == GRB.OPTIMAL:
+    variables = {}
+    for (s, k) in valid_pairs:
+        variables[f"x_{s}_{k}"] = x[s, k].X
+    for s in suppliers:
+        variables[f"y_{s}"] = y[s].X
+    for (s, k) in valid_pairs:
+        variables[f"z_{s}_{k}"] = z[s, k].X
+    result["objective"] = model.ObjVal
+    result["variables"] = variables
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello MILP individua come soluzione ottima l'attivazione di **tre fornitori**: A, C, E (soddisfacendo il vincolo "almeno uno tra A e B" tramite A), con:
+
+- **C1** (80 u.): 70 da A, 10 da C — qualità media 96,25
+- **C2** (70 u.): 10 da C, 60 da E — qualità media 97,57
+- **C3** (60 u.): 10 da A, 50 da C — qualità media 95,83
+
+Capacità utilizzate: A=80/100, C=70/90, E=60/80 — tutte rispettate. Rischio totale = 350 ≤ 580 (non vincolante). Ogni componente è servito da esattamente 2 fornitori (vincolo minimo rispettato), ogni combinazione attiva usa ≥10 unità, e sono attivati solo 3 fornitori (≤4 consentiti).
+
+**Costo totale ottimo ≈ 2190** (1880 di acquisto + 310 

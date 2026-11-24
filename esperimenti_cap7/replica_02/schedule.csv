@@ -1,0 +1,11 @@
+global_order,pair_sequence,within_pair,problem_id,condition,model,replicate
+1,1,1,L05,Cmem,deepseek-v4-flash,2
+2,1,2,L05,C0,deepseek-v4-flash,2
+3,2,1,L04,C0,deepseek-v4-flash,2
+4,2,2,L04,Cmem,deepseek-v4-flash,2
+5,3,1,L03,Cmem,deepseek-v4-flash,2
+6,3,2,L03,C0,deepseek-v4-flash,2
+7,4,1,L02,C0,deepseek-v4-flash,2
+8,4,2,L02,Cmem,deepseek-v4-flash,2
+9,5,1,L01,Cmem,deepseek-v4-flash,2
+10,5,2,L01,C0,deepseek-v4-flash,2

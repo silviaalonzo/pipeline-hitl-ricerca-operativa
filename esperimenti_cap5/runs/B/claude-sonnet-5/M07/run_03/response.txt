@@ -1,0 +1,152 @@
+# M07 — Selezione dei fornitori con qualità minima
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $I = \{A, B, C, D\}$ : insieme dei fornitori
+
+**Parametri**
+- $c_i$ : costo variabile per unità del fornitore $i$
+- $f_i$ : costo fisso di attivazione del fornitore $i$
+- $\text{cap}_i$ : capacità massima del fornitore $i$
+- $m_i$ : ordine minimo se il fornitore $i$ è attivato
+- $q_i$ : qualità del fornitore $i$
+- $e_i$ : emissioni per unità del fornitore $i$
+- $D_{tot} = 180$ : domanda totale da soddisfare
+- $Q_{min} = 92$ : qualità media ponderata minima
+- $E_{max} = 650$ : emissioni totali massime
+- $S_{min} = 2$ : numero minimo di fornitori attivi
+
+| i | c_i | f_i | cap_i | m_i | q_i | e_i |
+|---|---|---|---|---|---|---|
+| A | 11 | 80 | 80 | 20 | 96 | 3 |
+| B | 10 | 95 | 100 | 25 | 90 | 4 |
+| C | 12 | 60 | 70 | 15 | 98 | 2 |
+| D | 9 | 120 | 90 | 20 | 88 | 5 |
+
+**Variabili decisionali**
+- $x_i \ge 0$, intera : unità acquistate dal fornitore $i$
+- $y_i \in \{0,1\}$ : 1 se il fornitore $i$ è attivato, 0 altrimenti
+
+## 2. Formulazione matematica
+
+$$\min \; Z = \sum_{i \in I} c_i x_i + \sum_{i \in I} f_i y_i$$
+
+soggetto a:
+
+$$\sum_{i \in I} x_i = D_{tot} \qquad (\text{domanda esatta})$$
+
+$$x_i \le \text{cap}_i \, y_i \qquad \forall i \in I \qquad (\text{capacità, attivazione})$$
+
+$$x_i \ge m_i \, y_i \qquad \forall i \in I \qquad (\text{ordine minimo})$$
+
+$$\sum_{i \in I} y_i \ge S_{min} \qquad (\text{almeno due fornitori})$$
+
+$$\sum_{i \in I} q_i x_i \ge Q_{min} \sum_{i \in I} x_i \qquad (\text{qualità media ponderata})$$
+
+$$\sum_{i \in I} e_i x_i \le E_{max} \qquad (\text{emissioni totali})$$
+
+$$x_i \in \mathbb{Z}_{\ge 0}, \quad y_i \in \{0,1\} \qquad \forall i \in I$$
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# Dati
+suppliers = ["A", "B", "C", "D"]
+c    = {"A": 11, "B": 10, "C": 12, "D": 9}
+f    = {"A": 80, "B": 95, "C": 60, "D": 120}
+cap  = {"A": 80, "B": 100, "C": 70, "D": 90}
+m    = {"A": 20, "B": 25, "C": 15, "D": 20}
+q    = {"A": 96, "B": 90, "C": 98, "D": 88}
+e    = {"A": 3,  "B": 4,  "C": 2,  "D": 5}
+
+D_tot   = 180
+Q_min   = 92
+E_max   = 650
+S_min   = 2
+
+model = gp.Model("Selezione_Fornitori")
+model.Params.OutputFlag = 0
+
+x = model.addVars(suppliers, lb=0, vtype=GRB.INTEGER, name="x")
+y = model.addVars(suppliers, vtype=GRB.BINARY, name="y")
+
+# Obiettivo
+model.setObjective(
+    gp.quicksum(c[i] * x[i] for i in suppliers) +
+    gp.quicksum(f[i] * y[i] for i in suppliers),
+    GRB.MINIMIZE
+)
+
+# Domanda esatta
+model.addConstr(gp.quicksum(x[i] for i in suppliers) == D_tot, name="Domanda")
+
+# Capacità e attivazione
+for i in suppliers:
+    model.addConstr(x[i] <= cap[i] * y[i], name=f"Capacita_{i}")
+    model.addConstr(x[i] >= m[i] * y[i], name=f"OrdineMin_{i}")
+
+# Almeno due fornitori attivi
+model.addConstr(gp.quicksum(y[i] for i in suppliers) >= S_min, name="MinFornitori")
+
+# Qualità media ponderata >= 92
+model.addConstr(
+    gp.quicksum(q[i] * x[i] for i in suppliers) >= Q_min * D_tot,
+    name="Qualita"
+)
+
+# Emissioni totali <= 650
+model.addConstr(
+    gp.quicksum(e[i] * x[i] for i in suppliers) <= E_max,
+    name="Emissioni"
+)
+
+model.optimize()
+
+status = model.Status
+result = {"status": None, "objective": None, "variables": {}}
+
+if status == GRB.OPTIMAL:
+    result["status"] = "OPTIMAL"
+    result["objective"] = round(model.ObjVal, 4)
+    variables = {}
+    for i in suppliers:
+        variables[f"x_{i}"] = round(x[i].X, 4)
+    for i in suppliers:
+        variables[f"y_{i}"] = round(y[i].X, 4)
+    result["variables"] = variables
+else:
+    status_map = {
+        GRB.INFEASIBLE: "INFEASIBLE",
+        GRB.UNBOUNDED: "UNBOUNDED",
+        GRB.INF_OR_UNBD: "INF_OR_UNBD"
+    }
+    result["status"] = status_map.get(status, str(status))
+    result["objective"] = None
+    result["variables"] = {}
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello risolto da Gurobi individua come soluzione ottima l'attivazione dei soli fornitori **A** e **B**, entrambi utilizzati alla massima capacità:
+
+- **Fornitore A**: 80 unità (capacità massima), attivato
+- **Fornitore B**: 100 unità (capacità massima), attivato
+- **Fornitori C e D**: non attivati (0 unità)
+
+Verifica dei vincoli:
+- Domanda: $80 + 100 = 180$ ✓
+- Qualità media: $(96 \cdot 80 + 90 \cdot 100)/180 = 92{,}67 \ge 92$ ✓
+- Emissioni totali: $3 \cdot 80 + 4 \cdot 100 = 640 \le 650$ ✓
+- Numero fornitori attivi: $2 \ge 2$ ✓
+
+**Costo totale ottimo: 2055**
+(costo variabile $= 11 \cdot 80 + 10 \cdot 100 = 1880$; costo fisso $= 80 + 95 = 175$).
+
+Questa combinazione risulta l'unica coppia di fornitori capacità-compatibile con la domanda di 180 unità e, pur essendo solo due fornitori, soddisfa strettamente sia il vincolo di qualità che quello di emissioni, risultando più economica di qualsiasi combinazione a tre o quattro fornitori (che comportano costi fissi aggiuntivi non compensati da risparmi sui costi variabili).

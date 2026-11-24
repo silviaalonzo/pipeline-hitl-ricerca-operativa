@@ -1,0 +1,17 @@
+{
+  "scenario": "B",
+  "provider": "openrouter",
+  "model": "openai/gpt-5.6-sol",
+  "problem_id": "H04",
+  "replicate": 1,
+  "started_at_utc": "2026-08-10T16:33:16.766915+00:00",
+  "configuration": {
+    "provider": "openrouter",
+    "upstream_provider": "openai",
+    "model": "openai/gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "max_output_tokens": 24000
+  },
+  "system_prompt": "Agisci come esperto di Ricerca Operativa. Devi formulare e risolvere il problema descritto dall'utente senza chiedere chiarimenti e senza usare informazioni esterne.\n\nLa risposta deve contenere, in quest'ordine:\n1. insiemi, parametri e variabili decisionali;\n2. formulazione matematica completa;\n3. un solo blocco di codice Python eseguibile con gurobipy;\n4. una breve sintesi della soluzione.\n\nIl codice deve costruire il modello a partire dai dati presenti nella traccia, chiamare Gurobi e stampare alla fine ESATTAMENTE una riga nel formato seguente:\n\nSOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":0.0,\"variables\":{\"nome_variabile\":0.0}}\n\nNel dizionario \"variables\" devono comparire tutte le variabili decisionali, comprese quelle con valore zero. Usa i nomi indicati nella formulazione e valori numerici, non espressioni testuali. Se il solver non restituisce una soluzione ottima, stampa comunque la riga SOLUTION_JSON con lo stato effettivo, objective null e variables vuoto.\n\nNon leggere o scrivere file, non accedere alla rete, non invocare altri processi e non utilizzare librerie diverse da gurobipy, json, math e itertools.\n\n",
+  "problem_prompt": "# H04 — Allocazione della flotta su più rotte\n\nDifficoltà: Elevata\nClasse: MILP intera\n\nUn’impresa deve assegnare viaggi di tre tipi di veicolo a quattro rotte. La capacità complessiva assegnata a ogni rotta deve coprirne la domanda. La disponibilità di ciascun tipo è condivisa tra tutte le rotte.\nPer contenere la complessità operativa, su ogni rotta possono essere usati al massimo due tipi di veicolo. Sulla rotta R4 deve essere impiegato almeno un veicolo grande. Le emissioni totali non possono superare 145 unità.\nMinimizzare il costo totale dei viaggi.\n\n## Domanda per rotta\n\nRotta | R1 | R2 | R3 | R4\n--- | --- | --- | --- | ---\nDomanda | 42 | 55 | 38 | 64\n\n## Flotta\n\nTipo | Capacità/viaggio | Disponibilità | Emissioni/viaggio\n--- | --- | --- | ---\nPiccolo | 8 | 10 | 5\nMedio | 14 | 9 | 8\nGrande | 20 | 6 | 11\n\n## Costo di un viaggio\n\nRotta | Piccolo | Medio | Grande\n--- | --- | --- | ---\nR1 | 45 | 62 | 82\nR2 | 52 | 68 | 88\nR3 | 40 | 58 | 79\nR4 | 60 | 77 | 96\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n"
+}

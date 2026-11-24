@@ -1,0 +1,21 @@
+{
+  "scenario": "C",
+  "model": "claude-sonnet-5",
+  "problem_id": "H01",
+  "problem_sequence": 16,
+  "completed_at_utc": "2026-08-24T19:19:24.143780+00:00",
+  "correct": true,
+  "pass": true,
+  "final_attempt": "attempt_02",
+  "attempt_count": 3,
+  "automatic_repair_count": 1,
+  "traceability_repair_count": 0,
+  "code_repair_count": 1,
+  "handoff_count": 1,
+  "human_minutes": 15.0,
+  "handoff_stages": [
+    2
+  ],
+  "memory_semantic_retrieved": 0,
+  "memory_episodic_retrieved": 0
+}

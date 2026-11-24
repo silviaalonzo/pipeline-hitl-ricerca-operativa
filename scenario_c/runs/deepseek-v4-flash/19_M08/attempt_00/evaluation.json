@@ -1,0 +1,30 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "10 zone -> insieme I={1,...,10}",
+        "centri e costi -> insieme J e parametri c_j",
+        "coperture della matrice -> parametri M_i per ogni zona",
+        "copertura singola -> vincoli sum_{j in M_i} x_j >= 1",
+        "doppia copertura Z3 e Z7 -> vincoli sum_{j in M_i} x_j >= 2 per i=3,7",
+        "massimo cinque centri -> vincolo sum_{j in J} x_j <= 5",
+        "minimizzare costo di apertura -> funzione obiettivo min sum c_j x_j"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "Domanda soddisfatta senza arretrati -> vincolo di bilancio scorte I[p,t]=I[p,t-1]+x[p,t]-d[p,t] con I>=0",
+        "Scorta finale minima 2 unità -> vincolo I[p,6]>=2",
+        "Setup e lotto minimo -> vincoli x[p,t]<=M_p*y[p,t] e x[p,t]>=minlot_p*y[p,t]",
+        "Limite prodotti attivi per periodo (3 in T1, 2 altrove) -> vincolo sum_p y[p,t]<=3 (t=1) / <=2 (t>1)",
+        "Capacità con straordinario fino a 20 ore a 18/ora -> vincolo capacità sum_p hours_p*x[p,t] <= cap[t]+O[t], O[t]<=20, costo 18*O[t] in obiettivo",
+        "Scorta totale di fine periodo <=40 -> vincolo sum_p I[p,t] <= 40",
+        "Produzione e scorte intere, straordinario continuo -> domini delle variabili x,I interi, O continuo"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

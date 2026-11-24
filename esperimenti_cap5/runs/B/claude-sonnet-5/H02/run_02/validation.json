@@ -1,0 +1,94 @@
+{
+  "problem_id": "H02",
+  "candidate_status": "OPTIMAL",
+  "feasible": false,
+  "correct": false,
+  "recomputed_objective": 1509.0,
+  "known_optimum": 1575.0,
+  "relative_gap": 0.0419047619047619,
+  "max_violation": 14.0,
+  "declared_objective": 1575.0,
+  "declared_objective_delta": 66.0,
+  "missing_variables_assumed_zero": [
+    "I_A_1",
+    "I_A_2",
+    "I_A_3",
+    "I_A_4",
+    "I_B_1",
+    "I_B_2",
+    "I_B_3",
+    "I_B_4",
+    "I_C_1",
+    "I_C_2",
+    "I_C_3",
+    "I_C_4"
+  ],
+  "unknown_variables": [
+    "Inv_A_1",
+    "Inv_A_2",
+    "Inv_A_3",
+    "Inv_A_4",
+    "Inv_B_1",
+    "Inv_B_2",
+    "Inv_B_3",
+    "Inv_B_4",
+    "Inv_C_1",
+    "Inv_C_2",
+    "Inv_C_3",
+    "Inv_C_4"
+  ],
+  "duplicate_variable_names": [],
+  "normalized_variable_names": {},
+  "numeric_error": null,
+  "bound_violations": [],
+  "integrality_violations": [],
+  "constraint_violations": [
+    {
+      "constraint": "bilancio_A_1",
+      "lhs": 20.0,
+      "sense": "=",
+      "rhs": 8.0,
+      "violation": 12.0
+    },
+    {
+      "constraint": "bilancio_A_2",
+      "lhs": 0.0,
+      "sense": "=",
+      "rhs": 12.0,
+      "violation": 12.0
+    },
+    {
+      "constraint": "bilancio_A_3",
+      "lhs": 24.0,
+      "sense": "=",
+      "rhs": 10.0,
+      "violation": 14.0
+    },
+    {
+      "constraint": "bilancio_A_4",
+      "lhs": 0.0,
+      "sense": "=",
+      "rhs": 14.0,
+      "violation": 14.0
+    },
+    {
+      "constraint": "bilancio_C_2",
+      "lhs": 16.0,
+      "sense": "=",
+      "rhs": 9.0,
+      "violation": 7.0
+    },
+    {
+      "constraint": "bilancio_C_3",
+      "lhs": 0.0,
+      "sense": "=",
+      "rhs": 7.0,
+      "violation": 7.0
+    }
+  ],
+  "tolerances": {
+    "feasibility": 1e-06,
+    "integrality": 1e-05,
+    "relative_gap": 0.001
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "claude-sonnet-5",
+  "problem_id": "M09",
+  "problem_sequence": 7,
+  "domain": "Inventory management",
+  "difficulty": "Media",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-24T18:45:51.620472+00:00",
+  "updated_at_utc": "2026-08-24T18:46:22.656108+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:46:22.655449+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "scorta iniziale 10 -> parametro I0 e vincolo di bilancio al periodo 1",
+              "nessun arretrato -> I_t >= 0 per ogni t",
+              "scorta finale >= 5 -> vincolo I_6 >= 5",
+              "ordine minimo 10 se attivato -> vincolo L*y_t <= x_t",
+              "capacità ordine per periodo -> vincolo x_t <= U_t*y_t",
+              "costo fisso 40 per ordine -> termine f*y_t nell'obiettivo",
+              "costo di mantenimento 2/unità -> termine h*I_t nell'obiettivo",
+              "variabili intere -> dominio Integer per x_t e I_t, Binary per y_t"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "claude-sonnet-5",
+    "problem_id": "M09",
+    "retrieved_at_utc": "2026-08-24T18:45:51.620463+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

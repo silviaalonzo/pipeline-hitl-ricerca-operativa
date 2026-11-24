@@ -1,0 +1,67 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 12 rows, 14 columns and 28 nonzeros (Min)
+Model fingerprint: 0x4a0075c1
+Model has 14 linear objective coefficients
+Variable types: 0 continuous, 14 integer (7 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 4e+01]
+  Objective range  [1e+00, 4e+01]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [4e+01, 4e+01]
+
+Found heuristic solution: objective 468.0000000
+Presolve removed 6 rows and 6 columns
+Presolve time: 0.00s
+Presolved: 6 rows, 8 columns, 16 nonzeros
+Variable types: 0 continuous, 8 integer (3 binary)
+
+Root relaxation: objective 4.410000e+02, 4 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  441.00000    0    1  468.00000  441.00000  5.77%     -    0s
+H    0     0                     453.0000000  441.00000  2.65%     -    0s
+H    0     0                     452.0000000  441.00000  2.43%     -    0s
+H    0     0                     451.0000000  441.00000  2.22%     -    0s
+H    0     0                     450.0000000  441.00000  2.00%     -    0s
+*    0     0               0     443.0000000  443.00000  0.00%     -    0s
+
+Explored 1 nodes (5 simplex iterations) in 0.00 seconds (0.00 work units)
+Thread count was 8 (of 8 available processors)
+
+Solution count 6: 443 450 451 ... 468
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 4.430000000000e+02, best bound 4.430000000000e+02, gap 0.0000%
+
+======================================================================
+RISULTATO M10 - Progettazione di una rete distributiva
+======================================================================
+Stato finale Gurobi      : OPTIMAL (codice 2)
+Tempo di esecuzione Gurobi: 0.0022 s
+Valore funzione obiettivo : 443
+
+Archi e decisioni:
+    arco      flusso x  attivo y  capacita    CF   CV
+    S->A            25         1        30    40    2
+    S->B            15         1        35    35    3
+    A->B            -0        -0        15    15    1
+    A->C            25         1        25    30    2
+    B->C             0        -0        20    18    2
+    B->T            15         1        25    45    4
+    C->T            25         1        35    38    2
+
+Composizione del costo:
+    costi di attivazione = 188
+    costi di trasporto   = 255
+
+File soluzione scritto: /Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_a/M10/M10.sol
+======================================================================

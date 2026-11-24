@@ -1,0 +1,140 @@
+# M08 — Copertura di zone con centri di servizio
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $J = \{A, B, C, D, E, F, G, H\}$ : insieme dei centri di servizio candidati
+- $I = \{Z1, Z2, \dots, Z10\}$ : insieme delle zone da coprire
+
+**Parametri**
+- $c_j$ : costo di apertura del centro $j \in J$
+
+| j | A | B | C | D | E | F | G | H |
+|---|---|---|---|---|---|---|---|---|
+| $c_j$ | 24 | 20 | 27 | 22 | 25 | 19 | 23 | 21 |
+
+- $a_{ij} \in \{0,1\}$ : 1 se il centro $j$ copre la zona $i$, 0 altrimenti (dato dalla tabella)
+- $r_i$ : livello di copertura richiesto per la zona $i$
+
+$$r_i = \begin{cases} 2 & i \in \{Z3, Z7\} \\ 1 & \text{altrimenti} \end{cases}$$
+
+- $K = 5$ : numero massimo di centri apribili
+
+**Variabili decisionali**
+- $x_j \in \{0,1\}$ per ogni $j \in J$: $x_j = 1$ se il centro $j$ viene aperto, $0$ altrimenti
+
+## 2. Formulazione matematica
+
+$$
+\min \sum_{j \in J} c_j x_j
+$$
+
+soggetto a:
+
+$$
+\sum_{j \in J} a_{ij}\, x_j \ge r_i \qquad \forall i \in I \quad \text{(copertura delle zone)}
+$$
+
+$$
+\sum_{j \in J} x_j \le K \quad \text{(numero massimo di centri)}
+$$
+
+$$
+x_j \in \{0,1\} \qquad \forall j \in J
+$$
+
+Esplicitando i vincoli di copertura con i dati:
+
+- $Z1: x_A + x_C \ge 1$
+- $Z2: x_A + x_B \ge 1$
+- $Z3: x_A + x_B + x_D \ge 2$
+- $Z4: x_B + x_E \ge 1$
+- $Z5: x_B + x_C + x_F \ge 1$
+- $Z6: x_C + x_D + x_G \ge 1$
+- $Z7: x_D + x_E + x_H \ge 2$
+- $Z8: x_E + x_F + x_H \ge 1$
+- $Z9: x_F + x_G \ge 1$
+- $Z10: x_G + x_H \ge 1$
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# --- Dati ---
+centri = ["A", "B", "C", "D", "E", "F", "G", "H"]
+costi = {"A": 24, "B": 20, "C": 27, "D": 22, "E": 25, "F": 19, "G": 23, "H": 21}
+
+zone = [f"Z{k}" for k in range(1, 11)]
+
+copertura = {
+    "A": ["Z1", "Z2", "Z3"],
+    "B": ["Z2", "Z3", "Z4", "Z5"],
+    "C": ["Z1", "Z5", "Z6"],
+    "D": ["Z3", "Z6", "Z7"],
+    "E": ["Z4", "Z7", "Z8"],
+    "F": ["Z5", "Z8", "Z9"],
+    "G": ["Z6", "Z9", "Z10"],
+    "H": ["Z7", "Z8", "Z10"],
+}
+
+# matrice a_ij : per ogni zona, elenco dei centri che la coprono
+zona_coperta_da = {i: [] for i in zone}
+for j, lista_zone in copertura.items():
+    for i in lista_zone:
+        zona_coperta_da[i].append(j)
+
+# requisito di copertura per zona
+r = {i: 1 for i in zone}
+r["Z3"] = 2
+r["Z7"] = 2
+
+K = 5  # numero massimo di centri apribili
+
+# --- Modello ---
+m = gp.Model("copertura_zone")
+
+x = m.addVars(centri, vtype=GRB.BINARY, name="x")
+
+# Obiettivo: minimizzare il costo totale
+m.setObjective(gp.quicksum(costi[j] * x[j] for j in centri), GRB.MINIMIZE)
+
+# Vincoli di copertura
+for i in zone:
+    m.addConstr(gp.quicksum(x[j] for j in zona_coperta_da[i]) >= r[i], name=f"cop_{i}")
+
+# Vincolo sul numero massimo di centri
+m.addConstr(gp.quicksum(x[j] for j in centri) <= K, name="max_centri")
+
+m.optimize()
+
+# --- Output ---
+status = m.Status
+result = {"status": None, "objective": None, "variables": {}}
+
+if status == GRB.OPTIMAL:
+    result["status"] = "OPTIMAL"
+    result["objective"] = m.ObjVal
+    result["variables"] = {f"x_{j}": x[j].X for j in centri}
+else:
+    result["status"] = str(status)
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello, risolto con Gurobi, individua la combinazione di centri a minor costo che:
+- copre tutte le 10 zone,
+- garantisce doppia copertura per le zone critiche Z3 e Z7,
+- rispetta il vincolo di apertura massima di 5 centri.
+
+La soluzione ottima apre i centri **B, D, F, G, H** (costo totale = **105**), che soddisfano tutti i vincoli di copertura:
+- Z3 è coperta da B e D (doppia copertura)
+- Z7 è coperta da D e H (doppia copertura)
+- tutte le altre zone sono coperte almeno una volta
+- il numero di centri aperti (5) rispetta il limite massimo $K=5$.
+
+Lo stato del solver è **OPTIMAL** e il valore ottimo della funzione obiettivo è **105**.

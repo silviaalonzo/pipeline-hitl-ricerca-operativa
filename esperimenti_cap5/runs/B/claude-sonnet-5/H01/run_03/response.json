@@ -1,0 +1,73 @@
+{
+  "id": "gen-1786388404-ZGOqGjRP62OPKUJFdOaT",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "# H01 — Rete capacitata di centri distributivi\n\n## 1. Insiemi, parametri e variabili decisionali\n\n**Insiemi**\n- $I = \\{A, B, C, D, E, F\\}$ : siti candidati\n- $J = \\{Z1, ..., Z8\\}$ : zone di domanda\n- $N = \\{A, B, C\\} \\subset I$ : gruppo Nord\n- $S = \\{D, E, F\\} \\subset I$ : gruppo Sud\n\n**Parametri**\n- $d_j$ : domanda della zona $j \\in J$\n- $f_i$ : costo fisso di apertura del sito $i \\in I$\n- $cap_i$ : capacità massima del sito $i \\in I$\n- $c_{ij}$ : costo unitario di distribuzione da $i$ a $j$\n- $e_{ij}$ : coefficiente di emissione da $i$ a $j$\n- $minTh = 20$ : movimentazione minima per centro aperto\n- $minOpen = 3$, $maxOpen = 4$ : numero minimo/massimo di centri apribili\n- $EmisCap = 470$ : tetto massimo di emissioni complessive\n\n**Variabili decisionali**\n- $y_i \\in \\{0,1\\}$ : 1 se il sito $i$ viene aperto, 0 altrimenti\n- $x_{ij} \\ge 0$ : quantità distribuita dal sito $i$ alla zona $j$\n\n## 2. Formulazione matematica\n\n**Funzione obiettivo**\n\n$$\n\\min \\; \\sum_{i \\in I} f_i y_i \\;+\\; \\sum_{i \\in I}\\sum_{j \\in J} c_{ij} x_{ij}\n$$\n\n**Vincoli**\n\n1. Soddisfazione integrale della domanda:\n$$\n\\sum_{i \\in I} x_{ij} = d_j \\qquad \\forall j \\in J\n$$\n\n2. Capacità dei centri (attiva solo se aperto):\n$$\n\\sum_{j \\in J} x_{ij} \\le cap_i \\, y_i \\qquad \\forall i \\in I\n$$\n\n3. Movimentazione minima se il centro è aperto:\n$$\n\\sum_{j \\in J} x_{ij} \\ge minTh \\, y_i \\qquad \\forall i \\in I\n$$\n\n4. Numero di centri aperti:\n$$\nminOpen \\le \\sum_{i \\in I} y_i \\le maxOpen\n$$\n\n5. Resilienza — almeno un sito Nord e uno Sud:\n$$\n\\sum_{i \\in N} y_i \\ge 1, \\qquad \\sum_{i \\in S} y_i \\ge 1\n$$\n\n6. Vincolo di emissione complessiva:\n$$\n\\sum_{i \\in I}\\sum_{j \\in J} e_{ij} x_{ij} \\le EmisCap\n$$\n\n7. Dominio delle variabili:\n$$\nx_{ij} \\ge 0 \\quad \\forall i,j; \\qquad y_i \\in \\{0,1\\} \\quad \\forall i\n$$\n\n## 3. Codice Python (gurobipy)\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\n# ---------------- Dati ----------------\nsites = ['A', 'B', 'C', 'D', 'E', 'F']\nzones = ['Z1', 'Z2', 'Z3', 'Z4', 'Z5', 'Z6', 'Z7', 'Z8']\n\ndemand = {'Z1': 30, 'Z2': 25, 'Z3': 35, 'Z4': 20,\n          'Z5': 28, 'Z6': 32, 'Z7': 24, 'Z8': 26}\n\nfixed_cost = {'A': 110, 'B': 95, 'C': 120, 'D': 90, 'E': 105, 'F': 100}\ncapacity   = {'A': 90,  'B': 80, 'C': 110, 'D': 75, 'E': 95,  'F': 85}\n\nunit_cost = {\n    'Z1': {'A':4,'B':7,'C':6,'D':10,'E':9,'F':11},\n    'Z2': {'A':5,'B':4,'C':8,'D':9, 'E':7,'F':10},\n    'Z3': {'A':7,'B':5,'C':4,'D':8, 'E':9,'F':7},\n    'Z4': {'A':9,'B':8,'C':7,'D':4, 'E':5,'F':6},\n    'Z5': {'A':8,'B':9,'C':6,'D':5, 'E':4,'F':7},\n    'Z6': {'A':10,'B':8,'C':7,'D':6,'E':5,'F':4},\n    'Z7': {'A':6,'B':7,'C':5,'D':8, 'E':6,'F':7},\n    'Z8': {'A':7,'B':6,'C':8,'D':5, 'E':7,'F':4},\n}\n\nemission = {\n    'Z1': {'A':1,'B':2,'C':2,'D':4,'E':3,'F':4},\n    'Z2': {'A':2,'B':1,'C':3,'D':3,'E':2,'F':4},\n    'Z3': {'A':3,'B':2,'C':1,'D':3,'E':4,'F':3},\n    'Z4': {'A':4,'B':3,'C':3,'D':1,'E':2,'F':2},\n    'Z5': {'A':3,'B':4,'C':2,'D':2,'E':1,'F':3},\n    'Z6': {'A':4,'B':3,'C':3,'D':2,'E':2,'F':1},\n    'Z7': {'A':2,'B':3,'C':1,'D':3,'E':2,'F':3},\n    'Z8': {'A':3,'B':2,'C':3,'D':1,'E':3,'F':1},\n}\n\nnorth = ['A', 'B', 'C']\nsouth = ['D', 'E', 'F']\n\nmin_open = 3\nmax_open = 4\nmin_throughput = 20\nemission_cap = 470\n\n# ---------------- Modello ----------------\nm = gp.Model(\"H01_rete_capacitata\")\n\ny = m.addVars(sites, vtype=GRB.BINARY, name=\"y\")\nx = m.addVars(sites, zones, lb=0.0, vtype=GRB.CONTINUOUS, name=\"x\")\n\n# Obiettivo\nm.setObjective(\n    gp.quicksum(fixed_cost[i] * y[i] for i in sites) +\n    gp.quicksum(unit_cost[j][i] * x[i, j] for i in sites for j in zones),\n    GRB.MINIMIZE\n)\n\n# Domanda soddisfatta integralmente\nfor j in zones:\n    m.addConstr(gp.quicksum(x[i, j] for i in sites) == demand[j], name=f\"dom_{j}\")\n\n# Capacità\nfor i in sites:\n    m.addConstr(gp.quicksum(x[i, j] for j in zones) <= capacity[i] * y[i], name=f\"cap_{i}\")\n\n# Movimentazione minima se aperto\nfor i in sites:\n    m.addConstr(gp.quicksum(x[i, j] for j in zones) >= min_throughput * y[i], name=f\"minth_{i}\")\n\n# Numero di centri aperti\nm.addConstr(gp.quicksum(y[i] for i in sites) >= min_open, name=\"min_open\")\nm.addConstr(gp.quicksum(y[i] for i in sites) <= max_open, name=\"max_open\")\n\n# Resilienza Nord/Sud\nm.addConstr(gp.quicksum(y[i] for i in north) >= 1, name=\"north_open\")\nm.addConstr(gp.quicksum(y[i] for i in south) >= 1, name=\"south_open\")\n\n# Vincolo di emissione\nm.addConstr(\n    gp.quicksum(emission[j][i] * x[i, j] for i in sites for j in zones) <= emission_cap,\n    name=\"emission_cap\"\n)\n\nm.optimize()\n\n# ---------------- Output ----------------\nstatus_map = {\n    GRB.OPTIMAL: \"OPTIMAL\",\n    GRB.INFEASIBLE: \"INFEASIBLE\",\n    GRB.UNBOUNDED: \"UNBOUNDED\",\n    GRB.INF_OR_UNBD: \"INF_OR_UNBD\"\n}\n\nif m.status == GRB.OPTIMAL:\n    variables = {}\n    for i in sites:\n        variables[f\"y_{i}\"] = round(y[i].X, 6)\n    for i in sites:\n        for j in zones:\n            variables[f\"x_{i}_{j}\"] = round(x[i, j].X, 6)\n\n    result = {\n        \"status\": \"OPTIMAL\",\n        \"objective\": round(m.ObjVal, 6),\n        \"variables\": variables\n    }\nelse:\n    result = {\n        \"status\": status_map.get(m.status, str(m.status)),\n        \"objective\": None,\n        \"variables\": {}\n    }\n\nprint(\"SOLUTION_JSON=\" + json.dumps(result))\n```\n\n## 4. Sintesi della soluzione\n\nIl modello determina quali centri distributivi aprire (tra 3 e 4, con almeno uno del gruppo Nord A–C e uno del gruppo Sud D–F) e come ripartire il flusso di 220 unità di domanda totale tra i centri aperti, minimizzando la somma di costi fissi e costi unitari di distribuzione, rispettando i vincoli di capacità, di movimentazione minima (20 unità se aperto) e il tetto di emissioni complessive pari a 470 unità.\n\nEseguendo il codice, Gurobi trova la soluzione ottima esatta stampando lo stato (`OPTIMAL`), il valore della funzione obiettivo e tutti i valori delle variabili $y_i$ (apertura dei siti) e $x_{ij}$ (flussi assegnati), incluse quelle nulle, nel formato JSON richiesto tramite la riga `SOLUTION_JSON=...`.",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": "I'm setting up a mixed-integer linear programming model for a facility location problem with candidate sites across northern and southern regions, zones with specific demands, and constraints on the number of open facilities, minimum throughput, and total emissions.",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "I'm setting up a mixed-integer linear programming model for a facility location problem with candidate sites across northern and southern regions, zones with specific demands, and constraints on the number of open facilities, minimum throughput, and total emissions.",
+            "format": "anthropic-claude-v1",
+            "index": 0,
+            "signature": "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"
+          }
+        ]
+      },
+      "native_finish_reason": "end_turn"
+    }
+  ],
+  "created": 1786388404,
+  "model": "anthropic/claude-sonnet-5",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 4035,
+    "prompt_tokens": 1626,
+    "total_tokens": 5661,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 67,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.043602,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.043602,
+      "upstream_inference_prompt_cost": 0.003252,
+      "upstream_inference_completions_cost": 0.04035
+    }
+  },
+  "provider": "Anthropic",
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "anthropic/claude-sonnet-5",
+    "required_provider": "anthropic",
+    "allow_fallbacks": false,
+    "require_parameters": true
+  },
+  "_experiment": {
+    "elapsed_seconds": 34.29022049999912,
+    "completed_at_utc": "2026-08-10T19:00:37.261523+00:00"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "quattro articoli -> insieme P",
+        "margine e setup per articolo -> parametri m_i e s_i",
+        "ore macchina e lavoro disponibili -> capacita M=90 e H=100",
+        "lotto minimo e domanda massima -> vincoli x_i >= L_i y_i e x_i <= U_i y_i",
+        "almeno due articoli diversi -> vincolo sum_i y_i >= 2",
+        "massimizzare margine netto -> funzione obiettivo max sum_i (m_i x_i - s_i y_i)"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

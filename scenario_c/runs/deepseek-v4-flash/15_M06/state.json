@@ -1,0 +1,125 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "deepseek-v4-flash",
+  "problem_id": "M06",
+  "problem_sequence": 15,
+  "domain": "Scheduling",
+  "difficulty": "Media",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-24T21:34:28.361177+00:00",
+  "updated_at_utc": "2026-08-24T21:37:30.234809+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T21:37:30.233883+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "Minimizzare il makespan -> funzione obiettivo min C",
+              "Ogni lavoro va eseguito interamente su una sola macchina -> vincoli di assegnamento",
+              "J7 non compatibile con la macchina A -> insieme E esclude (J7,A)",
+              "Tempi dipendenti dalla macchina scelta -> parametri p_im",
+              "Makespan come massimo dei carichi -> vincoli C >= somma p_im x_im"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "deepseek-v4-flash",
+    "problem_id": "M06",
+    "retrieved_at_utc": "2026-08-24T21:34:28.361024+00:00",
+    "semantic": [
+      {
+        "id": "S-003",
+        "created_at_utc": "2026-08-24T21:14:54.580945+00:00",
+        "source_episode": "H07-H01",
+        "principle": "Nei problemi di approvvigionamento con celle non disponibili, creare variabili soltanto per le coppie ammesse e collegare esplicitamente quantità, uso della coppia e attivazione del fornitore.",
+        "tags": [
+          "Procurement",
+          "MILP intera",
+          "stadio-2",
+          "revisione_di_assicurazione_post_riparazione"
+        ]
+      },
+      {
+        "id": "S-002",
+        "created_at_utc": "2026-08-24T20:18:42.444653+00:00",
+        "source_episode": "H02-H01",
+        "principle": "Nei problemi di produzione multi-periodo, indicizzare esplicitamente anche la scorta iniziale e collegare periodi consecutivi mediante il bilancio produzione più scorta precedente uguale domanda più scorta finale; completare poi il collegamento tra produzione e setup con limiti minimo e massimo di lotto.",
+        "tags": [
+          "Produzione e scorte",
+          "MILP intera",
+          "stadio-3",
+          "output_troncato_o_senza_codice"
+        ]
+      }
+    ],
+    "episodic": [
+      {
+        "id": "H07-H01",
+        "created_at_utc": "2026-08-24T21:14:54.580937+00:00",
+        "problem_id": "H07",
+        "domain": "Procurement",
+        "model_class": "MILP intera",
+        "stage": 2,
+        "failure_class": "revisione_di_assicurazione_post_riparazione",
+        "correction_summary": "Durante la revisione dello Stadio 2, l’esperto ha sostituito l’artefatto automatico con un codice completo e autonomo che definisce esplicitamente le sole coppie fornitore-componente disponibili, i legami quantità-uso-attivazione e tutti i controlli richiesti dalla traccia.",
+        "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+        "active_minutes": 20.0,
+        "tags": [
+          "Procurement",
+          "MILP intera",
+          "stadio-2",
+          "revisione_di_assicurazione_post_riparazione"
+        ]
+      },
+      {
+        "id": "H02-H01",
+        "created_at_utc": "2026-08-24T20:18:42.444642+00:00",
+        "problem_id": "H02",
+        "domain": "Produzione e scorte",
+        "model_class": "MILP intera",
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "correction_summary": "Dopo tre riparazioni automatiche concluse senza codice eseguibile, l’esperto ha completato il modello MILP introducendo variabili di produzione, scorta e setup, bilanci intertemporali, condizioni iniziali e finali, capacità, limite ai setup e vincoli di lotto.",
+        "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+        "active_minutes": 20.0,
+        "tags": [
+          "Produzione e scorte",
+          "MILP intera",
+          "stadio-3",
+          "output_troncato_o_senza_codice"
+        ]
+      }
+    ],
+    "semantic_count_total": 4,
+    "episodic_count_total": 4
+  },
+  "pending_handoff": null
+}

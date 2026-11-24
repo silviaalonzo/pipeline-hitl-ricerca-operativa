@@ -1,0 +1,12 @@
+{
+  "status": "SUBMITTED",
+  "action": "CORRECT",
+  "correction_mode": "DIRECT_CODE",
+  "active_minutes": 20.0,
+  "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+  "correction_summary": "Dopo tre riparazioni automatiche concluse senza codice eseguibile, l’esperto ha completato il modello MILP introducendo variabili di produzione, scorta e setup, bilanci intertemporali, condizioni iniziali e finali, capacità, limite ai setup e vincoli di lotto.",
+  "semantic_principle": "Nei problemi di produzione multi-periodo, indicizzare esplicitamente anche la scorta iniziale e collegare periodi consecutivi mediante il bilancio produzione più scorta precedente uguale domanda più scorta finale; completare poi il collegamento tra produzione e setup con limiti minimo e massimo di lotto.",
+  "expert_artifact_source": "/Users/silviaalonzo/.codex/attachments/d734bd88-ba06-4aaa-97a5-2913c695a653/pasted-text.txt",
+  "expert_artifact_sha256": "59db2bce2e42c3da30f0090fc8c58bf33914d66ad16c511cce5e40c23c084d3d",
+  "submitted_at_utc": "2026-08-24T20:18:42.443887+00:00"
+}

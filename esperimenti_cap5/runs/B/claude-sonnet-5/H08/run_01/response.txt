@@ -1,0 +1,177 @@
+# H08 — Rete di emergenza capacitada con backup
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $S = \{A,B,C,D,E,F,G,H\}$: stazioni candidate
+- $Z = \{Z1,\dots,Z12\}$: zone da servire
+- $West = \{A,B,C,D\} \subset S$
+- $East = \{E,F,G,H\} \subset S$
+- $ZC = \{Z3, Z8, Z11\} \subset Z$: zone critiche
+- $R \subseteq Z \times S$: coppie (zona, stazione) raggiungibili (definite dalla tabella tempi)
+- $R_z = \{s \in S : (z,s)\in R\}$: stazioni che possono servire la zona $z$
+- $R_s = \{z \in Z : (z,s)\in R\}$: zone servibili dalla stazione $s$
+
+**Parametri**
+- $f_s$: costo fisso apertura stazione $s\in S$
+- $cap_s$: capacità stazione $s\in S$
+- $d_z$: domanda zona $z\in Z$
+- $t_{z,s}$: tempo di percorrenza per $(z,s)\in R$
+
+**Variabili decisionali**
+- $y_s \in \{0,1\}$: 1 se la stazione $s$ è aperta
+- $x_{z,s} \in \{0,1\}$ per $(z,s)\in R$: 1 se la zona $z$ è assegnata alla stazione $s$
+
+## 2. Formulazione matematica
+
+$$
+\min \sum_{s\in S} f_s y_s \;+\; \sum_{(z,s)\in R} d_z\, t_{z,s}\, x_{z,s}
+$$
+
+soggetto a:
+
+**Assegnazione unica**
+$$
+\sum_{s\in R_z} x_{z,s} = 1 \qquad \forall z\in Z
+$$
+
+**Attivazione (assegnazione solo a stazioni aperte)**
+$$
+x_{z,s} \le y_s \qquad \forall (z,s)\in R
+$$
+
+**Capacità**
+$$
+\sum_{z\in R_s} d_z\, x_{z,s} \le cap_s\, y_s \qquad \forall s\in S
+$$
+
+**Numero esatto di stazioni aperte**
+$$
+\sum_{s\in S} y_s = 4
+$$
+
+**Copertura geografica**
+$$
+\sum_{s\in West} y_s \ge 1, \qquad \sum_{s\in East} y_s \ge 1
+$$
+
+**Backup per zone critiche**
+$$
+\sum_{s\in R_z} y_s \ge 2 \qquad \forall z\in ZC
+$$
+
+**Dominio**
+$$
+y_s \in \{0,1\}\ \forall s\in S, \qquad x_{z,s}\in\{0,1\}\ \forall (z,s)\in R
+$$
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# ---------------- Dati ----------------
+stations = ['A','B','C','D','E','F','G','H']
+fixed = {'A':35,'B':32,'C':40,'D':30,'E':38,'F':33,'G':36,'H':31}
+cap   = {'A':42,'B':44,'C':46,'D':40,'E':45,'F':43,'G':44,'H':42}
+
+west = ['A','B','C','D']
+east = ['E','F','G','H']
+
+zones = [f'Z{i}' for i in range(1,13)]
+demand = {'Z1':8,'Z2':7,'Z3':10,'Z4':6,'Z5':9,'Z6':8,'Z7':7,
+          'Z8':11,'Z9':6,'Z10':9,'Z11':8,'Z12':7}
+
+reach = {
+ 'Z1': {'A':3,'B':5},
+ 'Z2': {'A':6,'B':8,'C':10},
+ 'Z3': {'B':11,'C':4,'D':6},
+ 'Z4': {'C':7,'D':9},
+ 'Z5': {'A':6,'D':3,'E':5},
+ 'Z6': {'B':11,'E':8,'F':10},
+ 'Z7': {'C':7,'F':4,'G':6,'H':8},
+ 'Z8': {'D':3,'G':9,'H':11},
+ 'Z9': {'E':8,'F':10,'H':5},
+ 'Z10':{'F':4,'G':6,'H':8},
+ 'Z11':{'A':6,'E':5,'H':11},
+ 'Z12':{'B':11,'G':3,'H':5},
+}
+
+critical = ['Z3','Z8','Z11']
+
+pairs = [(z,s) for z in zones for s in reach[z]]
+
+# ---------------- Modello ----------------
+m = gp.Model("H08_emergency_network")
+
+y = m.addVars(stations, vtype=GRB.BINARY, name="y")
+x = m.addVars(pairs, vtype=GRB.BINARY, name="x")
+
+# Funzione obiettivo
+m.setObjective(
+    gp.quicksum(fixed[s]*y[s] for s in stations) +
+    gp.quicksum(demand[z]*reach[z][s]*x[z,s] for (z,s) in pairs),
+    GRB.MINIMIZE
+)
+
+# Assegnazione unica
+for z in zones:
+    m.addConstr(gp.quicksum(x[z,s] for s in reach[z]) == 1, name=f"assign_{z}")
+
+# Attivazione
+for (z,s) in pairs:
+    m.addConstr(x[z,s] <= y[s], name=f"link_{z}_{s}")
+
+# Capacità
+for s in stations:
+    m.addConstr(
+        gp.quicksum(demand[z]*x[z,s] for z in zones if s in reach[z]) <= cap[s]*y[s],
+        name=f"cap_{s}"
+    )
+
+# Numero stazioni aperte
+m.addConstr(gp.quicksum(y[s] for s in stations) == 4, name="num_open")
+
+# Copertura Ovest/Est
+m.addConstr(gp.quicksum(y[s] for s in west) >= 1, name="west_open")
+m.addConstr(gp.quicksum(y[s] for s in east) >= 1, name="east_open")
+
+# Backup zone critiche
+for z in critical:
+    m.addConstr(gp.quicksum(y[s] for s in reach[z]) >= 2, name=f"backup_{z}")
+
+m.optimize()
+
+# ---------------- Output ----------------
+status_map = {
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.UNBOUNDED: "UNBOUNDED",
+}
+
+if m.status == GRB.OPTIMAL:
+    variables = {}
+    for s in stations:
+        variables[f"y_{s}"] = round(y[s].X, 4)
+    for (z,s) in pairs:
+        variables[f"x_{z}_{s}"] = round(x[z,s].X, 4)
+    result = {
+        "status": "OPTIMAL",
+        "objective": round(m.ObjVal, 4),
+        "variables": variables
+    }
+else:
+    result = {
+        "status": status_map.get(m.status, str(m.status)),
+        "objective": None,
+        "variables": {}
+    }
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello apre esattamente 4 stazioni rispettando i vincoli di copertura geografica (almeno una a Ovest A–D e una a Est E–H) e di backup per le zone critiche Z3, Z8, Z11 (per ciascuna almeno due stazioni raggiungibili risultano aperte). Ogni zona viene assegnata a un’unica stazione aperta e raggiungibile, nel rispetto della capacità residua di ciascuna stazione. La funzione obiettivo minimizza la somma dei costi fissi di apertura e del costo di trasporto (domanda × tempo di percorrenza) per le assegnazioni effettuate. Il valore ottimo, lo stato del solver e tutte le variabili (comprese quelle nulle) sono riportati nella riga `SOLUTION_JSON` prodotta dall'esecuzione del codice.

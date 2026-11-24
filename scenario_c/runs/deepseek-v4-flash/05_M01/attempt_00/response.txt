@@ -1,0 +1,126 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["servire sei zone commerciali -> insieme J delle 6 zone","esattamente due centri da aprire -> vincolo sum_i y_i = 2","capacita massima di ogni sito -> vincoli sum_j x_ij <= cap_i y_i","ogni zona assegnata a un solo centro -> vincoli sum_i x_ij = 1","minimizzare costi fissi e di servizio -> funzione obiettivo"]}
+
+## Insiemi, parametri e variabili
+
+- \(I = \{A, B, C, D\}\): siti candidati.
+- \(J = \{Z1, Z2, Z3, Z4, Z5, Z6\}\): zone commerciali.
+- \(f_i\): costo fisso del sito \(i\).
+- \(q_i\): capacità massima del sito \(i\), in numero di zone.
+- \(c_{ij}\): costo di servizio per assegnare la zona \(j\) al sito \(i\).
+
+Variabili decisionali:
+- \(y_i \in \{0,1\}\): vale 1 se il centro \(i\) viene aperto.
+- \(x_{ij} \in \{0,1\}\): vale 1 se la zona \(j\) viene assegnata al centro \(i\).
+
+## Modello matematico
+
+\[
+\min \sum_{i\in I} f_i y_i + \sum_{i\in I}\sum_{j\in J} c_{ij} x_{ij}
+\]
+
+vincoli:
+
+\[
+\sum_{i\in I} y_i = 2
+\]
+
+\[
+\sum_{j\in J} x_{ij} \le q_i\, y_i \qquad \forall i\in I
+\]
+
+\[
+\sum_{i\in I} x_{ij} = 1 \qquad \forall j\in J
+\]
+
+\[
+y_i \in \{0,1\} \qquad \forall i\in I
+\]
+
+\[
+x_{ij} \in \{0,1\} \qquad \forall i\in I,\ j\in J
+\]
+
+## Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+sites = ["A", "B", "C", "D"]
+zones = ["Z1", "Z2", "Z3", "Z4", "Z5", "Z6"]
+
+fixed_cost = {"A": 38, "B": 42, "C": 35, "D": 46}
+capacity = {"A": 2, "B": 3, "C": 2, "D": 3}
+
+service_cost = {
+    "Z1": {"A": 8, "B": 14, "C": 11, "D": 17},
+    "Z2": {"A": 10, "B": 9, "C": 13, "D": 15},
+    "Z3": {"A": 12, "B": 8, "C": 14, "D": 10},
+    "Z4": {"A": 15, "B": 11, "C": 9, "D": 7},
+    "Z5": {"A": 9, "B": 13, "C": 8, "D": 14},
+    "Z6": {"A": 14, "B": 10, "C": 7, "D": 9},
+}
+
+model = gp.Model("localizzazione_centri_assistenza")
+model.setParam("OutputFlag", 0)
+
+y = {}
+for i in sites:
+    y[i] = model.addVar(vtype=GRB.BINARY, name=f"y_{i}")
+
+x = {}
+for i in sites:
+    for j in zones:
+        x[i, j] = model.addVar(vtype=GRB.BINARY, name=f"x_{i}_{j}")
+
+model.setObjective(
+    gp.quicksum(fixed_cost[i] * y[i] for i in sites)
+    + gp.quicksum(service_cost[j][i] * x[i, j] for i in sites for j in zones),
+    GRB.MINIMIZE
+)
+
+model.addConstr(gp.quicksum(y[i] for i in sites) == 2, "esattamente_due_centri")
+
+for i in sites:
+    model.addConstr(
+        gp.quicksum(x[i, j] for j in zones) <= capacity[i] * y[i],
+        f"capacita_{i}"
+    )
+
+for j in zones:
+    model.addConstr(
+        gp.quicksum(x[i, j] for i in sites) == 1,
+        f"zona_{j}"
+    )
+
+model.optimize()
+
+if model.Status == GRB.OPTIMAL:
+    solution = {
+        "status": "OPTIMAL",
+        "objective": model.ObjVal,
+        "variables": {
+            v.VarName: v.X for v in sorted(model.getVars(), key=lambda v: v.VarName)
+        },
+    }
+else:
+    solution = {
+        "status": f"STATUS_{model.Status}",
+        "objective": None,
+        "variables": {},
+    }
+
+print("SOLUTION_JSON=" + json.dumps(solution, separators=(",", ":")))
+```
+
+## Sintesi della soluzione
+
+Il solver trova una soluzione ottima con costo complessivo pari a **149 mila euro**.  
+Vengono aperti i centri **B** e **D**, con costo fisso complessivo \(42 + 46 = 88\).
+
+Assegnazioni ottime:
+- B: Z1, Z2, Z3 — costo di servizio \(14 + 9 + 8 = 31\)
+- D: Z4, Z5, Z6 — costo di servizio \(7 + 14 + 9 = 30\)
+
+Le altre variabili decisionali, comprese quelle relative ai siti A e C, sono nulle.

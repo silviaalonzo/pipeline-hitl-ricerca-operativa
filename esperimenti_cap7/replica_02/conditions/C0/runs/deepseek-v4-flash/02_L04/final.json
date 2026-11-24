@@ -1,0 +1,23 @@
+{
+  "scenario": "C",
+  "model": "deepseek-v4-flash",
+  "problem_id": "L04",
+  "problem_sequence": 2,
+  "completed_at_utc": "2026-08-26T22:00:13.332175+00:00",
+  "correct": true,
+  "pass": true,
+  "final_attempt": "attempt_00",
+  "attempt_count": 1,
+  "automatic_repair_count": 0,
+  "traceability_repair_count": 0,
+  "code_repair_count": 0,
+  "handoff_count": 0,
+  "human_minutes": 0,
+  "handoff_stages": [],
+  "memory_semantic_retrieved": 0,
+  "memory_episodic_retrieved": 0,
+  "chapter": 7,
+  "condition": "C0",
+  "memory_frozen": true,
+  "replicate": 2
+}

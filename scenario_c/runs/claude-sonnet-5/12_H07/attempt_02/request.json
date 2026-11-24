@@ -1,0 +1,11 @@
+{
+  "scenario": "C",
+  "problem_id": "H07",
+  "problem_sequence": 12,
+  "attempt_number": 2,
+  "attempt_kind": "EXPERT_DIRECT_CODE",
+  "source_path": "/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/claude-sonnet-5/12_H07/handoffs/handoff_01/expert_code_H07.py",
+  "source_sha256": "e9d411cfcd2be8e06610db5241e96f914c1a8c3be0e6c149d1a7d3af6284ff85",
+  "api_call": false,
+  "created_at_utc": "2026-08-24T19:06:04.241544+00:00"
+}

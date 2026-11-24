@@ -1,0 +1,30 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "40 unità da S a T -> d=40 e vincoli di bilancio ai nodi S/T",
+        "attivazione degli archi -> variabile binaria y_a e vincolo x_a <= u_a*y_a",
+        "costo fisso -> parametro f_a e termine f_a*y_a nell'obiettivo",
+        "costo per unità -> parametro c_a e termine c_a*x_a nell'obiettivo",
+        "capacità degli archi -> parametro u_a e vincolo di capacità",
+        "flusso intero -> variabili x_a in Z_+",
+        "conservazione del flusso -> vincoli di bilancio ai nodi"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

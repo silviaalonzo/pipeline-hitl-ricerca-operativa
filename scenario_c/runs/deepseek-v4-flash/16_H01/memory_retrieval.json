@@ -1,0 +1,41 @@
+{
+  "model": "deepseek-v4-flash",
+  "problem_id": "H01",
+  "retrieved_at_utc": "2026-08-24T21:37:30.236080+00:00",
+  "semantic": [
+    {
+      "id": "S-004",
+      "created_at_utc": "2026-08-24T21:34:22.100781+00:00",
+      "source_episode": "H09-H01",
+      "principle": "Nei modelli multi-prodotto e multi-periodo, collegare ogni periodo mediante il bilancio delle scorte e rappresentare lo straordinario come capacità aggiuntiva limitata e costosa; i setup devono attivare la produzione attraverso limiti minimo e massimo di lotto.",
+      "tags": [
+        "Production-inventory",
+        "MILP",
+        "stadio-3",
+        "output_troncato_o_senza_codice"
+      ]
+    }
+  ],
+  "episodic": [
+    {
+      "id": "H09-H01",
+      "created_at_utc": "2026-08-24T21:34:22.100774+00:00",
+      "problem_id": "H09",
+      "domain": "Production-inventory",
+      "model_class": "MILP",
+      "stage": 3,
+      "failure_class": "output_troncato_o_senza_codice",
+      "correction_summary": "Dopo tre riparazioni automatiche concluse senza codice eseguibile, l’esperto ha fornito il modello MILP completo con bilanci di produzione e scorta, setup e lotti minimi, capacità aumentabile tramite straordinario, limiti alle attivazioni e alle scorte e giacenze finali minime.",
+      "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+      "active_minutes": 15.0,
+      "tags": [
+        "Production-inventory",
+        "MILP",
+        "stadio-3",
+        "output_troncato_o_senza_codice"
+      ]
+    }
+  ],
+  "semantic_count_total": 4,
+  "episodic_count_total": 4
+}

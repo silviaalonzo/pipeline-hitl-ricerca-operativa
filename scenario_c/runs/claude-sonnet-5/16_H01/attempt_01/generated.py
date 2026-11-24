@@ -1,0 +1,88 @@
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+zones = ["Z1","Z2","Z3","Z4","Z5","Z6","Z7","Z8"]
+sites = ["A","B","C","D","E","F"]
+north = ["A","B","C"]
+south = ["D","E","F"]
+
+demand = {"Z1":30,"Z2":25,"Z3":35,"Z4":20,"Z5":28,"Z6":32,"Z7":24,"Z8":26}
+
+fixed_cost = {"A":110,"B":95,"C":120,"D":90,"E":105,"F":100}
+capacity   = {"A":90,"B":80,"C":110,"D":75,"E":95,"F":85}
+
+unit_cost = {
+    ("Z1","A"):4, ("Z1","B"):7, ("Z1","C"):6, ("Z1","D"):10, ("Z1","E"):9, ("Z1","F"):11,
+    ("Z2","A"):5, ("Z2","B"):4, ("Z2","C"):8, ("Z2","D"):9,  ("Z2","E"):7, ("Z2","F"):10,
+    ("Z3","A"):7, ("Z3","B"):5, ("Z3","C"):4, ("Z3","D"):8,  ("Z3","E"):9, ("Z3","F"):7,
+    ("Z4","A"):9, ("Z4","B"):8, ("Z4","C"):7, ("Z4","D"):4,  ("Z4","E"):5, ("Z4","F"):6,
+    ("Z5","A"):8, ("Z5","B"):9, ("Z5","C"):6, ("Z5","D"):5,  ("Z5","E"):4, ("Z5","F"):7,
+    ("Z6","A"):10,("Z6","B"):8, ("Z6","C"):7, ("Z6","D"):6,  ("Z6","E"):5, ("Z6","F"):4,
+    ("Z7","A"):6, ("Z7","B"):7, ("Z7","C"):5, ("Z7","D"):8,  ("Z7","E"):6, ("Z7","F"):7,
+    ("Z8","A"):7, ("Z8","B"):6, ("Z8","C"):8, ("Z8","D"):5,  ("Z8","E"):7, ("Z8","F"):4,
+}
+
+emission = {
+    ("Z1","A"):1, ("Z1","B"):2, ("Z1","C"):2, ("Z1","D"):4, ("Z1","E"):3, ("Z1","F"):4,
+    ("Z2","A"):2, ("Z2","B"):1, ("Z2","C"):3, ("Z2","D"):3, ("Z2","E"):2, ("Z2","F"):4,
+    ("Z3","A"):3, ("Z3","B"):2, ("Z3","C"):1, ("Z3","D"):3, ("Z3","E"):4, ("Z3","F"):3,
+    ("Z4","A"):4, ("Z4","B"):3, ("Z4","C"):3, ("Z4","D"):1, ("Z4","E"):2, ("Z4","F"):2,
+    ("Z5","A"):3, ("Z5","B"):4, ("Z5","C"):2, ("Z5","D"):2, ("Z5","E"):1, ("Z5","F"):3,
+    ("Z6","A"):4, ("Z6","B"):3, ("Z6","C"):3, ("Z6","D"):2, ("Z6","E"):2, ("Z6","F"):1,
+    ("Z7","A"):2, ("Z7","B"):3, ("Z7","C"):1, ("Z7","D"):3, ("Z7","E"):2, ("Z7","F"):3,
+    ("Z8","A"):3, ("Z8","B"):2, ("Z8","C"):3, ("Z8","D"):1, ("Z8","E"):3, ("Z8","F"):1,
+}
+
+minOpen = 3
+maxOpen = 4
+minThroughput = 20
+Ecap = 470
+
+m = gp.Model("H01_rete_distributiva")
+
+x = m.addVars(zones, sites, lb=0.0, vtype=GRB.CONTINUOUS, name="x")
+y = m.addVars(sites, vtype=GRB.BINARY, name="y")
+
+m.setObjective(
+    gp.quicksum(fixed_cost[j]*y[j] for j in sites) +
+    gp.quicksum(unit_cost[i,j]*x[i,j] for i in zones for j in sites),
+    GRB.MINIMIZE
+)
+
+for i in zones:
+    m.addConstr(gp.quicksum(x[i,j] for j in sites) == demand[i], name=f"dem_{i}")
+
+for j in sites:
+    m.addConstr(gp.quicksum(x[i,j] for i in zones) <= capacity[j]*y[j], name=f"cap_{j}")
+
+for j in sites:
+    m.addConstr(gp.quicksum(x[i,j] for i in zones) >= minThroughput*y[j], name=f"minflow_{j}")
+
+m.addConstr(gp.quicksum(y[j] for j in sites) >= minOpen, name="minOpen")
+m.addConstr(gp.quicksum(y[j] for j in sites) <= maxOpen, name="maxOpen")
+
+m.addConstr(gp.quicksum(y[j] for j in north) >= 1, name="north_min")
+m.addConstr(gp.quicksum(y[j] for j in south) >= 1, name="south_min")
+
+m.addConstr(
+    gp.quicksum(emission[i,j]*x[i,j] for i in zones for j in sites) <= Ecap,
+    name="emission_cap"
+)
+
+m.optimize()
+
+status = m.Status
+if status == GRB.OPTIMAL:
+    variables = {}
+    for j in sites:
+        variables[f"y_{j}"] = round(y[j].X, 4)
+    for i in zones:
+        for j in sites:
+            variables[f"x_{i}_{j}"] = round(x[i,j].X, 4)
+    obj_val = round(m.ObjVal, 4)
+    result = {"status": "OPTIMAL", "objective": obj_val, "variables": variables}
+else:
+    result = {"status": str(status), "objective": None, "variables": {}}
+
+print(f"SOLUTION_JSON={json.dumps(result)}")

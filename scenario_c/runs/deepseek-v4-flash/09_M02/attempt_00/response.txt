@@ -1,0 +1,153 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["quattro articoli -> insieme P","margine e setup per articolo -> parametri m_i e s_i","ore macchina e lavoro disponibili -> capacita M=90 e H=100","lotto minimo e domanda massima -> vincoli x_i >= L_i y_i e x_i <= U_i y_i","almeno due articoli diversi -> vincolo sum_i y_i >= 2","massimizzare margine netto -> funzione obiettivo max sum_i (m_i x_i - s_i y_i)"]}
+
+## Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+
+- \(P = \{A, B, C, D\}\): articoli prodotti.
+
+**Parametri**
+
+- \(m_i\): margine unitario dell'articolo \(i\);
+- \(s_i\): costo di setup dell'articolo \(i\);
+- \(a_i\): ore-macchina per unità di \(i\);
+- \(b_i\): ore-lavoro per unità di \(i\);
+- \(L_i\): lotto minimo di \(i\);
+- \(U_i\): domanda massima di \(i\);
+- \(M = 90\): ore-macchina disponibili;
+- \(H = 100\): ore-lavoro disponibili.
+
+**Variabili decisionali**
+
+- \(x_i \in \mathbb{Z}_+\): quantità prodotta dell'articolo \(i\);
+- \(y_i \in \{0,1\}\): vale 1 se l'articolo \(i\) viene prodotto, 0 altrimenti.
+
+## Formulazione matematica
+
+\[
+\max \sum_{i \in P} \left( m_i x_i - s_i y_i \right)
+\]
+
+soggetto a:
+
+\[
+x_i \le U_i y_i \qquad \forall i \in P
+\]
+
+\[
+x_i \ge L_i y_i \qquad \forall i \in P
+\]
+
+\[
+\sum_{i \in P} a_i x_i \le 90
+\]
+
+\[
+\sum_{i \in P} b_i x_i \le 100
+\]
+
+\[
+\sum_{i \in P} y_i \ge 2
+\]
+
+\[
+x_i \in \mathbb{Z}_+, \qquad y_i \in \{0,1\}
+\]
+
+I vincoli \(x_i \le U_i y_i\) e \(x_i \ge L_i y_i\) impongono che, se l'articolo non viene prodotto, la quantità sia zero; se viene prodotto, la quantità sia compresa tra lotto minimo e domanda massima.
+
+## Codice Python eseguibile con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+prodotti = ["A", "B", "C", "D"]
+
+margine = {"A": 42, "B": 36, "C": 50, "D": 31}
+setup = {"A": 80, "B": 65, "C": 90, "D": 50}
+ore_macchina = {"A": 3, "B": 2, "C": 4, "D": 1}
+ore_lavoro = {"A": 2, "B": 3, "C": 2, "D": 2}
+lotto_min = {"A": 4, "B": 5, "C": 3, "D": 6}
+domanda_max = {"A": 20, "B": 25, "C": 16, "D": 30}
+
+R_M = 90
+R_L = 100
+
+modello = gp.Model("Piano_produzione")
+modello.setParam("OutputFlag", 0)
+
+x = modello.addVars(prodotti, vtype=GRB.INTEGER, lb=0, name="x")
+y = modello.addVars(prodotti, vtype=GRB.BINARY, name="y")
+
+modello.setObjective(
+    gp.quicksum(margine[i] * x[i] - setup[i] * y[i] for i in prodotti),
+    GRB.MAXIMIZE
+)
+
+modello.addConstrs(
+    (x[i] <= domanda_max[i] * y[i] for i in prodotti),
+    name="max_domanda"
+)
+
+modello.addConstrs(
+    (x[i] >= lotto_min[i] * y[i] for i in prodotti),
+    name="lotto_minimo"
+)
+
+modello.addConstr(
+    gp.quicksum(ore_macchina[i] * x[i] for i in prodotti) <= R_M,
+    name="capacita_macchine"
+)
+
+modello.addConstr(
+    gp.quicksum(ore_lavoro[i] * x[i] for i in prodotti) <= R_L,
+    name="capacita_lavoro"
+)
+
+modello.addConstr(
+    gp.quicksum(y[i] for i in prodotti) >= 2,
+    name="almeno_due_articoli"
+)
+
+modello.optimize()
+
+if modello.status == GRB.OPTIMAL:
+    variabili = {}
+    for i in prodotti:
+        variabili[f"x_{i}"] = x[i].X
+        variabili[f"y_{i}"] = y[i].X
+
+    soluzione = {
+        "status": "OPTIMAL",
+        "objective": modello.ObjVal,
+        "variables": variabili
+    }
+else:
+    soluzione = {
+        "status": "NOT_OPTIMAL",
+        "objective": None,
+        "variables": {}
+    }
+
+print("SOLUTION_JSON=" + json.dumps(soluzione))
+```
+
+## Sintesi della soluzione
+
+Il solver Gurobi termina con stato **OPTIMAL** e valore ottimo **1640.0**.
+
+Decisioni non nulle:
+
+- \(x_A = 20\), \(y_A = 1\);
+- \(x_D = 30\), \(y_D = 1\);
+- \(x_B = 0\), \(y_B = 0\);
+- \(x_C = 0\), \(y_C = 0\).
+
+Vengono prodotti solo gli articoli **A** e **D**, rispettando il vincolo commerciale di produrre almeno due articoli diversi. Le risorse impiegate sono:
+
+- ore-macchina: \(20 \cdot 3 + 30 \cdot 1 = 90\);
+- ore-lavoro: \(20 \cdot 2 + 30 \cdot 2 = 100\).
+
+Margine netto: \(20 \cdot 42 - 80 + 30 \cdot 31 - 50 = 1640\).

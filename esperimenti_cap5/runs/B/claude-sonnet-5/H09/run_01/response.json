@@ -1,0 +1,73 @@
+{
+  "id": "gen-1786374836-wc6wB62hRdsG57DeDLHD",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "# H09 — Produzione e scorte multi-prodotto con straordinario\n\n## 1. Insiemi, Parametri e Variabili Decisionali\n\n**Insiemi**\n- $P = \\{A, B, C\\}$: prodotti\n- $T = \\{1, \\dots, 6\\}$: periodi\n\n**Parametri**\n- $d_{p,t}$: domanda del prodotto $p$ nel periodo $t$\n- $c_{p,t}$: costo unitario di produzione\n- $s_p$: costo di setup del prodotto $p$\n- $h_p$: costo unitario di mantenimento a scorta\n- $r_p$: ore richieste per unità di prodotto $p$\n- $L_p$: lotto minimo di produzione\n- $Cap_t$: capacità base (ore) nel periodo $t$\n- $OT^{max} = 20$: massimo straordinario per periodo (ore)\n- $c^{OT} = 18$: costo unitario dello straordinario\n- $InvMax = 40$: scorta totale massima a fine periodo\n- $SF = 2$: scorta minima finale per prodotto\n- $M_p$: big-M per prodotto $p$ (upper bound su produzione), calcolato come $M_p = \\sum_t d_{p,t} + InvMax$\n\n**Variabili decisionali**\n- $x_{p,t} \\in \\mathbb{Z}_{\\ge 0}$: quantità prodotta di $p$ nel periodo $t$\n- $I_{p,t} \\in \\mathbb{Z}_{\\ge 0}$: scorta finale di $p$ nel periodo $t$ ($I_{p,0}=0$)\n- $y_{p,t} \\in \\{0,1\\}$: indicatore di setup (1 se $p$ è prodotto in $t$)\n- $O_t \\in \\mathbb{R}_{\\ge 0}$: ore di straordinario usate nel periodo $t$\n\n## 2. Formulazione Matematica\n\n**Funzione obiettivo**\n\n$$\n\\min \\sum_{p \\in P}\\sum_{t \\in T} c_{p,t}\\,x_{p,t}\n+ \\sum_{p \\in P}\\sum_{t \\in T} h_p\\,I_{p,t}\n+ \\sum_{p \\in P}\\sum_{t \\in T} s_p\\,y_{p,t}\n+ \\sum_{t \\in T} c^{OT}\\,O_t\n$$\n\n**Vincoli**\n\nBilancio di magazzino:\n$$\nI_{p,t} = I_{p,t-1} + x_{p,t} - d_{p,t} \\qquad \\forall p \\in P,\\ t \\in T,\\quad I_{p,0}=0\n$$\n\nScorta finale minima:\n$$\nI_{p,6} \\ge SF \\qquad \\forall p \\in P\n$$\n\nLotto minimo e attivazione setup (linking):\n$$\nL_p\\, y_{p,t} \\le x_{p,t} \\le M_p\\, y_{p,t} \\qquad \\forall p \\in P,\\ t \\in T\n$$\n\nLimite numero setup per periodo:\n$$\n\\sum_{p \\in P} y_{p,t} \\le 3 \\quad (t=1); \\qquad \\sum_{p \\in P} y_{p,t} \\le 2 \\quad (t=2,\\dots,6)\n$$\n\nCapacità produttiva con straordinario:\n$$\n\\sum_{p \\in P} r_p\\, x_{p,t} \\le Cap_t + O_t \\qquad \\forall t \\in T\n$$\n\nLimite straordinario:\n$$\n0 \\le O_t \\le OT^{max} \\qquad \\forall t \\in T\n$$\n\nLimite scorta totale:\n$$\n\\sum_{p \\in P} I_{p,t} \\le InvMax \\qquad \\forall t \\in T\n$$\n\nDominio:\n$$\nx_{p,t} \\in \\mathbb{Z}_{\\ge0},\\ I_{p,t}\\in \\mathbb{Z}_{\\ge0},\\ y_{p,t}\\in\\{0,1\\},\\ O_t \\in \\mathbb{R}_{\\ge0}\n$$\n\n## 3. Codice Python (gurobipy)\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\nP = ['A', 'B', 'C']\nT = [1, 2, 3, 4, 5, 6]\n\nd = {\n    'A': {1:12,2:18,3:14,4:20,5:16,6:19},\n    'B': {1:10,2:9,3:15,4:12,5:17,6:14},\n    'C': {1:8,2:11,3:10,4:13,5:9,6:15}\n}\n\nc = {\n    'A': {1:7,2:8,3:9,4:7,5:10,6:8},\n    'B': {1:9,2:8,3:8,4:10,5:7,6:9},\n    'C': {1:11,2:10,3:12,4:9,5:11,6:8}\n}\n\nsetup = {'A':35, 'B':40, 'C':45}\nhold  = {'A':2,  'B':2,  'C':3}\nhours = {'A':2,  'B':3,  'C':4}\nlotmin= {'A':5,  'B':4,  'C':3}\n\nCap = {1:120, 2:115, 3:125, 4:110, 5:120, 6:115}\n\nOT_MAX = 20.0\nOT_COST = 18.0\nINV_MAX_TOTAL = 40\nFINAL_MIN = 2\n\n# Big-M per prodotto: somma domande + scorta massima\nM = {p: sum(d[p][t] for t in T) + INV_MAX_TOTAL for p in P}\n\nmodel = gp.Model(\"H09_ProdInv_Overtime\")\n\nx = model.addVars(P, T, vtype=GRB.INTEGER, lb=0, name=\"x\")\nI = model.addVars(P, T, vtype=GRB.INTEGER, lb=0, name=\"I\")\ny = model.addVars(P, T, vtype=GRB.BINARY, name=\"y\")\nO = model.addVars(T, vtype=GRB.CONTINUOUS, lb=0.0, ub=OT_MAX, name=\"O\")\n\n# Bilancio di magazzino\nfor p in P:\n    prev = 0\n    for t in T:\n        model.addConstr(I[p, t] == prev + x[p, t] - d[p][t], name=f\"bal_{p}_{t}\")\n        prev = I[p, t]\n\n# Scorta finale minima\nfor p in P:\n    model.addConstr(I[p, 6] >= FINAL_MIN, name=f\"finalstock_{p}\")\n\n# Lotto minimo e linking con setup\nfor p in P:\n    for t in T:\n        model.addConstr(x[p, t] <= M[p] * y[p, t], name=f\"linkU_{p}_{t}\")\n        model.addConstr(x[p, t] >= lotmin[p] * y[p, t], name=f\"linkL_{p}_{t}\")\n\n# Limite numero setup per periodo\nfor t in T:\n    limit = 3 if t == 1 else 2\n    model.addConstr(gp.quicksum(y[p, t] for p in P) <= limit, name=f\"setuplim_{t}\")\n\n# Capacità con straordinario\nfor t in T:\n    model.addConstr(\n        gp.quicksum(hours[p] * x[p, t] for p in P) <= Cap[t] + O[t],\n        name=f\"cap_{t}\"\n    )\n\n# Scorta totale massima\nfor t in T:\n    model.addConstr(gp.quicksum(I[p, t] for p in P) <= INV_MAX_TOTAL, name=f\"invmax_{t}\")\n\n# Funzione obiettivo\nobj = gp.quicksum(c[p][t] * x[p, t] for p in P for t in T) \\\n    + gp.quicksum(hold[p] * I[p, t] for p in P for t in T) \\\n    + gp.quicksum(setup[p] * y[p, t] for p in P for t in T) \\\n    + gp.quicksum(OT_COST * O[t] for t in T)\n\nmodel.setObjective(obj, GRB.MINIMIZE)\n\nmodel.optimize()\n\nstatus = model.Status\nresult = {\"status\": None, \"objective\": None, \"variables\": {}}\n\nif status == GRB.OPTIMAL:\n    result[\"status\"] = \"OPTIMAL\"\n    result[\"objective\"] = round(model.ObjVal, 4)\n    variables = {}\n    for p in P:\n        for t in T:\n            variables[f\"x_{p}_{t}\"] = round(x[p, t].X, 4)\n            variables[f\"I_{p}_{t}\"] = round(I[p, t].X, 4)\n            variables[f\"y_{p}_{t}\"] = round(y[p, t].X, 4)\n    for t in T:\n        variables[f\"O_{t}\"] = round(O[t].X, 4)\n    result[\"variables\"] = variables\n\n    print(\"=== Riepilogo soluzione ===\")\n    print(f\"Stato: {result['status']}\")\n    print(f\"Costo totale ottimo: {result['objective']}\")\n    print(\"\\nDecisioni non nulle:\")\n    for k, v in variables.items():\n        if abs(v) > 1e-6:\n            print(f\"  {k} = {v}\")\nelse:\n    status_map = {\n        GRB.INFEASIBLE: \"INFEASIBLE\",\n        GRB.UNBOUNDED: \"UNBOUNDED\",\n        GRB.INF_OR_UNBD: \"INF_OR_UNBD\"\n    }\n    result[\"status\"] = status_map.get(status, f\"STATUS_{status}\")\n    print(f\"Solver non ha trovato soluzione ottima. Stato: {result['status']}\")\n\nprint(\"SOLUTION_JSON=\" + json.dumps(result))\n```\n\n## 4. Sintesi della Soluzione\n\nIl modello MILP risolve la pianificazione congiunta di produzione, scorte, setup e straordinario per 3 prodotti su 6 periodi, rispettando: \n- domanda soddisfatta senza arretrati tramite bilancio di magazzino,\n- lotto minimo di produzione legato all'attivazione del setup,\n- vincolo sul numero massimo di setup per periodo (3 nel primo periodo, 2 nei successivi),\n- capacità produttiva estendibile con straordinario (max 20 ore/periodo, costo 18/ora),\n- tetto di 40 unità sulla scorta totale di fine periodo,\n- scorta finale minima di 2 unità per prodotto.\n\nL'esecuzione del codice Gurobi produce lo stato del solver (atteso `OPTIMAL`), il costo totale minimo (somma di costi di produzione, mantenimento a scorta, setup e straordinario) e il dettaglio di tutte le variabili decisionali, incluse quelle nulle, nel formato JSON richiesto nella riga `SOLUTION_JSON`.",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": "I'm setting up an optimization model with three products across six time periods, defining the key parameters like demand, production costs, setup costs, holding costs, labor requirements, and minimum lot sizes, along with capacity constraints including base capacity, overtime limits, and inventory caps.\n\nNow I'm specifying the decision variables—production quantities and ending inventory for each product-period combination, binary setup indicators, and overtime hours—then laying out the constraints that enforce inventory balance, final stock requirements, lot sizing rules with a big-M formulation, limits on concurrent setups, capacity constraints accounting for overtime, and total inventory bounds across all products.\n\nThe objective minimizes total production costs, holding costs, setup costs, and overtime expenses, with the remaining task being to determine appropriate big-M values for the lot-sizing constraints based on maximum feasible production quantities.",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "I'm setting up an optimization model with three products across six time periods, defining the key parameters like demand, production costs, setup costs, holding costs, labor requirements, and minimum lot sizes, along with capacity constraints including base capacity, overtime limits, and inventory caps.\n\nNow I'm specifying the decision variables—production quantities and ending inventory for each product-period combination, binary setup indicators, and overtime hours—then laying out the constraints that enforce inventory balance, final stock requirements, lot sizing rules with a big-M formulation, limits on concurrent setups, capacity constraints accounting for overtime, and total inventory bounds across all products.\n\nThe objective minimizes total production costs, holding costs, setup costs, and overtime expenses, with the remaining task being to determine appropriate big-M values for the lot-sizing constraints based on maximum feasible production quantities.",
+            "format": "anthropic-claude-v1",
+            "index": 0,
+            "signature": "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"
+          }
+        ]
+      },
+      "native_finish_reason": "end_turn"
+    }
+  ],
+  "created": 1786374836,
+  "model": "anthropic/claude-sonnet-5",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 4764,
+    "prompt_tokens": 1390,
+    "total_tokens": 6154,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 247,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.05042,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.05042,
+      "upstream_inference_prompt_cost": 0.00278,
+      "upstream_inference_completions_cost": 0.04764
+    }
+  },
+  "provider": "Anthropic",
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "anthropic/claude-sonnet-5",
+    "required_provider": "anthropic",
+    "allow_fallbacks": false,
+    "require_parameters": true
+  },
+  "_experiment": {
+    "elapsed_seconds": 40.40668433399878,
+    "completed_at_utc": "2026-08-10T15:14:35.647478+00:00"
+  }
+}

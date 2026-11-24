@@ -1,0 +1,11 @@
+{
+  "scenario": "C",
+  "problem_id": "M03",
+  "problem_sequence": 17,
+  "attempt_number": 4,
+  "attempt_kind": "EXPERT_DIRECT_CODE",
+  "source_path": "/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/deepseek-v4-flash/17_M03/handoffs/handoff_01/expert_code_M03_sandbox.py",
+  "source_sha256": "34743b7e68c369c9e86dda15fa4db1ca2d1028621b411abc8f293171bce599e0",
+  "api_call": false,
+  "created_at_utc": "2026-08-24T22:11:39.269143+00:00"
+}

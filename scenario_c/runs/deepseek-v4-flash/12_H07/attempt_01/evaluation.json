@@ -1,0 +1,8 @@
+{
+  "success": false,
+  "repairable": true,
+  "stage": 3,
+  "failure_class": "codice_non_estratto",
+  "detail": "Atteso un solo blocco Python, trovati 0",
+  "finish_reason": "stop"
+}

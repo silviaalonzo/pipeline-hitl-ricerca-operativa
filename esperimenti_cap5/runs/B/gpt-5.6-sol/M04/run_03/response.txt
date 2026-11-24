@@ -1,0 +1,281 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+### Insieme dei tipi di veicolo
+
+\[
+I=\{\text{Van},\text{Autocarro},\text{Refrigerato},\text{Elettrico},\text{Bilico}\}.
+\]
+
+### Parametri
+
+Per ogni \(i\in I\):
+
+- \(v_i\): volume offerto;
+- \(p_i\): portata offerta;
+- \(c_i\): costo giornaliero;
+- \(e_i\): emissioni;
+- \(u_i\): disponibilità massima.
+
+| \(i\) | \(v_i\) | \(p_i\) | \(c_i\) | \(e_i\) | \(u_i\) |
+|---|---:|---:|---:|---:|---:|
+| Van | 18 | 8 | 120 | 12 | 8 |
+| Autocarro | 30 | 18 | 180 | 22 | 6 |
+| Refrigerato | 20 | 10 | 210 | 15 | 4 |
+| Elettrico | 16 | 7 | 150 | 4 | 5 |
+| Bilico | 42 | 28 | 260 | 32 | 3 |
+
+Ulteriori parametri:
+
+\[
+V^{\min}=180,\qquad P^{\min}=95,\qquad E^{\max}=145.
+\]
+
+### Variabili decisionali
+
+\[
+x_i=\text{numero di veicoli di tipo }i\text{ impiegati nella giornata}.
+\]
+
+In particolare, i nomi utilizzati nel codice sono:
+
+\[
+x_{\text{Van}},\;
+x_{\text{Autocarro}},\;
+x_{\text{Refrigerato}},\;
+x_{\text{Elettrico}},\;
+x_{\text{Bilico}}.
+\]
+
+Tutte le variabili sono intere non negative.
+
+---
+
+## 2. Formulazione matematica completa
+
+### Funzione obiettivo
+
+Minimizzare il costo giornaliero totale:
+
+\[
+\min \sum_{i\in I} c_i x_i
+\]
+
+ossia:
+
+\[
+\min \;
+120x_{\text{Van}}
++180x_{\text{Autocarro}}
++210x_{\text{Refrigerato}}
++150x_{\text{Elettrico}}
++260x_{\text{Bilico}}.
+\]
+
+### Vincolo di volume
+
+\[
+18x_{\text{Van}}
++30x_{\text{Autocarro}}
++20x_{\text{Refrigerato}}
++16x_{\text{Elettrico}}
++42x_{\text{Bilico}}
+\ge 180.
+\]
+
+### Vincolo di portata
+
+\[
+8x_{\text{Van}}
++18x_{\text{Autocarro}}
++10x_{\text{Refrigerato}}
++7x_{\text{Elettrico}}
++28x_{\text{Bilico}}
+\ge 95.
+\]
+
+### Vincolo sulle emissioni
+
+\[
+12x_{\text{Van}}
++22x_{\text{Autocarro}}
++15x_{\text{Refrigerato}}
++4x_{\text{Elettrico}}
++32x_{\text{Bilico}}
+\le 145.
+\]
+
+### Presenza dei mezzi speciali
+
+\[
+x_{\text{Refrigerato}}\ge 1,
+\]
+
+\[
+x_{\text{Elettrico}}\ge 1.
+\]
+
+### Disponibilità e dominio
+
+\[
+0\le x_i\le u_i
+\qquad \forall i\in I,
+\]
+
+\[
+x_i\in\mathbb{Z}
+\qquad \forall i\in I.
+\]
+
+---
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+tipi = ["Van", "Autocarro", "Refrigerato", "Elettrico", "Bilico"]
+
+volume = {
+    "Van": 18,
+    "Autocarro": 30,
+    "Refrigerato": 20,
+    "Elettrico": 16,
+    "Bilico": 42
+}
+
+portata = {
+    "Van": 8,
+    "Autocarro": 18,
+    "Refrigerato": 10,
+    "Elettrico": 7,
+    "Bilico": 28
+}
+
+costo = {
+    "Van": 120,
+    "Autocarro": 180,
+    "Refrigerato": 210,
+    "Elettrico": 150,
+    "Bilico": 260
+}
+
+emissioni = {
+    "Van": 12,
+    "Autocarro": 22,
+    "Refrigerato": 15,
+    "Elettrico": 4,
+    "Bilico": 32
+}
+
+disponibilita = {
+    "Van": 8,
+    "Autocarro": 6,
+    "Refrigerato": 4,
+    "Elettrico": 5,
+    "Bilico": 3
+}
+
+volume_minimo = 180
+portata_minima = 95
+emissioni_massime = 145
+
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+model = gp.Model("composizione_flotta_giornaliera", env=env)
+model.Params.MIPGap = 0.0
+
+x = {
+    i: model.addVar(
+        lb=0,
+        ub=disponibilita[i],
+        vtype=GRB.INTEGER,
+        name="x_" + i
+    )
+    for i in tipi
+}
+
+model.setObjective(
+    gp.quicksum(costo[i] * x[i] for i in tipi),
+    GRB.MINIMIZE
+)
+
+model.addConstr(
+    gp.quicksum(volume[i] * x[i] for i in tipi) >= volume_minimo,
+    name="volume_minimo"
+)
+
+model.addConstr(
+    gp.quicksum(portata[i] * x[i] for i in tipi) >= portata_minima,
+    name="portata_minima"
+)
+
+model.addConstr(
+    gp.quicksum(emissioni[i] * x[i] for i in tipi) <= emissioni_massime,
+    name="emissioni_massime"
+)
+
+model.addConstr(
+    x["Refrigerato"] >= 1,
+    name="almeno_un_refrigerato"
+)
+
+model.addConstr(
+    x["Elettrico"] >= 1,
+    name="almeno_un_elettrico"
+)
+
+model.optimize()
+
+status_labels = [
+    "LOADED", "OPTIMAL", "INFEASIBLE", "INF_OR_UNBD", "UNBOUNDED",
+    "CUTOFF", "ITERATION_LIMIT", "NODE_LIMIT", "TIME_LIMIT",
+    "SOLUTION_LIMIT", "INTERRUPTED", "NUMERIC", "SUBOPTIMAL",
+    "INPROGRESS", "USER_OBJ_LIMIT", "WORK_LIMIT", "MEM_LIMIT"
+]
+
+status = "STATUS_" + str(model.Status)
+for label in status_labels:
+    if getattr(GRB, label, None) == model.Status:
+        status = label
+        break
+
+if model.Status == GRB.OPTIMAL:
+    risultato = {
+        "status": "OPTIMAL",
+        "objective": float(round(model.ObjVal, 10)),
+        "variables": {
+            "x_" + i: float(round(x[i].X, 10))
+            for i in tipi
+        }
+    }
+else:
+    risultato = {
+        "status": status,
+        "objective": None,
+        "variables": {}
+    }
+
+print("SOLUTION_JSON=" + json.dumps(risultato, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato è **OPTIMAL** e il costo giornaliero minimo è:
+
+\[
+z^*=1240.
+\]
+
+La flotta ottima impiega:
+
+- \(2\) autocarri;
+- \(1\) refrigerato;
+- \(1\) elettrico;
+- \(2\) bilici;
+- \(0\) van.
+
+La soluzione offre volume \(180\), portata \(109\) e produce emissioni pari a \(127\), rispettando tutti i vincoli.

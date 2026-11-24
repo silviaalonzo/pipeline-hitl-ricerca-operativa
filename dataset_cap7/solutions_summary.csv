@@ -1,0 +1,6 @@
+id,dataset_version,title,domain,model_class,source_problem,target_principle_id,objective,variables,constraints,runtime_seconds
+L01,definitivo_v2,Assegnazione di consegne a una flotta con limiti individuali,Distribuzione urbana,IP binaria,H03,S-001,394.0,136,43,0.02603888511657715
+L02,definitivo_v2,Pianificazione multi-prodotto di un reparto di confezionamento,Produzione e scorte,MILP intera,H02,S-002,8134.799999999998,72,94,0.007004976272583008
+L03,definitivo_v2,Approvvigionamento multi-componente da fornitori qualificati,Procurement,MILP intera,H07,S-003,2770.0,74,134,0.004644870758056641
+L04,definitivo_v2,Produzione multi-prodotto con straordinario attivabile,Produzione multi-prodotto,MILP intera,H09,S-004,9077.6,102,126,0.03754782676696777
+L05,definitivo_v2,Assegnazione di ispettori a un portafoglio di audit,Assegnazione e qualificazione,IP binaria,M03,S-005,371.0,190,83,0.029757976531982422

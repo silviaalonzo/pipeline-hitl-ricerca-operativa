@@ -1,0 +1,303 @@
+{
+  "status": "CANCELLED_INFRASTRUCTURE_FALSE_POSITIVE",
+  "cancelled_at_utc": "2026-08-26T17:54:30.194331+00:00",
+  "reason": "Falso positivo del validatore: y[i,j] e z[i] sono nomi alternativi per le binarie z[i,j] e y[i] della ground truth; codice, soluzione e criterio di accettazione restano invariati.",
+  "old_evaluation": {
+    "success": false,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "validazione_indipendente_fallita",
+    "detail": "la soluzione viola almeno un requisito del problema originale; il gap supera la soglia dello 0,1%; sono presenti variabili operative non riconosciute",
+    "finish_reason": "stop",
+    "validation_public": {
+      "problem_id": "L03",
+      "correct": false,
+      "candidate_status": "OPTIMAL",
+      "feasible_in_original_problem": false,
+      "gap_within_tolerance": false,
+      "declared_objective_corrected_automatically": false,
+      "max_constraint_violation": 97.0,
+      "constraint_violations": [
+        {
+          "constraint": "min_sources_C1",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 2.0,
+          "violation": 2.0
+        },
+        {
+          "constraint": "min_sources_C2",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 2.0,
+          "violation": 2.0
+        },
+        {
+          "constraint": "min_sources_C3",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 2.0,
+          "violation": 2.0
+        },
+        {
+          "constraint": "min_sources_C4",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 2.0,
+          "violation": 2.0
+        },
+        {
+          "constraint": "min_sources_C5",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 2.0,
+          "violation": 2.0
+        },
+        {
+          "constraint": "min_sources_C6",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 2.0,
+          "violation": 2.0
+        },
+        {
+          "constraint": "capacity_S1",
+          "lhs": 76.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 76.0
+        },
+        {
+          "constraint": "capacity_S2",
+          "lhs": 68.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 68.0
+        },
+        {
+          "constraint": "capacity_S3",
+          "lhs": 97.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 97.0
+        },
+        {
+          "constraint": "capacity_S4",
+          "lhs": 72.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 72.0
+        },
+        {
+          "constraint": "capacity_S5",
+          "lhs": 54.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 54.0
+        },
+        {
+          "constraint": "capacity_S7",
+          "lhs": 73.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 73.0
+        },
+        {
+          "constraint": "at_least_one_S1_S2",
+          "lhs": 0.0,
+          "sense": ">=",
+          "rhs": 1.0,
+          "violation": 1.0
+        },
+        {
+          "constraint": "upper_link_S1_C1",
+          "lhs": 76.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 76.0
+        },
+        {
+          "constraint": "upper_link_S2_C2",
+          "lhs": 68.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 68.0
+        },
+        {
+          "constraint": "upper_link_S3_C1",
+          "lhs": 14.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 14.0
+        },
+        {
+          "constraint": "upper_link_S3_C3",
+          "lhs": 63.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 63.0
+        },
+        {
+          "constraint": "upper_link_S3_C4",
+          "lhs": 10.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 10.0
+        },
+        {
+          "constraint": "upper_link_S3_C6",
+          "lhs": 10.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 10.0
+        },
+        {
+          "constraint": "upper_link_S4_C2",
+          "lhs": 12.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 12.0
+        },
+        {
+          "constraint": "upper_link_S4_C4",
+          "lhs": 60.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 60.0
+        },
+        {
+          "constraint": "upper_link_S5_C5",
+          "lhs": 54.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 54.0
+        },
+        {
+          "constraint": "upper_link_S7_C3",
+          "lhs": 12.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 12.0
+        },
+        {
+          "constraint": "upper_link_S7_C5",
+          "lhs": 11.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 11.0
+        },
+        {
+          "constraint": "upper_link_S7_C6",
+          "lhs": 50.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 50.0
+        }
+      ],
+      "bound_violations": [],
+      "integrality_violations": [],
+      "unknown_nonzero_variables": [
+        "y_S1_C1",
+        "y_S2_C2",
+        "y_S3_C1",
+        "y_S3_C3",
+        "y_S3_C4",
+        "y_S3_C6",
+        "y_S4_C2",
+        "y_S4_C4",
+        "y_S5_C5",
+        "y_S7_C3",
+        "y_S7_C5",
+        "y_S7_C6",
+        "z_S1",
+        "z_S2",
+        "z_S3",
+        "z_S4",
+        "z_S5",
+        "z_S7"
+      ],
+      "missing_variables_assumed_zero": [
+        "y_S1",
+        "y_S2",
+        "y_S3",
+        "y_S4",
+        "y_S5",
+        "y_S6",
+        "y_S7",
+        "y_S8",
+        "z_S1_C1",
+        "z_S1_C2",
+        "z_S1_C3",
+        "z_S1_C5",
+        "z_S2_C1",
+        "z_S2_C2",
+        "z_S2_C4",
+        "z_S2_C6",
+        "z_S3_C1",
+        "z_S3_C3",
+        "z_S3_C4",
+        "z_S3_C5",
+        "z_S3_C6",
+        "z_S4_C2",
+        "z_S4_C3",
+        "z_S4_C4",
+        "z_S4_C6",
+        "z_S5_C1",
+        "z_S5_C2",
+        "z_S5_C5",
+        "z_S5_C6",
+        "z_S6_C2",
+        "z_S6_C3",
+        "z_S6_C4",
+        "z_S6_C5",
+        "z_S7_C1",
+        "z_S7_C3",
+        "z_S7_C5",
+        "z_S7_C6",
+        "z_S8_C2",
+        "z_S8_C4",
+        "z_S8_C5",
+        "z_S8_C6"
+      ]
+    },
+    "traceability": {
+      "present": true,
+      "valid": true,
+      "complete_ready": true,
+      "value": {
+        "status": "READY",
+        "unresolved": [],
+        "undefined_symbols": [],
+        "requirements_mapped": [
+          "domanda esatta -> vincoli di uguaglianza per ogni componente",
+          "da 2 a 3 fornitori per componente -> vincoli su somma delle y",
+          "lotto minimo per coppia usata -> x_ij >= L_j y_ij",
+          "capacita' condivisa e attivazione fornitore -> vincoli di capacita' con z_i",
+          "massimo sei fornitori e almeno uno tra S1 e S2 -> vincoli su z",
+          "qualita' media >= 95 -> vincoli di qualita'",
+          "rischio ponderato <= 1300 -> vincolo di rischio",
+          "minimizzazione costi -> funzione obiettivo"
+        ],
+        "memory_items_used": [
+          "S-001",
+          "S-003",
+          "H07-H01"
+        ]
+      },
+      "needs_expert": false,
+      "errors": []
+    }
+  },
+  "new_evaluation": {
+    "success": true,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "corretta",
+    "detail": "Soluzione ammissibile e gap entro tolleranza",
+    "finish_reason": "stop",
+    "declared_objective_corrected_automatically": false
+  },
+  "count_as_handoff": false,
+  "count_as_human_time": false,
+  "count_as_memory_event": false
+}

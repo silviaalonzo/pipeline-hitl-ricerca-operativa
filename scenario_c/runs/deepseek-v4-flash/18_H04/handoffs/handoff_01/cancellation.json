@@ -1,0 +1,94 @@
+{
+  "status": "CANCELLED_INFRASTRUCTURE_FALSE_POSITIVE",
+  "cancelled_at_utc": "2026-08-24T22:20:11.452345+00:00",
+  "reason": "DeepSeek ha usato z_Rotta_Tipo per la binaria di utilizzo del tipo di veicolo, semanticamente equivalente alla famiglia y_Rotta_Tipo della ground truth. La normalizzazione rinomina esclusivamente la famiglia z in y e non modifica viaggi, attivazioni, emissioni, obiettivo o criterio di correttezza.",
+  "old_evaluation": {
+    "success": false,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "validazione_indipendente_fallita",
+    "detail": "sono presenti variabili operative non riconosciute",
+    "finish_reason": "stop",
+    "validation_public": {
+      "problem_id": "H04",
+      "correct": false,
+      "candidate_status": "OPTIMAL",
+      "feasible_in_original_problem": true,
+      "gap_within_tolerance": true,
+      "declared_objective_corrected_automatically": false,
+      "max_constraint_violation": 4.0,
+      "constraint_violations": [
+        {
+          "constraint": "linkmax_R1_Medio",
+          "lhs": 3.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 3.0
+        },
+        {
+          "constraint": "linkmax_R2_Medio",
+          "lhs": 4.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 4.0
+        },
+        {
+          "constraint": "linkmax_R3_Grande",
+          "lhs": 2.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 2.0
+        },
+        {
+          "constraint": "linkmax_R4_Medio",
+          "lhs": 2.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 2.0
+        },
+        {
+          "constraint": "linkmax_R4_Grande",
+          "lhs": 2.0,
+          "sense": "<=",
+          "rhs": 0.0,
+          "violation": 2.0
+        }
+      ],
+      "bound_violations": [],
+      "integrality_violations": [],
+      "unknown_nonzero_variables": [
+        "z_R1_Medio",
+        "z_R2_Medio",
+        "z_R3_Grande",
+        "z_R4_Medio",
+        "z_R4_Grande"
+      ],
+      "missing_variables_assumed_zero": [
+        "y_R1_Grande",
+        "y_R1_Medio",
+        "y_R1_Piccolo",
+        "y_R2_Grande",
+        "y_R2_Medio",
+        "y_R2_Piccolo",
+        "y_R3_Grande",
+        "y_R3_Medio",
+        "y_R3_Piccolo",
+        "y_R4_Grande",
+        "y_R4_Medio",
+        "y_R4_Piccolo"
+      ]
+    }
+  },
+  "new_evaluation": {
+    "success": true,
+    "repairable": false,
+    "stage": 4,
+    "failure_class": "corretta",
+    "detail": "Soluzione ammissibile e gap entro tolleranza",
+    "finish_reason": "stop",
+    "declared_objective_corrected_automatically": false
+  },
+  "count_as_handoff": false,
+  "count_as_human_time": false,
+  "count_as_memory_event": false
+}

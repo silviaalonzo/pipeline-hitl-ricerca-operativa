@@ -1,0 +1,68 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 19 rows, 14 columns and 103 nonzeros (Max)
+Model fingerprint: 0x6c05a862
+Model has 14 linear objective coefficients
+Variable types: 0 continuous, 14 integer (14 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 3e+01]
+  Objective range  [1e+01, 6e+01]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+02]
+
+Found heuristic solution: objective 208.0000000
+Presolve removed 7 rows and 0 columns
+Presolve time: 0.00s
+Presolved: 12 rows, 14 columns, 37 nonzeros
+Variable types: 0 continuous, 14 integer (14 binary)
+
+Root relaxation: objective 2.410000e+02, 5 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  241.00000    0    1  208.00000  241.00000  15.9%     -    0s
+H    0     0                     226.0000000  241.00000  6.64%     -    0s
+H    0     0                     229.0000000  241.00000  5.24%     -    0s
+H    0     0                     235.0000000  241.00000  2.55%     -    0s
+     0     0     cutoff    0       235.00000  235.00000  0.00%     -    0s
+
+Cutting planes:
+  Gomory: 1
+  Cover: 1
+  MIR: 1
+  GUB cover: 1
+
+Explored 1 nodes (8 simplex iterations) in 0.01 seconds (0.00 work units)
+Thread count was 8 (of 8 available processors)
+
+Solution count 4: 235 229 226 208 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 2.350000000000e+02, best bound 2.350000000000e+02, gap 0.0000%
+
+======================================================================
+Stato finale Gurobi : 2
+Runtime Gurobi      : 0.0093 s
+Variabili           : 14
+Vincoli             : 19
+Valore obiettivo    : 235
+
+Progetti scelti (5): A, C, E, H, K
+VAN dei progetti      : 213
+Sinergia A-C attiva   : sì  (+12 se attiva)
+Sinergia E-K attiva   : sì  (+10 se attiva)
+
+Consumo delle risorse:
+  Budget A1 : 109 / 110
+  Budget A2 : 85 / 100
+  Budget A3 : 76 / 90
+  Personale : 22 / 28
+  Rischio   : 25 / 32
+======================================================================

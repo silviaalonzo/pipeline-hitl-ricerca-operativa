@@ -1,0 +1,10 @@
+{
+  "success": false,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "validazione_indipendente_fallita",
+  "detail": "La soluzione fornita dall'esperto non supera la validazione indipendente",
+  "finish_reason": "expert_direct_artifact",
+  "source_sha256": "59db2bce2e42c3da30f0090fc8c58bf33914d66ad16c511cce5e40c23c084d3d",
+  "candidate_source": "H02.sol"
+}

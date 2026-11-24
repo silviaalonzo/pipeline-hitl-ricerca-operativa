@@ -1,0 +1,128 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["non sovrapposizione sulla macchina -> vincoli disgiuntivi con variabili binarie x_ij e big-M","J1 termina prima dell'inizio di J2 -> vincolo S2 >= S1+p1","J3 termina prima dell'inizio di J5 -> vincolo S5 >= S3+p3","minimizzare somma ritardi pesati -> funzione obiettivo sum w_i*T_i","data di disponibilità di ogni lavoro -> vincolo S_i >= r_i","scadenza di ogni lavoro -> vincolo T_i >= S_i+p_i-d_i"]}
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- J = {1,2,3,4,5,6,7} — indice dei lavori
+
+**Parametri** (per i ∈ J)
+- p_i — durata del lavoro i
+- r_i — data di disponibilità (release time)
+- d_i — scadenza (due date)
+- w_i — peso di priorità
+
+| i | p_i | r_i | d_i | w_i |
+|---|-----|-----|-----|-----|
+| 1 | 5 | 0 | 9 | 4 |
+| 2 | 7 | 0 | 17 | 3 |
+| 3 | 4 | 2 | 12 | 5 |
+| 4 | 6 | 3 | 22 | 2 |
+| 5 | 3 | 5 | 15 | 6 |
+| 6 | 8 | 0 | 28 | 2 |
+| 7 | 5 | 6 | 25 | 4 |
+
+- Big-M: M = Σ_i p_i + max_i r_i = 38 + 6 = 44 (upper bound sicuro sull'orizzonte temporale, poiché nel caso peggiore un lavoro può iniziare dopo il massimo tra le disponibilità e la somma di tutte le durate precedenti)
+
+**Variabili decisionali**
+- S_i ≥ 0, continua — istante di inizio del lavoro i
+- T_i ≥ 0, continua — ritardo del lavoro i (tardiness)
+- x_ij ∈ {0,1}, per ogni coppia i<j in J — 1 se il lavoro i precede il lavoro j sulla macchina, 0 altrimenti
+
+## 2. Formulazione matematica
+
+**Funzione obiettivo**
+
+min Σ_{i∈J} w_i · T_i
+
+**Vincoli**
+
+1. Disponibilità:
+   S_i ≥ r_i,  ∀ i ∈ J
+
+2. Definizione del ritardo:
+   T_i ≥ S_i + p_i − d_i,  ∀ i ∈ J
+   T_i ≥ 0,  ∀ i ∈ J
+
+3. Non sovrapposizione (disgiuntiva) per ogni coppia i<j:
+   S_i + p_i ≤ S_j + M(1 − x_ij)
+   S_j + p_j ≤ S_i + M·x_ij
+
+4. Precedenza esplicita:
+   S_1 + p_1 ≤ S_2
+   S_3 + p_3 ≤ S_5
+
+**Domini**
+- S_i ∈ ℝ≥0
+- T_i ∈ ℝ≥0
+- x_ij ∈ {0,1}
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import itertools
+
+# Dati
+jobs = [1,2,3,4,5,6,7]
+p = {1:5, 2:7, 3:4, 4:6, 5:3, 6:8, 7:5}
+r = {1:0, 2:0, 3:2, 4:3, 5:5, 6:0, 7:6}
+d = {1:9, 2:17, 3:12, 4:22, 5:15, 6:28, 7:25}
+w = {1:4, 2:3, 3:5, 4:2, 5:6, 6:2, 7:4}
+
+M = sum(p.values()) + max(r.values())  # big-M = 44
+
+model = gp.Model("H06_scheduling")
+model.Params.OutputFlag = 0
+
+# Variabili
+S = model.addVars(jobs, lb=0.0, vtype=GRB.CONTINUOUS, name="S")
+T = model.addVars(jobs, lb=0.0, vtype=GRB.CONTINUOUS, name="T")
+pairs = list(itertools.combinations(jobs, 2))
+x = model.addVars(pairs, vtype=GRB.BINARY, name="x")
+
+# Vincoli di disponibilità
+for i in jobs:
+    model.addConstr(S[i] >= r[i], name=f"release_{i}")
+
+# Vincoli di ritardo
+for i in jobs:
+    model.addConstr(T[i] >= S[i] + p[i] - d[i], name=f"tardiness_{i}")
+
+# Vincoli disgiuntivi di non sovrapposizione
+for (i, j) in pairs:
+    model.addConstr(S[i] + p[i] <= S[j] + M * (1 - x[i, j]), name=f"disj1_{i}_{j}")
+    model.addConstr(S[j] + p[j] <= S[i] + M * x[i, j], name=f"disj2_{i}_{j}")
+
+# Vincoli di precedenza
+model.addConstr(S[1] + p[1] <= S[2], name="prec_1_2")
+model.addConstr(S[3] + p[3] <= S[5], name="prec_3_5")
+
+# Obiettivo
+model.setObjective(gp.quicksum(w[i] * T[i] for i in jobs), GRB.MINIMIZE)
+
+model.optimize()
+
+status = model.Status
+result = {"status": None, "objective": None, "variables": {}}
+
+if status == GRB.OPTIMAL:
+    result["status"] = "OPTIMAL"
+    result["objective"] = round(model.ObjVal, 4)
+    variables = {}
+    for i in jobs:
+        variables[f"S_{i}"] = round(S[i].X, 4)
+        variables[f"T_{i}"] = round(T[i].X, 4)
+    for (i, j) in pairs:
+        variables[f"x_{i}_{j}"] = round(x[i, j].X, 4)
+    result["variables"] = variables
+else:
+    result["status"] = str(status)
+
+import json
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello MILP disgiuntivo con variabili binarie di ordinamento x_ij e big-M = 44 (dato dalla somma delle durate più il massimo release time) determina la sequenza ottima dei sette lavori su macchina singola, rispettando le due precedenze esplicite (J1→J2, J3→J5) e le date di disponibilità. La funzione obiettivo minimizza la somma dei ritardi pesati. Il solver Gurobi risolve il MILP restituendo lo stato ottimale, il valore della funzione obiettivo (somma dei ritardi pesati) e tutti i valori delle variabili di inizio S_i, ritardo T_i e ordinamento x_ij, stampati nella riga SOLUTION_JSON secondo il formato richiesto.

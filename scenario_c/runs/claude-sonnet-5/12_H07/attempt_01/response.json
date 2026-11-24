@@ -1,0 +1,67 @@
+{
+  "id": "gen-1787597352-bfcryPHq22rOFVZj3tpD",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\nsuppliers = ['A','B','C','D','E','F']\ncomponents = ['C1','C2','C3']\n\ndemand = {'C1':80,'C2':70,'C3':60}\nfixed  = {'A':120,'B':140,'C':100,'D':150,'E':90,'F':110}\ncap    = {'A':100,'B':110,'C':90,'D':120,'E':80,'F':95}\nrisk   = {'A':2,'B':3,'C':1,'D':4,'E':2,'F':3}\n\ncost = {\n    ('A','C1'):9, ('A','C2'):12, ('A','C3'):11,\n    ('B','C1'):10,('B','C2'):9,  ('B','C3'):12,\n    ('C','C1'):11,('C','C2'):10, ('C','C3'):9,\n                 ('D','C2'):11, ('D','C3'):10,\n    ('E','C1'):12,('E','C2'):8,\n    ('F','C1'):10,               ('F','C3'):8,\n}\n\nquality = {\n    ('A','C1'):96, ('A','C2'):94, ('A','C3'):95,\n    ('B','C1'):93, ('B','C2'):97, ('B','C3'):92,\n    ('C','C1'):98, ('C','C2'):95, ('C','C3'):96,\n                    ('D','C2'):94, ('D','C3'):93,\n    ('E','C1'):97, ('E','C2'):98,\n    ('F','C1'):94,                ('F','C3'):98,\n}\n\nS = list(cost.keys())\n\nm = gp.Model(\"H07_sourcing\")\nm.Params.OutputFlag = 0\n\nx = m.addVars(S, vtype=GRB.INTEGER, lb=0, name=\"x\")\nz = m.addVars(S, vtype=GRB.BINARY, name=\"z\")\ny = m.addVars(suppliers, vtype=GRB.BINARY, name=\"y\")\n\n# 1. Domanda esatta\nfor k in components:\n    m.addConstr(\n        gp.quicksum(x[i,k] for i in suppliers if (i,k) in cost) == demand[k],\n        name=f\"demand_{k}\"\n    )\n\n# 2. Legame quantità-uso e minimo 10 unità\nfor (i,k) in S:\n    M_ik = min(cap[i], demand[k])\n    m.addConstr(x[i,k] <= M_ik * z[i,k], name=f\"bigM_{i}_{k}\")\n    m.addConstr(x[i,k] >= 10 * z[i,k], name=f\"min10_{i}_{k}\")\n\n# 3. Almeno 2 fornitori per componente\nfor k in components:\n    m.addConstr(\n        gp.quicksum(z[i,k] for i in suppliers if (i,k) in cost) >= 2,\n        name=f\"multisource_{k}\"\n    )\n\n# 4. Capacità complessiva per fornitore\nfor i in suppliers:\n    m.addConstr(\n        gp.quicksum(x[i,k] for k in components if (i,k) in cost) <= cap[i]*y[i],\n        name=f\"cap_{i}\"\n    )\n\n# 5. Coerenza uso-attivazione\nfor (i,k) in S:\n    m.addConstr(z[i,k] <= y[i], name=f\"link_{i}_{k}\")\n\n# 6. Massimo 4 fornitori attivi\nm.addConstr(gp.quicksum(y[i] for i in suppliers) <= 4, name=\"max_suppliers\")\n\n# 7. Almeno uno tra A e B\nm.addConstr(y['A'] + y['B'] >= 1, name=\"A_or_B\")\n\n# 8. Qualità media minima\nfor k in components:\n    m.addConstr(\n        gp.quicksum(quality[i,k]*x[i,k] for i in suppliers if (i,k) in cost) >= 95*demand[k],\n        name=f\"quality_{k}\"\n    )\n\n# 9. Rischio totale massimo\nm.addConstr(\n    gp.quicksum(risk[i]*x[i,k] for (i,k) in S) <= 580,\n    name=\"risk_total\"\n)\n\n# Obiettivo\nm.setObjective(\n    gp.quicksum(cost[i,k]*x[i,k] for (i,k) in S) +\n    gp.quicksum(fixed[i]*y[i] for i in suppliers),\n    GRB.MINIMIZE\n)\n\nm.optimize()\n\nstatus = m.Status\nif status == GRB.OPTIMAL:\n    variables = {}\n    for (i,k) in S:\n        variables[f\"x_{i}_{k}\"] = x[i,k].X\n        variables[f\"z_{i}_{k}\"] = z[i,k].X\n    for i in suppliers:\n        variables[f\"y_{i}\"] = y[i].X\n    obj = m.ObjVal\n    result = {\"status\":\"OPTIMAL\",\"objective\":obj,\"variables\":variables}\nelse:\n    result = {\"status\":str(status),\"objective\":None,\"variables\":{}}\n\nprint(f\"SOLUTION_JSON={json.dumps(result)}\")\n```",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": null
+      },
+      "native_finish_reason": "end_turn"
+    }
+  ],
+  "created": 1787597352,
+  "model": "anthropic/claude-sonnet-5",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 1729,
+    "prompt_tokens": 3123,
+    "total_tokens": 4852,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.023536,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.023536,
+      "upstream_inference_prompt_cost": 0.006246,
+      "upstream_inference_completions_cost": 0.01729
+    }
+  },
+  "provider": "Anthropic",
+  "_experiment": {
+    "elapsed_seconds": 13.872326249998878,
+    "completed_at_utc": "2026-08-24T18:49:24.419305+00:00",
+    "transport_attempt": 1
+  },
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "anthropic/claude-sonnet-5",
+    "required_provider": "anthropic",
+    "allow_fallbacks": false,
+    "require_parameters": true,
+    "actual_model": "anthropic/claude-sonnet-5",
+    "resolved_revision": false
+  }
+}

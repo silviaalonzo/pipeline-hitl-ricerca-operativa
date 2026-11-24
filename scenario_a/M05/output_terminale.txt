@@ -1,0 +1,65 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 7 rows, 8 columns and 33 nonzeros (Max)
+Model fingerprint: 0x4dc2ae23
+Model has 8 linear objective coefficients
+Variable types: 0 continuous, 8 integer (8 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 3e+01]
+  Objective range  [2e+01, 4e+01]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 1e+02]
+
+Found heuristic solution: objective 117.0000000
+Presolve time: 0.00s
+Presolved: 7 rows, 8 columns, 32 nonzeros
+Variable types: 0 continuous, 8 integer (8 binary)
+
+Root relaxation: objective 1.404815e+02, 2 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  140.48148    0    1  117.00000  140.48148  20.1%     -    0s
+H    0     0                     134.0000000  140.48148  4.84%     -    0s
+H    0     0                     136.0000000  140.48148  3.30%     -    0s
+     0     0 infeasible    0       136.00000  136.00000  0.00%     -    0s
+
+Cutting planes:
+  Cover: 2
+  Knapsack: 1
+
+Explored 1 nodes (3 simplex iterations) in 0.00 seconds (0.00 work units)
+Thread count was 8 (of 8 available processors)
+
+Solution count 3: 136 134 117 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 1.360000000000e+02, best bound 1.360000000000e+02, gap 0.0000%
+
+======================================================================
+RISULTATO M05 - Selezione di un portafoglio progetti
+======================================================================
+Stato finale Gurobi      : OPTIMAL (codice 2)
+Tempo di esecuzione Gurobi: 0.0027 s
+Valore funzione obiettivo : 136
+
+Decisioni non nulle (x_i = 1):
+    x[1] = 1   (P1: valore 30, budget 20, personale 4)
+    x[2] = 1   (P2: valore 24, budget 18, personale 3)
+    x[3] = 1   (P3: valore 35, budget 27, personale 5)
+    x[6] = 1   (P6: valore 26, budget 19, personale 3)
+    x[8] = 1   (P8: valore 21, budget 15, personale 2)
+
+Verifica risorse:
+    budget impiegato    = 99 / 100
+    personale impiegato = 17 / 18
+
+File soluzione scritto: /Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_a/M05/M05.sol
+======================================================================

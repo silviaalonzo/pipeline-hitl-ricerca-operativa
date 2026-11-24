@@ -1,0 +1,111 @@
+```python
+import json
+from gurobipy import GRB, Model, quicksum
+
+products = [0, 1, 2]
+periods = list(range(8))
+
+initial_stock = [22, 18, 25]
+required_final = [18, 15, 20]
+hours_per_unit = [2, 3, 1]
+min_lot = [24, 20, 28]
+max_lot = [82, 70, 90]
+setup_cost = [52, 60, 45]
+holding_cost = [1.2, 1.6, 0.9]
+
+production_cost = [
+    [5, 8, 5, 8, 5, 8, 5, 8],
+    [7, 10, 7, 10, 7, 10, 7, 10],
+    [9, 6, 9, 6, 9, 6, 9, 6],
+]
+
+demand = [
+    [34, 48, 42, 55, 38, 50, 46, 40],
+    [28, 32, 45, 36, 50, 34, 42, 39],
+    [40, 35, 38, 44, 36, 48, 41, 45],
+]
+
+capacity = [250, 245, 235, 260, 240, 255, 245, 265]
+
+m = Model("packing_plan")
+m.setParam("OutputFlag", 0)
+
+x = {}
+y = {}
+inv = {}
+
+for p in products:
+    for t in periods:
+        x[p, t] = m.addVar(vtype=GRB.INTEGER, lb=0, name=f"x_P{p+1}_T{t+1}")
+        y[p, t] = m.addVar(vtype=GRB.BINARY, name=f"y_P{p+1}_T{t+1}")
+        inv[p, t] = m.addVar(vtype=GRB.INTEGER, lb=0, ub=75, name=f"inv_P{p+1}_T{t+1}")
+
+m.setObjective(
+    quicksum(
+        production_cost[p][t] * x[p, t]
+        + setup_cost[p] * y[p, t]
+        + holding_cost[p] * inv[p, t]
+        for p in products
+        for t in periods
+    ),
+    GRB.MINIMIZE,
+)
+
+for p in products:
+    for t in periods:
+        m.addConstr(x[p, t] >= min_lot[p] * y[p, t], name=f"min_lot_{p+1}_{t+1}")
+        m.addConstr(x[p, t] <= max_lot[p] * y[p, t], name=f"max_lot_{p+1}_{t+1}")
+
+for p in products:
+    m.addConstr(inv[p, 0] == initial_stock[p] + x[p, 0] - demand[p][0], name=f"balance_{p+1}_1")
+    for t in range(1, len(periods)):
+        m.addConstr(inv[p, t] == inv[p, t - 1] + x[p, t] - demand[p][t], name=f"balance_{p+1}_{t+1}")
+
+for p in products:
+    m.addConstr(inv[p, len(periods) - 1] >= required_final[p], name=f"final_inv_{p+1}")
+
+for t in periods:
+    m.addConstr(quicksum(inv[p, t] for p in products) <= 150, name=f"total_inv_{t+1}")
+    m.addConstr(quicksum(hours_per_unit[p] * x[p, t] for p in products) <= capacity[t], name=f"capacity_{t+1}")
+
+m.addConstr(quicksum(y[p, t] for p in products for t in periods) <= 18, name="total_setups")
+
+for t in (2, 5):
+    m.addConstr(quicksum(y[p, t] for p in products) <= 2, name=f"max2_setup_T{t+1}")
+
+m.optimize()
+
+status_names = {
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.UNBOUNDED: "UNBOUNDED",
+    GRB.INF_OR_UNBD: "INF_OR_UNBD",
+    GRB.TIME_LIMIT: "TIME_LIMIT",
+    GRB.NODE_LIMIT: "NODE_LIMIT",
+    GRB.ITERATION_LIMIT: "ITERATION_LIMIT",
+    GRB.INTERRUPTED: "INTERRUPTED",
+    GRB.NUMERIC: "NUMERIC",
+    GRB.SUBOPTIMAL: "SUBOPTIMAL",
+    GRB.CUTOFF: "CUTOFF",
+    GRB.SOLUTION_LIMIT: "SOLUTION_LIMIT",
+}
+
+if m.status == GRB.OPTIMAL:
+    variables = {}
+    for v in sorted(m.getVars(), key=lambda var: var.VarName):
+        val = float(v.X)
+        variables[v.VarName] = 0.0 if abs(val) < 1e-9 else val
+    solution = {
+        "status": "OPTIMAL",
+        "objective": float(m.ObjVal),
+        "variables": variables,
+    }
+else:
+    solution = {
+        "status": status_names.get(m.status, str(m.status)),
+        "objective": 0.0,
+        "variables": {},
+    }
+
+print("SOLUTION_JSON=" + json.dumps(solution, separators=(",", ":")))
+```

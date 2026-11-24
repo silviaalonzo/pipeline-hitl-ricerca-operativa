@@ -1,0 +1,67 @@
+{
+  "id": "gen-1787598771-ptvL9znpRd4k80v8BFwb",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\nzones = [\"Z1\",\"Z2\",\"Z3\",\"Z4\",\"Z5\",\"Z6\",\"Z7\",\"Z8\"]\nsites = [\"A\",\"B\",\"C\",\"D\",\"E\",\"F\"]\nnorth = [\"A\",\"B\",\"C\"]\nsouth = [\"D\",\"E\",\"F\"]\n\ndemand = {\"Z1\":30,\"Z2\":25,\"Z3\":35,\"Z4\":20,\"Z5\":28,\"Z6\":32,\"Z7\":24,\"Z8\":26}\n\nfixed_cost = {\"A\":110,\"B\":95,\"C\":120,\"D\":90,\"E\":105,\"F\":100}\ncapacity   = {\"A\":90,\"B\":80,\"C\":110,\"D\":75,\"E\":95,\"F\":85}\n\nunit_cost = {\n    (\"Z1\",\"A\"):4, (\"Z1\",\"B\"):7, (\"Z1\",\"C\"):6, (\"Z1\",\"D\"):10, (\"Z1\",\"E\"):9, (\"Z1\",\"F\"):11,\n    (\"Z2\",\"A\"):5, (\"Z2\",\"B\"):4, (\"Z2\",\"C\"):8, (\"Z2\",\"D\"):9,  (\"Z2\",\"E\"):7, (\"Z2\",\"F\"):10,\n    (\"Z3\",\"A\"):7, (\"Z3\",\"B\"):5, (\"Z3\",\"C\"):4, (\"Z3\",\"D\"):8,  (\"Z3\",\"E\"):9, (\"Z3\",\"F\"):7,\n    (\"Z4\",\"A\"):9, (\"Z4\",\"B\"):8, (\"Z4\",\"C\"):7, (\"Z4\",\"D\"):4,  (\"Z4\",\"E\"):5, (\"Z4\",\"F\"):6,\n    (\"Z5\",\"A\"):8, (\"Z5\",\"B\"):9, (\"Z5\",\"C\"):6, (\"Z5\",\"D\"):5,  (\"Z5\",\"E\"):4, (\"Z5\",\"F\"):7,\n    (\"Z6\",\"A\"):10,(\"Z6\",\"B\"):8, (\"Z6\",\"C\"):7, (\"Z6\",\"D\"):6,  (\"Z6\",\"E\"):5, (\"Z6\",\"F\"):4,\n    (\"Z7\",\"A\"):6, (\"Z7\",\"B\"):7, (\"Z7\",\"C\"):5, (\"Z7\",\"D\"):8,  (\"Z7\",\"E\"):6, (\"Z7\",\"F\"):7,\n    (\"Z8\",\"A\"):7, (\"Z8\",\"B\"):6, (\"Z8\",\"C\"):8, (\"Z8\",\"D\"):5,  (\"Z8\",\"E\"):7, (\"Z8\",\"F\"):4,\n}\n\nemission = {\n    (\"Z1\",\"A\"):1, (\"Z1\",\"B\"):2, (\"Z1\",\"C\"):2, (\"Z1\",\"D\"):4, (\"Z1\",\"E\"):3, (\"Z1\",\"F\"):4,\n    (\"Z2\",\"A\"):2, (\"Z2\",\"B\"):1, (\"Z2\",\"C\"):3, (\"Z2\",\"D\"):3, (\"Z2\",\"E\"):2, (\"Z2\",\"F\"):4,\n    (\"Z3\",\"A\"):3, (\"Z3\",\"B\"):2, (\"Z3\",\"C\"):1, (\"Z3\",\"D\"):3, (\"Z3\",\"E\"):4, (\"Z3\",\"F\"):3,\n    (\"Z4\",\"A\"):4, (\"Z4\",\"B\"):3, (\"Z4\",\"C\"):3, (\"Z4\",\"D\"):1, (\"Z4\",\"E\"):2, (\"Z4\",\"F\"):2,\n    (\"Z5\",\"A\"):3, (\"Z5\",\"B\"):4, (\"Z5\",\"C\"):2, (\"Z5\",\"D\"):2, (\"Z5\",\"E\"):1, (\"Z5\",\"F\"):3,\n    (\"Z6\",\"A\"):4, (\"Z6\",\"B\"):3, (\"Z6\",\"C\"):3, (\"Z6\",\"D\"):2, (\"Z6\",\"E\"):2, (\"Z6\",\"F\"):1,\n    (\"Z7\",\"A\"):2, (\"Z7\",\"B\"):3, (\"Z7\",\"C\"):1, (\"Z7\",\"D\"):3, (\"Z7\",\"E\"):2, (\"Z7\",\"F\"):3,\n    (\"Z8\",\"A\"):3, (\"Z8\",\"B\"):2, (\"Z8\",\"C\"):3, (\"Z8\",\"D\"):1, (\"Z8\",\"E\"):3, (\"Z8\",\"F\"):1,\n}\n\nminOpen = 3\nmaxOpen = 4\nminThroughput = 20\nEcap = 470\n\nm = gp.Model(\"H01_rete_distributiva\")\n\nx = m.addVars(zones, sites, lb=0.0, vtype=GRB.CONTINUOUS, name=\"x\")\ny = m.addVars(sites, vtype=GRB.BINARY, name=\"y\")\n\nm.setObjective(\n    gp.quicksum(fixed_cost[j]*y[j] for j in sites) +\n    gp.quicksum(unit_cost[i,j]*x[i,j] for i in zones for j in sites),\n    GRB.MINIMIZE\n)\n\nfor i in zones:\n    m.addConstr(gp.quicksum(x[i,j] for j in sites) == demand[i], name=f\"dem_{i}\")\n\nfor j in sites:\n    m.addConstr(gp.quicksum(x[i,j] for i in zones) <= capacity[j]*y[j], name=f\"cap_{j}\")\n\nfor j in sites:\n    m.addConstr(gp.quicksum(x[i,j] for i in zones) >= minThroughput*y[j], name=f\"minflow_{j}\")\n\nm.addConstr(gp.quicksum(y[j] for j in sites) >= minOpen, name=\"minOpen\")\nm.addConstr(gp.quicksum(y[j] for j in sites) <= maxOpen, name=\"maxOpen\")\n\nm.addConstr(gp.quicksum(y[j] for j in north) >= 1, name=\"north_min\")\nm.addConstr(gp.quicksum(y[j] for j in south) >= 1, name=\"south_min\")\n\nm.addConstr(\n    gp.quicksum(emission[i,j]*x[i,j] for i in zones for j in sites) <= Ecap,\n    name=\"emission_cap\"\n)\n\nm.optimize()\n\nstatus = m.Status\nif status == GRB.OPTIMAL:\n    variables = {}\n    for j in sites:\n        variables[f\"y_{j}\"] = round(y[j].X, 4)\n    for i in zones:\n        for j in sites:\n            variables[f\"x_{i}_{j}\"] = round(x[i,j].X, 4)\n    obj_val = round(m.ObjVal, 4)\n    result = {\"status\": \"OPTIMAL\", \"objective\": obj_val, \"variables\": variables}\nelse:\n    result = {\"status\": str(status), \"objective\": None, \"variables\": {}}\n\nprint(f\"SOLUTION_JSON={json.dumps(result)}\")\n```",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": null
+      },
+      "native_finish_reason": "end_turn"
+    }
+  ],
+  "created": 1787598771,
+  "model": "anthropic/claude-sonnet-5",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 2193,
+    "prompt_tokens": 4062,
+    "total_tokens": 6255,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.030054,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.030054,
+      "upstream_inference_prompt_cost": 0.008124,
+      "upstream_inference_completions_cost": 0.02193
+    }
+  },
+  "provider": "Anthropic",
+  "_experiment": {
+    "elapsed_seconds": 14.596881417000986,
+    "completed_at_utc": "2026-08-24T19:13:06.051825+00:00",
+    "transport_attempt": 1
+  },
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "anthropic/claude-sonnet-5",
+    "required_provider": "anthropic",
+    "allow_fallbacks": false,
+    "require_parameters": true,
+    "actual_model": "anthropic/claude-sonnet-5",
+    "resolved_revision": false
+  }
+}

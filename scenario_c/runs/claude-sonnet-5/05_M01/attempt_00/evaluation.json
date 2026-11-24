@@ -1,0 +1,28 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "Aprire esattamente due centri -> vincolo sum_i y_i = 2",
+        "Ogni zona assegnata a un solo centro aperto -> vincolo sum_i x_ij = 1 per ogni j",
+        "Capacità massima per sito -> vincolo sum_j x_ij <= cap_i * y_i",
+        "Costi fissi e di assegnazione -> funzione obiettivo min sum f_i*y_i + sum c_ij*x_ij",
+        "Centro deve essere aperto per ricevere assegnazioni -> vincolo di capacità legato a y_i"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

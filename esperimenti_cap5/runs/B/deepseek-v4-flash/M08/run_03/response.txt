@@ -1,0 +1,126 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+- \(\mathcal Z = \{1,\dots,10\}\): insieme delle zone.
+- \(\mathcal C = \{A,B,C,D,E,F,G,H\}\): insieme dei centri apribili.
+- \(\mathcal Z_j \subseteq \mathcal Z\): zone coperte dal centro \(j\).
+- \(c_j\): costo di apertura del centro \(j\).
+- \(d_z\): domanda di copertura della zona \(z\), con \(d_z=2\) per \(z \in \{3,7\}\) e \(d_z=1\) altrimenti.
+- \(K = 5\): numero massimo di centri apribili.
+- \(x_j \in \{0,1\}\): vale 1 se il centro \(j\) viene aperto, 0 altrimenti.
+
+## 2. Formulazione matematica
+
+\[
+\min \sum_{j \in \mathcal C} c_j x_j
+\]
+
+soggetto a:
+
+\[
+\sum_{j \in \mathcal C : z \in \mathcal Z_j} x_j \ge d_z \qquad \forall z \in \mathcal Z
+\]
+
+\[
+\sum_{j \in \mathcal C} x_j \le 5
+\]
+
+\[
+x_j \in \{0,1\} \qquad \forall j \in \mathcal C
+\]
+
+## 3. Codice Python eseguibile con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+centri = ["A", "B", "C", "D", "E", "F", "G", "H"]
+
+costo = {
+    "A": 24,
+    "B": 20,
+    "C": 27,
+    "D": 22,
+    "E": 25,
+    "F": 19,
+    "G": 23,
+    "H": 21,
+}
+
+zone_coperte = {
+    "A": [1, 2, 3],
+    "B": [2, 3, 4, 5],
+    "C": [1, 5, 6],
+    "D": [3, 6, 7],
+    "E": [4, 7, 8],
+    "F": [5, 8, 9],
+    "G": [6, 9, 10],
+    "H": [7, 8, 10],
+}
+
+zone = list(range(1, 11))
+critiche = {3, 7}
+
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+modello = gp.Model("copertura_zone", env=env)
+
+x = {}
+for c in centri:
+    x[c] = modello.addVar(vtype=GRB.BINARY, name=f"x_{c}")
+
+for z in zone:
+    domanda = 2 if z in critiche else 1
+    modello.addConstr(
+        gp.quicksum(x[c] for c in centri if z in zone_coperte[c]) >= domanda,
+        name=f"copertura_Z{z}"
+    )
+
+modello.addConstr(gp.quicksum(x[c] for c in centri) <= 5, name="max_centri")
+
+modello.setObjective(gp.quicksum(costo[c] * x[c] for c in centri), GRB.MINIMIZE)
+
+modello.optimize()
+
+status_map = {
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.INF_OR_UNBD: "INF_OR_UNBD",
+    GRB.UNBOUNDED: "UNBOUNDED",
+}
+
+stato = status_map.get(modello.Status, str(modello.Status))
+
+if modello.Status == GRB.OPTIMAL:
+    obiettivo = modello.ObjVal
+    variabili = {v.VarName: v.X for v in modello.getVars()}
+else:
+    obiettivo = None
+    variabili = {}
+
+print("SOLUTION_JSON=" + json.dumps(
+    {
+        "status": stato,
+        "objective": obiettivo,
+        "variables": variabili
+    },
+    separators=(",", ":")
+))
+```
+
+## 4. Sintesi della soluzione
+
+Il solver termina con stato **OPTIMAL**. Il costo ottimo di apertura è **106.0**.
+
+Le decisioni non nulle sono:
+
+- \(x_A = 1\)
+- \(x_B = 1\)
+- \(x_D = 1\)
+- \(x_F = 1\)
+- \(x_H = 1\)
+
+Vengono quindi aperti i centri **A, B, D, F, H**; gli altri restano chiusi. Il vincolo sul numero massimo di centri è saturo: vengono aperti esattamente 5 centri.

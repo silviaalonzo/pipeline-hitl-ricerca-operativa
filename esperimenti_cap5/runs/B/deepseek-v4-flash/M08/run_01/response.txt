@@ -1,0 +1,116 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+- \(I=\{1,\dots,10\}\): insieme delle zone.
+- \(J=\{A,B,C,D,E,F,G,H\}\): insieme dei centri di servizio.
+- \(a_{ij}=1\) se il centro \(j\) copre la zona \(i\), \(0\) altrimenti.
+- \(c_j\): costo di apertura del centro \(j\).
+- \(b_i\): copertura richiesta per la zona \(i\), con \(b_3=b_7=2\) e \(b_i=1\) per le altre zone.
+- \(x_j \in \{0,1\}\): vale 1 se il centro \(j\) viene aperto, 0 altrimenti.
+
+## 2. Formulazione matematica
+
+\[
+\min \sum_{j \in J} c_j x_j
+\]
+
+soggetto a:
+
+\[
+\sum_{j \in J} a_{ij}\,x_j \ge b_i \qquad \forall i \in I
+\]
+
+\[
+\sum_{j \in J} x_j \le 5
+\]
+
+\[
+x_j \in \{0,1\} \qquad \forall j \in J
+\]
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+centri = ["A", "B", "C", "D", "E", "F", "G", "H"]
+zone = list(range(1, 11))
+
+costi = {
+    "A": 24, "B": 20, "C": 27, "D": 22,
+    "E": 25, "F": 19, "G": 23, "H": 21,
+}
+
+coperture = {
+    "A": {1, 2, 3},
+    "B": {2, 3, 4, 5},
+    "C": {1, 5, 6},
+    "D": {3, 6, 7},
+    "E": {4, 7, 8},
+    "F": {5, 8, 9},
+    "G": {6, 9, 10},
+    "H": {7, 8, 10},
+}
+
+richieste = {i: 2 if i in {3, 7} else 1 for i in zone}
+max_centri = 5
+
+m = gp.Model("M08_copertura")
+m.setParam("OutputFlag", 0)
+
+x = {j: m.addVar(vtype=GRB.BINARY, name=f"x_{j}") for j in centri}
+m.update()
+
+m.setObjective(
+    gp.quicksum(costi[j] * x[j] for j in centri),
+    GRB.MINIMIZE
+)
+
+for i in zone:
+    m.addConstr(
+        gp.quicksum(x[j] for j in centri if i in coperture[j]) >= richieste[i],
+        name=f"copertura_Z{i}"
+    )
+
+m.addConstr(
+    gp.quicksum(x[j] for j in centri) <= max_centri,
+    name="max_centri"
+)
+
+m.optimize()
+
+status = m.getAttr("Status")
+
+if status == GRB.OPTIMAL:
+    result = {
+        "status": "OPTIMAL",
+        "objective": float(m.getAttr("ObjVal")),
+        "variables": {f"x_{j}": float(x[j].x) for j in centri},
+    }
+else:
+    status_label = {
+        GRB.OPTIMAL: "OPTIMAL",
+        GRB.INFEASIBLE: "INFEASIBLE",
+        GRB.UNBOUNDED: "UNBOUNDED",
+    }.get(status, str(status))
+
+    result = {
+        "status": status_label,
+        "objective": None,
+        "variables": {},
+    }
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Il solver trova una soluzione ottima con costo pari a **106**.  
+Vengono aperti i centri **A, B, D, F, H**:
+
+\[
+x_A=1,\quad x_B=1,\quad x_D=1,\quad x_F=1,\quad x_H=1
+\]
+
+I centri \(C, E, G\) restano chiusi.

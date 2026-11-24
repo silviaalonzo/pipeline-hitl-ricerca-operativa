@@ -1,0 +1,206 @@
+{
+  "schema_version": 2,
+  "created_at_utc": "2026-08-24T20:54:48.784791+00:00",
+  "model": "deepseek-v4-flash",
+  "problem_id": "H06",
+  "problem_sequence": 10,
+  "handoff_number": 1,
+  "stage": 4,
+  "failure_class": "validazione_indipendente_fallita",
+  "failure_detail": "la soluzione viola almeno un requisito del problema originale; il gap supera la soglia dello 0,1%; sono presenti variabili operative non riconosciute",
+  "handoff_mode": "CORRECTION",
+  "allowed_actions": [
+    "CORRECT",
+    "ACCEPT_FAILURE"
+  ],
+  "automatic_repairs_exhausted": 3,
+  "problem_prompt": "# H06 — Sequenziamento con ritardi pesati\n\nDifficoltà: Elevata\nClasse: MILP intera\n\nSette lavori devono essere sequenziati senza sovrapposizioni su una sola macchina. Ogni lavoro ha durata, data di disponibilità, scadenza e peso di priorità.\nJ1 deve terminare prima dell’inizio di J2; J3 deve terminare prima dell’inizio di J5. Il ritardo di un lavoro è max(0, completamento − scadenza).\nMinimizzare la somma dei ritardi moltiplicati per i rispettivi pesi. Modellare la non sovrapposizione mediante variabili binarie di ordinamento e una costante big-M giustificata.\n\n## Dati dei lavori\n\nLavoro | Durata | Disponibilità | Scadenza | Peso\n--- | --- | --- | --- | ---\nJ1 | 5 | 0 | 9 | 4\nJ2 | 7 | 0 | 17 | 3\nJ3 | 4 | 2 | 12 | 5\nJ4 | 6 | 3 | 22 | 2\nJ5 | 3 | 5 | 15 | 6\nJ6 | 8 | 0 | 28 | 2\nJ7 | 5 | 6 | 25 | 4\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n",
+  "last_code": "import gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\nn = 7\np = [5, 7, 4, 6, 3, 8, 5]\nr = [0, 0, 2, 3, 5, 0, 6]\nd = [9, 17, 12, 22, 15, 28, 25]\nw = [4, 3, 5, 2, 6, 2, 4]\n\npairs = [(i, j) for i in range(n) for j in range(i + 1, n)]\nH = sum(p) + max(r)\nM = H\n\nm = gp.Model(\"weighted_tardiness\")\nm.Params.OutputFlag = 0\nm.Params.MIPGap = 0.0\n\nS = m.addVars(n, lb=0, ub=[H - p[i] for i in range(n)], name=\"S\")\nC = m.addVars(n, lb=0, ub=H, name=\"C\")\nT = m.addVars(n, lb=0, name=\"T\")\ny = m.addVars(pairs, vtype=GRB.BINARY, name=\"y\")\n\nm.setObjective(gp.quicksum(w[i] * T[i] for i in range(n)), GRB.MINIMIZE)\n\nm.addConstrs((S[i] + p[i] == C[i] for i in range(n)), name=\"comp\")\nm.addConstrs((T[i] >= C[i] - d[i] for i in range(n)), name=\"tardy\")\nm.addConstrs((S[i] >= r[i] for i in range(n)), name=\"release\")\n\nfor i, j in pairs:\n    m.addConstr(C[i] <= S[j] + M * (1 - y[i, j]), name=f\"ord_{i}_{j}_ij\")\n    m.addConstr(C[j] <= S[i] + M * y[i, j], name=f\"ord_{i}_{j}_ji\")\n\nm.addConstr(C[0] <= S[1], name=\"prec_J1_J2\")\nm.addConstr(C[2] <= S[4], name=\"prec_J3_J5\")\n\nm.optimize()\n\nstatus_names = {\n    1: \"LOADED\",\n    2: \"OPTIMAL\",\n    3: \"INFEASIBLE\",\n    4: \"INF_OR_UNBD\",\n    5: \"UNBOUNDED\",\n    6: \"CUTOFF\",\n    7: \"ITERATION_LIMIT\",\n    8: \"NODE_LIMIT\",\n    9: \"TIME_LIMIT\",\n    10: \"SOLUTION_LIMIT\",\n    11: \"INTERRUPTED\",\n    12: \"NUMERIC\",\n    13: \"SUBOPTIMAL\",\n    14: \"INPROGRESS\",\n    15: \"USER_OBJ_LIMIT\",\n}\n\nif m.status == GRB.OPTIMAL:\n    status = \"OPTIMAL\"\n    variables = {}\n    for var in m.getVars():\n        val = round(float(var.X), 6)\n        if abs(val) < 5e-12:\n            val = 0.0\n        variables[var.VarName] = val\n    payload = {\n        \"status\": status,\n        \"objective\": float(m.ObjVal),\n        \"variables\": variables,\n    }\nelse:\n    status = status_names.get(m.status, str(m.status))\n    payload = {\n        \"status\": status,\n        \"objective\": 0.0,\n        \"variables\": {},\n    }\n\nprint(\"SOLUTION_JSON=\" + json.dumps(payload, separators=(\",\", \":\")))\n",
+  "last_response_excerpt": "```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\nn = 7\np = [5, 7, 4, 6, 3, 8, 5]\nr = [0, 0, 2, 3, 5, 0, 6]\nd = [9, 17, 12, 22, 15, 28, 25]\nw = [4, 3, 5, 2, 6, 2, 4]\n\npairs = [(i, j) for i in range(n) for j in range(i + 1, n)]\nH = sum(p) + max(r)\nM = H\n\nm = gp.Model(\"weighted_tardiness\")\nm.Params.OutputFlag = 0\nm.Params.MIPGap = 0.0\n\nS = m.addVars(n, lb=0, ub=[H - p[i] for i in range(n)], name=\"S\")\nC = m.addVars(n, lb=0, ub=H, name=\"C\")\nT = m.addVars(n, lb=0, name=\"T\")\ny = m.addVars(pairs, vtype=GRB.BINARY, name=\"y\")\n\nm.setObjective(gp.quicksum(w[i] * T[i] for i in range(n)), GRB.MINIMIZE)\n\nm.addConstrs((S[i] + p[i] == C[i] for i in range(n)), name=\"comp\")\nm.addConstrs((T[i] >= C[i] - d[i] for i in range(n)), name=\"tardy\")\nm.addConstrs((S[i] >= r[i] for i in range(n)), name=\"release\")\n\nfor i, j in pairs:\n    m.addConstr(C[i] <= S[j] + M * (1 - y[i, j]), name=f\"ord_{i}_{j}_ij\")\n    m.addConstr(C[j] <= S[i] + M * y[i, j], name=f\"ord_{i}_{j}_ji\")\n\nm.addConstr(C[0] <= S[1], name=\"prec_J1_J2\")\nm.addConstr(C[2] <= S[4], name=\"prec_J3_J5\")\n\nm.optimize()\n\nstatus_names = {\n    1: \"LOADED\",\n    2: \"OPTIMAL\",\n    3: \"INFEASIBLE\",\n    4: \"INF_OR_UNBD\",\n    5: \"UNBOUNDED\",\n    6: \"CUTOFF\",\n    7: \"ITERATION_LIMIT\",\n    8: \"NODE_LIMIT\",\n    9: \"TIME_LIMIT\",\n    10: \"SOLUTION_LIMIT\",\n    11: \"INTERRUPTED\",\n    12: \"NUMERIC\",\n    13: \"SUBOPTIMAL\",\n    14: \"INPROGRESS\",\n    15: \"USER_OBJ_LIMIT\",\n}\n\nif m.status == GRB.OPTIMAL:\n    status = \"OPTIMAL\"\n    variables = {}\n    for var in m.getVars():\n        val = round(float(var.X), 6)\n        if abs(val) < 5e-12:\n            val = 0.0\n        variables[var.VarName] = val\n    payload = {\n        \"status\": status,\n        \"objective\": float(m.ObjVal),\n        \"variables\": variables,\n    }\nelse:\n    status = status_names.get(m.status, str(m.status))\n    payload = {\n        \"status\": status,\n        \"objective\": 0.0,\n        \"variables\": {},\n    }\n\nprint(\"SOLUTION_JSON=\" + json.dumps(payload, separators=(\",\", \":\")))\n```",
+  "response_source_attempt": 3,
+  "validation": {
+    "problem_id": "H06",
+    "correct": false,
+    "candidate_status": "OPTIMAL",
+    "feasible_in_original_problem": false,
+    "gap_within_tolerance": false,
+    "declared_objective_corrected_automatically": false,
+    "max_constraint_violation": 14.0,
+    "constraint_violations": [
+      {
+        "constraint": "completion_J1",
+        "lhs": 7.0,
+        "sense": "=",
+        "rhs": 5.0,
+        "violation": 2.0
+      },
+      {
+        "constraint": "tardiness_J1",
+        "lhs": -17.0,
+        "sense": ">=",
+        "rhs": -9.0,
+        "violation": 8.0
+      },
+      {
+        "constraint": "completion_J2",
+        "lhs": 4.0,
+        "sense": "=",
+        "rhs": 7.0,
+        "violation": 3.0
+      },
+      {
+        "constraint": "completion_J3",
+        "lhs": 6.0,
+        "sense": "=",
+        "rhs": 4.0,
+        "violation": 2.0
+      },
+      {
+        "constraint": "tardiness_J3",
+        "lhs": -22.0,
+        "sense": ">=",
+        "rhs": -12.0,
+        "violation": 10.0
+      },
+      {
+        "constraint": "completion_J4",
+        "lhs": 3.0,
+        "sense": "=",
+        "rhs": 6.0,
+        "violation": 3.0
+      },
+      {
+        "constraint": "completion_J5",
+        "lhs": 8.0,
+        "sense": "=",
+        "rhs": 3.0,
+        "violation": 5.0
+      },
+      {
+        "constraint": "tardiness_J5",
+        "lhs": -28.0,
+        "sense": ">=",
+        "rhs": -15.0,
+        "violation": 13.0
+      },
+      {
+        "constraint": "completion_J6",
+        "lhs": 5.0,
+        "sense": "=",
+        "rhs": 8.0,
+        "violation": 3.0
+      },
+      {
+        "constraint": "completion_J7",
+        "lhs": 0.0,
+        "sense": "=",
+        "rhs": 5.0,
+        "violation": 5.0
+      },
+      {
+        "constraint": "ordine2_J1_J4",
+        "lhs": 3.0,
+        "sense": ">=",
+        "rhs": 6.0,
+        "violation": 3.0
+      },
+      {
+        "constraint": "ordine1_J2_J4",
+        "lhs": -40.0,
+        "sense": ">=",
+        "rhs": -37.0,
+        "violation": 3.0
+      },
+      {
+        "constraint": "ordine2_J3_J6",
+        "lhs": 5.0,
+        "sense": ">=",
+        "rhs": 8.0,
+        "violation": 3.0
+      },
+      {
+        "constraint": "precedenza_J1_J2",
+        "lhs": -14.0,
+        "sense": ">=",
+        "rhs": 0.0,
+        "violation": 14.0
+      }
+    ],
+    "bound_violations": [
+      {
+        "variable": "S_J7",
+        "value": 0.0,
+        "violation": 6.0
+      }
+    ],
+    "integrality_violations": [],
+    "unknown_nonzero_variables": [
+      "C_J0",
+      "o_J0_J1",
+      "o_J0_J2",
+      "o_J0_J3",
+      "o_J0_J4",
+      "o_J0_J5",
+      "o_J0_J6"
+    ],
+    "missing_variables_assumed_zero": [
+      "C_J7",
+      "S_J7",
+      "T_J7",
+      "o_J1_J7",
+      "o_J2_J7",
+      "o_J3_J7",
+      "o_J4_J7",
+      "o_J5_J7",
+      "o_J6_J7"
+    ]
+  },
+  "attempt_history": [
+    {
+      "attempt_number": 0,
+      "attempt_kind": "INITIAL",
+      "finish_reason": "length",
+      "content_characters": 0,
+      "completion_tokens": 24000,
+      "reasoning_tokens": 24000,
+      "code_extracted": false,
+      "failure_class": "output_troncato_o_senza_codice",
+      "failure_detail": "Atteso un solo blocco Python, trovati 0"
+    },
+    {
+      "attempt_number": 1,
+      "attempt_kind": "AUTO_REPAIR",
+      "finish_reason": "length",
+      "content_characters": 0,
+      "completion_tokens": 24000,
+      "reasoning_tokens": 24000,
+      "code_extracted": false,
+      "failure_class": "output_troncato_o_senza_codice",
+      "failure_detail": "Atteso un solo blocco Python, trovati 0"
+    },
+    {
+      "attempt_number": 2,
+      "attempt_kind": "AUTO_REPAIR",
+      "finish_reason": "length",
+      "content_characters": 0,
+      "completion_tokens": 24000,
+      "reasoning_tokens": 24000,
+      "code_extracted": false,
+      "failure_class": "output_troncato_o_senza_codice",
+      "failure_detail": "Atteso un solo blocco Python, trovati 0"
+    },
+    {
+      "attempt_number": 3,
+      "attempt_kind": "AUTO_REPAIR",
+      "finish_reason": "stop",
+      "content_characters": 1999,
+      "completion_tokens": 18234,
+      "reasoning_tokens": 17426,
+      "code_extracted": true,
+      "failure_class": "validazione_indipendente_fallita",
+      "failure_detail": "la soluzione viola almeno un requisito del problema originale; il gap supera la soglia dello 0,1%; sono presenti variabili operative non riconosciute"
+    }
+  ],
+  "automatic_diagnosis": "Il codice è stato eseguito, ma la soluzione non ha superato la validazione indipendente. Esaminare le violazioni e il codice riportati nel pacchetto.",
+  "ground_truth_disclosed": false
+}

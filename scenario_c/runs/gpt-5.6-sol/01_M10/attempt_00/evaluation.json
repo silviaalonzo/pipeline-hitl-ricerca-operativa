@@ -1,0 +1,29 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "invio di 40 unità da S a T -> bilanci di flusso b_S=40 e b_T=-40",
+        "conservazione nei nodi A, B e C -> vincoli di bilancio con b_i=0",
+        "attivazione degli archi -> variabili binarie y_ij e vincoli x_ij<=u_ij y_ij",
+        "flusso intero -> variabili x_ij intere non negative",
+        "capacità degli archi -> parametri u_ij nei vincoli di collegamento",
+        "minimizzazione dei costi -> somma di costi fissi e costi unitari nella funzione obiettivo"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

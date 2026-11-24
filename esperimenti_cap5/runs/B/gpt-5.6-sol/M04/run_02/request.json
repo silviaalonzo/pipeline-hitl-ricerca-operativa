@@ -1,0 +1,17 @@
+{
+  "scenario": "B",
+  "provider": "openrouter",
+  "model": "openai/gpt-5.6-sol",
+  "problem_id": "M04",
+  "replicate": 2,
+  "started_at_utc": "2026-08-10T13:49:14.338957+00:00",
+  "configuration": {
+    "provider": "openrouter",
+    "upstream_provider": "openai",
+    "model": "openai/gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "max_output_tokens": 24000
+  },
+  "system_prompt": "Agisci come esperto di Ricerca Operativa. Devi formulare e risolvere il problema descritto dall'utente senza chiedere chiarimenti e senza usare informazioni esterne.\n\nLa risposta deve contenere, in quest'ordine:\n1. insiemi, parametri e variabili decisionali;\n2. formulazione matematica completa;\n3. un solo blocco di codice Python eseguibile con gurobipy;\n4. una breve sintesi della soluzione.\n\nIl codice deve costruire il modello a partire dai dati presenti nella traccia, chiamare Gurobi e stampare alla fine ESATTAMENTE una riga nel formato seguente:\n\nSOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":0.0,\"variables\":{\"nome_variabile\":0.0}}\n\nNel dizionario \"variables\" devono comparire tutte le variabili decisionali, comprese quelle con valore zero. Usa i nomi indicati nella formulazione e valori numerici, non espressioni testuali. Se il solver non restituisce una soluzione ottima, stampa comunque la riga SOLUTION_JSON con lo stato effettivo, objective null e variables vuoto.\n\nNon leggere o scrivere file, non accedere alla rete, non invocare altri processi e non utilizzare librerie diverse da gurobipy, json, math e itertools.\n\n",
+  "problem_prompt": "# M04 — Composizione di una flotta giornaliera\n\nDifficoltà: Media\nClasse: IP intera\n\nUn operatore deve scegliere quanti veicoli di ciascun tipo impiegare in una giornata. La flotta deve offrire almeno 180 unità di volume e 95 unità di portata, utilizzando almeno un mezzo refrigerato e un mezzo elettrico.\nLe emissioni complessive non possono superare 145 unità. Minimizzare il costo giornaliero.\n\n## Caratteristiche dei veicoli\n\nTipo | Volume | Portata | Costo | Emissioni | Disponibilità\n--- | --- | --- | --- | --- | ---\nVan | 18 | 8 | 120 | 12 | 8\nAutocarro | 30 | 18 | 180 | 22 | 6\nRefrigerato | 20 | 10 | 210 | 15 | 4\nElettrico | 16 | 7 | 150 | 4 | 5\nBilico | 42 | 28 | 260 | 32 | 3\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n"
+}

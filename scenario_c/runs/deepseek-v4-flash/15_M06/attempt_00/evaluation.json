@@ -1,0 +1,28 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "Minimizzare il makespan -> funzione obiettivo min C",
+        "Ogni lavoro va eseguito interamente su una sola macchina -> vincoli di assegnamento",
+        "J7 non compatibile con la macchina A -> insieme E esclude (J7,A)",
+        "Tempi dipendenti dalla macchina scelta -> parametri p_im",
+        "Makespan come massimo dei carichi -> vincoli C >= somma p_im x_im"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

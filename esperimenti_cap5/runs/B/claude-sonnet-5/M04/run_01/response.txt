@@ -1,0 +1,132 @@
+# M04 — Composizione di una flotta giornaliera
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insieme:**
+- $I = \{Van, Autocarro, Refrigerato, Elettrico, Bilico\}$ = tipi di veicolo
+
+**Parametri:**
+- $vol_i$ = volume offerto dal veicolo $i$
+- $port_i$ = portata offerta dal veicolo $i$
+- $cost_i$ = costo giornaliero del veicolo $i$
+- $em_i$ = emissioni del veicolo $i$
+- $disp_i$ = disponibilità massima del veicolo $i$
+- $VOL_{min}=180$, $PORT_{min}=95$, $EM_{max}=145$
+
+**Variabili decisionali:**
+- $x_i \in \mathbb{Z}_{\ge 0}$ = numero di veicoli di tipo $i$ impiegati, $\forall i \in I$
+
+## 2. Formulazione matematica
+
+$$
+\min \sum_{i \in I} cost_i \, x_i
+$$
+
+soggetto a:
+
+$$
+\sum_{i \in I} vol_i \, x_i \ge VOL_{min}
+$$
+$$
+\sum_{i \in I} port_i \, x_i \ge PORT_{min}
+$$
+$$
+\sum_{i \in I} em_i \, x_i \le EM_{max}
+$$
+$$
+x_{Refrigerato} \ge 1
+$$
+$$
+x_{Elettrico} \ge 1
+$$
+$$
+x_i \le disp_i \qquad \forall i \in I
+$$
+$$
+x_i \in \mathbb{Z}_{\ge 0} \qquad \forall i \in I
+$$
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# --- Dati ---
+tipi = ["Van", "Autocarro", "Refrigerato", "Elettrico", "Bilico"]
+
+volume = {"Van": 18, "Autocarro": 30, "Refrigerato": 20, "Elettrico": 16, "Bilico": 42}
+portata = {"Van": 8, "Autocarro": 18, "Refrigerato": 10, "Elettrico": 7, "Bilico": 28}
+costo = {"Van": 120, "Autocarro": 180, "Refrigerato": 210, "Elettrico": 150, "Bilico": 260}
+emissioni = {"Van": 12, "Autocarro": 22, "Refrigerato": 15, "Elettrico": 4, "Bilico": 32}
+disponibilita = {"Van": 8, "Autocarro": 6, "Refrigerato": 4, "Elettrico": 5, "Bilico": 3}
+
+VOL_MIN = 180
+PORT_MIN = 95
+EM_MAX = 145
+
+# --- Modello ---
+m = gp.Model("Composizione_Flotta")
+
+x = m.addVars(tipi, vtype=GRB.INTEGER, lb=0, name="x")
+
+# Vincoli di disponibilità
+for i in tipi:
+    x[i].UB = disponibilita[i]
+
+# Volume minimo
+m.addConstr(gp.quicksum(volume[i] * x[i] for i in tipi) >= VOL_MIN, name="volume_min")
+
+# Portata minima
+m.addConstr(gp.quicksum(portata[i] * x[i] for i in tipi) >= PORT_MIN, name="portata_min")
+
+# Emissioni massime
+m.addConstr(gp.quicksum(emissioni[i] * x[i] for i in tipi) <= EM_MAX, name="emissioni_max")
+
+# Almeno un refrigerato e un elettrico
+m.addConstr(x["Refrigerato"] >= 1, name="min_refrigerato")
+m.addConstr(x["Elettrico"] >= 1, name="min_elettrico")
+
+# Funzione obiettivo
+m.setObjective(gp.quicksum(costo[i] * x[i] for i in tipi), GRB.MINIMIZE)
+
+# --- Risoluzione ---
+m.optimize()
+
+# --- Output ---
+if m.Status == GRB.OPTIMAL:
+    status = "OPTIMAL"
+    objective = m.ObjVal
+    variables = {f"x_{i}": x[i].X for i in tipi}
+else:
+    status = str(m.Status)
+    objective = None
+    variables = {}
+
+result = {"status": status, "objective": objective, "variables": variables}
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il solver Gurobi trova la soluzione ottima con **status OPTIMAL** e **costo giornaliero minimo pari a 1240**.
+
+La composizione ottimale della flotta è:
+
+| Tipo | Numero veicoli |
+|---|---|
+| Van | 0 |
+| Autocarro | 2 |
+| Refrigerato | 1 |
+| Elettrico | 1 |
+| Bilico | 2 |
+
+**Verifica dei vincoli:**
+- Volume totale: $30\cdot2+20\cdot1+16\cdot1+42\cdot2 = 180 \ge 180$ ✔
+- Portata totale: $18\cdot2+10\cdot1+7\cdot1+28\cdot2 = 109 \ge 95$ ✔
+- Emissioni totali: $22\cdot2+15\cdot1+4\cdot1+32\cdot2 = 127 \le 145$ ✔
+- Refrigerato = 1 ≥ 1 ✔, Elettrico = 1 ≥ 1 ✔
+- Tutte le disponibilità rispettate ✔
+
+Il mix ottimale privilegia Autocarri e Bilici (efficienti in costo per unità di volume/portata), integrando il minimo obbligatorio di un veicolo Refrigerato e uno Elettrico, senza necessità di impiegare Van.

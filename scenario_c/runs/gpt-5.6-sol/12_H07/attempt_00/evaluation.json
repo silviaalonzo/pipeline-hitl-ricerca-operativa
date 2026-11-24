@@ -1,0 +1,31 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "domanda esatta -> vincoli di bilancio per componente",
+        "multisourcing e lotto minimo 10 -> variabili z e vincoli di utilizzo",
+        "capacità complessiva -> vincoli per fornitore",
+        "qualità media almeno 95 -> vincoli di qualità ponderata",
+        "massimo quattro fornitori e almeno uno tra A e B -> vincoli sulle y",
+        "rischio massimo 580 -> vincolo di rischio totale",
+        "componenti non fornibili -> insieme degli archi ammissibili",
+        "costi di acquisto e attivazione -> funzione obiettivo"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

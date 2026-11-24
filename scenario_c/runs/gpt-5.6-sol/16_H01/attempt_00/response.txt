@@ -1,0 +1,366 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["domanda integralmente soddisfatta e ripartibile -> vincoli di bilancio con flussi continui x_ij","apertura da tre a quattro centri -> 3 <= somma_i y_i <= 4","movimentazione minima e capacità -> 20 y_i <= somma_j x_ij <= u_i y_i","resilienza Nord-Sud -> somma_{i in N} y_i >= 1 e somma_{i in S} y_i >= 1","costi fissi e unitari -> funzione obiettivo","limite di 470 emissioni -> somma_{i,j} e_ij x_ij <= 470"]}
+
+## 1. Insiemi, parametri e variabili decisionali
+
+### Insiemi
+
+- Siti candidati:
+  \[
+  I=\{A,B,C,D,E,F\}.
+  \]
+- Zone di domanda:
+  \[
+  J=\{Z1,Z2,Z3,Z4,Z5,Z6,Z7,Z8\}.
+  \]
+- Siti del gruppo Nord:
+  \[
+  N=\{A,B,C\}.
+  \]
+- Siti del gruppo Sud:
+  \[
+  S=\{D,E,F\}.
+  \]
+
+### Parametri
+
+Domande, nell’ordine \(Z1,\ldots,Z8\):
+
+\[
+d=(30,25,35,20,28,32,24,26).
+\]
+
+Costi fissi e capacità, nell’ordine \(A,\ldots,F\):
+
+\[
+f=(110,95,120,90,105,100),
+\qquad
+u=(90,80,110,75,95,85).
+\]
+
+Movimentazione minima di un centro aperto:
+
+\[
+L=20.
+\]
+
+Limite complessivo di emissioni:
+
+\[
+E^{\max}=470.
+\]
+
+La matrice dei costi unitari \(c_{ij}\), con righe \(Z1,\ldots,Z8\) e colonne \(A,\ldots,F\), è:
+
+\[
+C=
+\begin{pmatrix}
+4&7&6&10&9&11\\
+5&4&8&9&7&10\\
+7&5&4&8&9&7\\
+9&8&7&4&5&6\\
+8&9&6&5&4&7\\
+10&8&7&6&5&4\\
+6&7&5&8&6&7\\
+7&6&8&5&7&4
+\end{pmatrix}.
+\]
+
+La matrice dei coefficienti di emissione \(e_{ij}\), con lo stesso ordinamento, è:
+
+\[
+E=
+\begin{pmatrix}
+1&2&2&4&3&4\\
+2&1&3&3&2&4\\
+3&2&1&3&4&3\\
+4&3&3&1&2&2\\
+3&4&2&2&1&3\\
+4&3&3&2&2&1\\
+2&3&1&3&2&3\\
+3&2&3&1&3&1
+\end{pmatrix}.
+\]
+
+### Variabili decisionali
+
+- \(y_i\in\{0,1\}\): vale 1 se il sito \(i\) viene aperto.
+- \(x_{ij}\geq 0\): quantità inviata dal sito \(i\) alla zona \(j\).
+
+I flussi sono continui perché la domanda può essere ripartita tra più centri.
+
+## 2. Formulazione matematica completa
+
+### Funzione obiettivo
+
+Minimizzazione dei costi fissi e di distribuzione:
+
+\[
+\min\quad
+\sum_{i\in I} f_i y_i+
+\sum_{i\in I}\sum_{j\in J}c_{ij}x_{ij}.
+\]
+
+### Soddisfacimento integrale della domanda
+
+\[
+\sum_{i\in I}x_{ij}=d_j
+\qquad \forall j\in J.
+\]
+
+### Movimentazione minima e capacità
+
+\[
+L y_i\leq \sum_{j\in J}x_{ij}\leq u_i y_i
+\qquad \forall i\in I.
+\]
+
+Questi vincoli impongono flusso nullo se \(y_i=0\), mentre un sito aperto deve movimentare almeno 20 unità senza superare la capacità.
+
+### Numero di centri aperti
+
+\[
+3\leq\sum_{i\in I}y_i\leq4.
+\]
+
+### Resilienza geografica
+
+\[
+\sum_{i\in N}y_i\geq1,
+\]
+
+\[
+\sum_{i\in S}y_i\geq1.
+\]
+
+### Limite sulle emissioni
+
+\[
+\sum_{i\in I}\sum_{j\in J}e_{ij}x_{ij}\leq470.
+\]
+
+### Dominio
+
+\[
+y_i\in\{0,1\}
+\qquad \forall i\in I,
+\]
+
+\[
+x_{ij}\geq0
+\qquad \forall i\in I,\ \forall j\in J.
+\]
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+sites = ["A", "B", "C", "D", "E", "F"]
+zones = ["Z1", "Z2", "Z3", "Z4", "Z5", "Z6", "Z7", "Z8"]
+north = ["A", "B", "C"]
+south = ["D", "E", "F"]
+
+demand = {
+    "Z1": 30, "Z2": 25, "Z3": 35, "Z4": 20,
+    "Z5": 28, "Z6": 32, "Z7": 24, "Z8": 26
+}
+
+fixed_cost = {
+    "A": 110, "B": 95, "C": 120,
+    "D": 90, "E": 105, "F": 100
+}
+
+capacity = {
+    "A": 90, "B": 80, "C": 110,
+    "D": 75, "E": 95, "F": 85
+}
+
+minimum_throughput = 20
+emission_limit = 470
+
+cost_rows = {
+    "Z1": [4, 7, 6, 10, 9, 11],
+    "Z2": [5, 4, 8, 9, 7, 10],
+    "Z3": [7, 5, 4, 8, 9, 7],
+    "Z4": [9, 8, 7, 4, 5, 6],
+    "Z5": [8, 9, 6, 5, 4, 7],
+    "Z6": [10, 8, 7, 6, 5, 4],
+    "Z7": [6, 7, 5, 8, 6, 7],
+    "Z8": [7, 6, 8, 5, 7, 4]
+}
+
+emission_rows = {
+    "Z1": [1, 2, 2, 4, 3, 4],
+    "Z2": [2, 1, 3, 3, 2, 4],
+    "Z3": [3, 2, 1, 3, 4, 3],
+    "Z4": [4, 3, 3, 1, 2, 2],
+    "Z5": [3, 4, 2, 2, 1, 3],
+    "Z6": [4, 3, 3, 2, 2, 1],
+    "Z7": [2, 3, 1, 3, 2, 3],
+    "Z8": [3, 2, 3, 1, 3, 1]
+}
+
+unit_cost = {
+    (site, zone): cost_rows[zone][k]
+    for zone in zones
+    for k, site in enumerate(sites)
+}
+
+emission = {
+    (site, zone): emission_rows[zone][k]
+    for zone in zones
+    for k, site in enumerate(sites)
+}
+
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+model = gp.Model("capacitated_distribution_network", env=env)
+model.Params.OutputFlag = 0
+
+y = {
+    site: model.addVar(vtype=GRB.BINARY, name="y_" + site)
+    for site in sites
+}
+
+x = {
+    (site, zone): model.addVar(
+        lb=0.0,
+        vtype=GRB.CONTINUOUS,
+        name="x_" + site + "_" + zone
+    )
+    for site in sites
+    for zone in zones
+}
+
+model.setObjective(
+    gp.quicksum(fixed_cost[site] * y[site] for site in sites)
+    + gp.quicksum(
+        unit_cost[site, zone] * x[site, zone]
+        for site in sites
+        for zone in zones
+    ),
+    GRB.MINIMIZE
+)
+
+for zone in zones:
+    model.addConstr(
+        gp.quicksum(x[site, zone] for site in sites) == demand[zone],
+        name="demand_" + zone
+    )
+
+for site in sites:
+    throughput = gp.quicksum(x[site, zone] for zone in zones)
+    model.addConstr(
+        throughput >= minimum_throughput * y[site],
+        name="minimum_throughput_" + site
+    )
+    model.addConstr(
+        throughput <= capacity[site] * y[site],
+        name="capacity_" + site
+    )
+
+model.addConstr(
+    gp.quicksum(y[site] for site in sites) >= 3,
+    name="minimum_open_centers"
+)
+
+model.addConstr(
+    gp.quicksum(y[site] for site in sites) <= 4,
+    name="maximum_open_centers"
+)
+
+model.addConstr(
+    gp.quicksum(y[site] for site in north) >= 1,
+    name="north_resilience"
+)
+
+model.addConstr(
+    gp.quicksum(y[site] for site in south) >= 1,
+    name="south_resilience"
+)
+
+model.addConstr(
+    gp.quicksum(
+        emission[site, zone] * x[site, zone]
+        for site in sites
+        for zone in zones
+    ) <= emission_limit,
+    name="emission_limit"
+)
+
+model.optimize()
+
+status_names = {}
+for status_name in [
+    "LOADED", "OPTIMAL", "INFEASIBLE", "INF_OR_UNBD", "UNBOUNDED",
+    "CUTOFF", "ITERATION_LIMIT", "NODE_LIMIT", "TIME_LIMIT",
+    "SOLUTION_LIMIT", "INTERRUPTED", "NUMERIC", "SUBOPTIMAL",
+    "INPROGRESS", "USER_OBJ_LIMIT", "WORK_LIMIT", "MEM_LIMIT"
+]:
+    status_code = getattr(GRB, status_name, None)
+    if status_code is not None:
+        status_names[status_code] = status_name
+
+solver_status = status_names.get(model.Status, "STATUS_" + str(model.Status))
+
+def clean_value(value):
+    if abs(value) <= 1e-9:
+        return 0.0
+    nearest_integer = round(value)
+    if abs(value - nearest_integer) <= 1e-9:
+        return float(nearest_integer)
+    return float(value)
+
+if model.Status == GRB.OPTIMAL:
+    result = {
+        "status": "OPTIMAL",
+        "objective": clean_value(model.ObjVal),
+        "variables": {
+            variable.VarName: clean_value(variable.X)
+            for variable in model.getVars()
+        }
+    }
+else:
+    result = {
+        "status": solver_status,
+        "objective": None,
+        "variables": {}
+    }
+
+model.dispose()
+env.dispose()
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato del solver è **OPTIMAL** e il costo minimo è:
+
+\[
+\boxed{1355}.
+\]
+
+Vengono aperti i siti:
+
+\[
+y_A=y_C=y_F=1.
+\]
+
+Le decisioni di distribuzione non nulle sono:
+
+\[
+x_{A,Z1}=30,\quad x_{A,Z2}=25,
+\]
+\[
+x_{C,Z3}=35,\quad x_{C,Z5}=28,\quad x_{C,Z7}=24,
+\]
+\[
+x_{F,Z4}=20,\quad x_{F,Z6}=32,\quad x_{F,Z8}=26.
+\]
+
+Le movimentazioni complessive sono 55 per \(A\), 87 per \(C\) e 78 per \(F\), tutte comprese tra il minimo e la rispettiva capacità. Le emissioni totali sono 293, inferiori al limite di 470.

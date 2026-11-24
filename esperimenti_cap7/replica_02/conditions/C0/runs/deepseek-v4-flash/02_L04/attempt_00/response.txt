@@ -1,0 +1,199 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["domanda per prodotto/periodo -> bilancio di scorta I_it=I_i,t-1+x_it-d_it","limiti di lotto e setup -> Lmin_i*y_it <= x_it <= Lmax_i*y_it","capacità ordinaria condivisa -> somma_i h_i*x_it <= C_t+R_t","straordinario attivabile -> 10*A_t <= R_t <= M_t*A_t con costo fisso 25*A_t","limiti di giacenza -> I_it<=75 e somma_i I_it<=210","limiti sui setup -> somma_{i,t} y_it<=26 e somma_i y_it<=4","scorta finale minima -> I_i,6>=SF_i","costi di produzione, setup, scorta e straordinario -> funzione obiettivo"],"memory_items_used":[]}
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**  
+\(P=\{\text{A},\text{B},\text{C},\text{D},\text{E}\}\),  
+\(T=\{1,\dots,6\}\).
+
+**Parametri**  
+- \(S_i^0\): scorta iniziale del prodotto \(i\).  
+- \(S_i^F\): scorta finale minima del prodotto \(i\).  
+- \(h_i\): ore necessarie per produrre una unità del prodotto \(i\).  
+- \(l_i^-, l_i^+\): lotto minimo e massimo del prodotto \(i\).  
+- \(c_i^{setup}\): costo di setup del prodotto \(i\).  
+- \(c_i^{hold}\): costo di scorta per unità del prodotto \(i\).  
+- \(d_{it}\): domanda del prodotto \(i\) nel periodo \(t\).  
+- \(p_{it}\): costo unitario di produzione del prodotto \(i\) nel periodo \(t\).  
+- \(C_t\): capacità ordinaria nel periodo \(t\).  
+- \(M_t\): massimo straordinario acquistabile nel periodo \(t\).  
+- \(u_t\): costo unitario dello straordinario nel periodo \(t\).  
+- \(K=25\): costo fisso di attivazione dello straordinario.
+
+**Variabili decisionali**  
+- \(x_{it}\in\mathbb{Z}_+\): quantità prodotta del prodotto \(i\) nel periodo \(t\).  
+- \(I_{it}\in\mathbb{Z}_+\): scorta del prodotto \(i\) a fine periodo \(t\).  
+- \(y_{it}\in\{0,1\}\): indica se nel periodo \(t\) viene fatto un setup per il prodotto \(i\).  
+- \(R_t\in\mathbb{R}_+\): ore di straordinario usate nel periodo \(t\).  
+- \(A_t\in\{0,1\}\): indica se lo straordinario è attivato nel periodo \(t\).
+
+## 2. Formulazione matematica
+
+**Funzione obiettivo**  
+\[
+\min \sum_{i\in P}\sum_{t\in T} p_{it}x_{it}
++\sum_{i\in P}\sum_{t\in T} c_i^{setup}y_{it}
++\sum_{i\in P}\sum_{t\in T} c_i^{hold}I_{it}
++\sum_{t\in T}\left(25A_t+u_tR_t\right)
+\]
+
+**Vincoli**
+
+Bilancio di scorta:
+\[
+I_{it}=I_{i,t-1}+x_{it}-d_{it}
+\qquad \forall i\in P,\ t\in T
+\]
+con \(I_{i,0}=S_i^0\).
+
+Scorta finale minima:
+\[
+I_{i,6}\ge S_i^F
+\qquad \forall i\in P
+\]
+
+Limiti di scorta:
+\[
+0\le I_{it}\le 75
+\qquad \forall i\in P,\ t\in T
+\]
+\[
+\sum_{i\in P} I_{it}\le 210
+\qquad \forall t\in T
+\]
+
+Setup e lotti:
+\[
+l_i^- y_{it}\le x_{it}\le l_i^+ y_{it}
+\qquad \forall i\in P,\ t\in T
+\]
+
+Capacità ordinaria e straordinario:
+\[
+\sum_{i\in P} h_i x_{it}\le C_t+R_t
+\qquad \forall t\in T
+\]
+\[
+10A_t\le R_t\le M_tA_t
+\qquad \forall t\in T
+\]
+
+Limiti sui setup:
+\[
+\sum_{i\in P}\sum_{t\in T} y_{it}\le 26
+\]
+\[
+\sum_{i\in P} y_{it}\le 4
+\qquad \forall t\in T
+\]
+
+## 3. Codice Python eseguibile con Gurobi
+
+```python
+import json
+import gurobipy as gp
+
+prodotti = ["A", "B", "C", "D", "E"]
+periodi = range(6)
+
+S0 = {"A": 20, "B": 15, "C": 10, "D": 18, "E": 25}
+SF = {"A": 15, "B": 10, "C": 8, "D": 12, "E": 5}
+h = {"A": 2, "B": 3, "C": 1, "D": 2, "E": 4}
+Lmin = {"A": 22, "B": 18, "C": 25, "D": 20, "E": 15}
+Lmax = {"A": 85, "B": 75, "C": 90, "D": 80, "E": 65}
+costo_setup = {"A": 48, "B": 55, "C": 40, "D": 52, "E": 45}
+costo_scorta = {"A": 1.1, "B": 1.4, "C": 0.8, "D": 1.2, "E": 1.5}
+
+domanda = {
+    "A": [38, 42, 35, 50, 45, 40],
+    "B": [32, 36, 44, 38, 46, 34],
+    "C": [25, 30, 28, 35, 30, 32],
+    "D": [40, 35, 45, 42, 38, 48],
+    "E": [20, 24, 22, 28, 26, 25],
+}
+
+costo_prod = {
+    "A": [4, 6, 8, 10, 5, 7],
+    "B": [7, 9, 4, 6, 8, 10],
+    "C": [10, 5, 7, 9, 4, 6],
+    "D": [6, 8, 10, 5, 7, 9],
+    "E": [9, 4, 6, 8, 10, 5],
+}
+
+cap_ord = [350, 360, 345, 370, 355, 380]
+max_straord = [85, 80, 90, 75, 85, 80]
+costo_straord = [7, 8, 7, 9, 8, 7]
+costo_fisso_straord = 25
+
+m = gp.Model("L04_produzione")
+m.Params.OutputFlag = 0
+
+x = m.addVars(prodotti, periodi, vtype=gp.GRB.INTEGER, name="x")
+I = m.addVars(prodotti, periodi, vtype=gp.GRB.INTEGER, name="I")
+y = m.addVars(prodotti, periodi, vtype=gp.GRB.BINARY, name="setup")
+R = m.addVars(periodi, vtype=gp.GRB.CONTINUOUS, name="straordinario")
+A = m.addVars(periodi, vtype=gp.GRB.BINARY, name="attiva_straordinario")
+
+# Bilancio di scorta
+for p in prodotti:
+    m.addConstr(I[p, 0] == S0[p] + x[p, 0] - domanda[p][0], name=f"bilancio_{p}_1")
+    for t in range(1, 6):
+        m.addConstr(I[p, t] == I[p, t-1] + x[p, t] - domanda[p][t], name=f"bilancio_{p}_{t+1}")
+
+# Scorta finale minima e limiti di giacenza
+for p in prodotti:
+    m.addConstr(I[p, 5] >= SF[p], name=f"finale_{p}")
+    for t in periodi:
+        m.addConstr(I[p, t] <= 75, name=f"stock_max_{p}_{t}")
+
+for t in periodi:
+    m.addConstr(gp.quicksum(I[p, t] for p in prodotti) <= 210, name=f"stock_tot_{t}")
+
+# Lotto minimo/massimo e setup
+for p in prodotti:
+    for t in periodi:
+        m.addConstr(x[p, t] >= Lmin[p] * y[p, t], name=f"lotto_min_{p}_{t}")
+        m.addConstr(x[p, t] <= Lmax[p] * y[p, t], name=f"lotto_max_{p}_{t}")
+
+# Capacità ordinaria e straordinario
+for t in periodi:
+    m.addConstr(gp.quicksum(h[p] * x[p, t] for p in prodotti) <= cap_ord[t] + R[t], name=f"capacity_{t}")
+    m.addConstr(R[t] <= max_straord[t] * A[t], name=f"ot_max_{t}")
+    m.addConstr(R[t] >= 10 * A[t], name=f"ot_min_{t}")
+
+# Limiti sui setup
+m.addConstr(y.sum() <= 26, name="setup_total")
+for t in periodi:
+    m.addConstr(gp.quicksum(y[p, t] for p in prodotti) <= 4, name=f"setup_per_{t}")
+
+# Funzione obiettivo
+obj = (
+    gp.quicksum(costo_prod[p][t] * x[p, t] for p in prodotti for t in periodi)
+    + gp.quicksum(costo_setup[p] * y[p, t] for p in prodotti for t in periodi)
+    + gp.quicksum(costo_scorta[p] * I[p, t] for p in prodotti for t in periodi)
+    + gp.quicksum(costo_fisso_straord * A[t] + costo_straord[t] * R[t] for t in periodi)
+)
+m.setObjective(obj, gp.GRB.MINIMIZE)
+
+m.optimize()
+
+if m.Status == gp.GRB.OPTIMAL:
+    sol = {
+        "status": "OPTIMAL",
+        "objective": float(m.ObjVal),
+        "variables": {v.VarName: v.X for v in m.getVars()},
+    }
+else:
+    status = {
+        gp.GRB.INFEASIBLE: "INFEASIBLE",
+        gp.GRB.UNBOUNDED: "UNBOUNDED",
+        gp.GRB.INF_OR_UNBD: "INF_OR_UNBD",
+    }.get(m.Status, f"STATUS_{m.Status}")
+    sol = {"status": status, "objective": None, "variables": {}}
+
+print("SOLUTION_JSON=" + json.dumps(sol, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Il codice costruisce il modello MILP completo e lo risolve con Gurobi. L’ultima riga stampata, `SOLUTION_JSON`, contiene stato del solver, valore ottimo della funzione obiettivo e tutte le variabili decisionali: quantità prodotte, scorte, setup, ore di straordinario e relative attivazioni. Le decisioni operative non nulle si leggono direttamente nel dizionario `variables` prodotto dal solver.

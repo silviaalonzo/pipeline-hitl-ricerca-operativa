@@ -1,0 +1,35 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "ogni rotta a un solo veicolo -> sum_v x_{v,r}=1 per ogni r",
+        "veicolo usato solo se attivato -> x_{v,r} <= y_v per ogni v,r",
+        "capacità di carico -> sum_r a_r x_{v,r} <= b_v y_v per ogni v",
+        "numero massimo di rotte -> sum_r x_{v,r} <= q_v y_v per ogni v",
+        "al massimo sette veicoli attivati -> sum_v y_v <= 7",
+        "almeno due elettrici attivati -> sum_{v in E} y_v >= 2",
+        "elettrico massimo una rotta lunga -> sum_{r in L} x_{v,r} <= 1 per v in E",
+        "diesel massimo due rotte di centro -> sum_{r in C} x_{v,r} <= 2 per v in D",
+        "limite emissioni 1050 -> sum_{v,r} d_r e_v x_{v,r} <= 1050"
+      ],
+      "memory_items_used": [
+        "S-001"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

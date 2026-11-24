@@ -1,0 +1,65 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "gpt-5.6-sol",
+  "problem_id": "H08",
+  "problem_sequence": 8,
+  "domain": "Localizzazione e copertura",
+  "difficulty": "Elevata",
+  "model_class": "IP binaria",
+  "created_at_utc": "2026-08-24T18:13:21.630760+00:00",
+  "updated_at_utc": "2026-08-24T18:14:47.525378+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:14:47.524558+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "aprire esattamente quattro stazioni -> vincolo somma_i y_i = 4",
+              "assegnare ogni zona a una stazione raggiungibile -> vincoli somma_{i in R_j} x_{ji} = 1",
+              "domanda consuma capacità -> vincoli somma_j d_j x_{ji} <= u_i y_i",
+              "almeno una stazione Ovest e una Est -> vincoli di apertura sui gruppi W ed E",
+              "backup per Z3, Z8 e Z11 -> somma_{i in R_j} y_i >= 2 per le zone critiche",
+              "minimizzare costi fissi e tempi pesati per domanda -> funzione obiettivo",
+              "assegnazione solo a stazioni aperte -> vincoli x_{ji} <= y_i"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "gpt-5.6-sol",
+    "problem_id": "H08",
+    "retrieved_at_utc": "2026-08-24T18:13:21.630750+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

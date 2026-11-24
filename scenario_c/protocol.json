@@ -1,0 +1,113 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "campaign_role": "definitive_strict_gates",
+  "supersedes_technical_pilot": "/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c",
+  "frozen_at_utc": "2026-08-24T17:57:18.210278+00:00",
+  "seed": 20260823,
+  "model_order": [
+    "gpt-5.6-sol",
+    "claude-sonnet-5",
+    "deepseek-v4-flash"
+  ],
+  "problem_order": [
+    "M10",
+    "H03",
+    "M07",
+    "H02",
+    "M01",
+    "H05",
+    "M09",
+    "H08",
+    "M02",
+    "H06",
+    "M05",
+    "H07",
+    "M04",
+    "H09",
+    "M06",
+    "H01",
+    "M03",
+    "H04",
+    "M08",
+    "H10"
+  ],
+  "number_of_models": 3,
+  "problems_per_model": 20,
+  "total_hybrid_executions": 60,
+  "replicates_per_configuration": 1,
+  "same_problem_order_for_all_models": true,
+  "memory_policy": {
+    "starts_empty": true,
+    "separate_for_each_model": true,
+    "updated_only_after_verified_expert_correction": true,
+    "semantic_retrieval_limit": 8,
+    "episodic_retrieval_limit": 2
+  },
+  "gates": {
+    "automatic_self_repairs_before_handoff": 3,
+    "automatic_traceability_repairs_before_handoff": 1,
+    "solver_timeout_seconds": 300,
+    "relative_gap_tolerance": 0.001,
+    "stage_1": {
+      "rule": "ogni risposta iniziale non vuota deve contenere un TRACEABILITY_JSON valido; READY richiede liste unresolved e undefined_symbols vuote e almeno quattro corrispondenze requisito -> elemento del modello",
+      "automatic_repair": "una sola rigenerazione completa se la riga è assente, non valida o incompleta",
+      "handoff": "immediato per NEEDS_EXPERT o dati irrisolti; dopo il solo retry ammesso negli altri casi",
+      "empty_length_exception": "una risposta completamente vuota troncata per limite di output è classificata allo Stadio 3"
+    },
+    "stage_2": {
+      "rule": "revisione umana obbligatoria, prima dell'accettazione, per ogni problema di difficoltà elevata risolto dopo almeno una riparazione automatica",
+      "ground_truth_visible_to_expert": false,
+      "checklist": [
+        "variabili e domini",
+        "obiettivo e verso",
+        "copertura dei requisiti mediante vincoli",
+        "coefficienti, indici e unità",
+        "vincoli impliciti"
+      ],
+      "outcomes": {
+        "APPROVE": "revisione senza correzione; non aggiorna la memoria",
+        "CORRECT": "correzione verificata; aggiorna la memoria dopo il successo",
+        "ACCEPT_FAILURE": "chiusura come non corretto"
+      }
+    },
+    "stage_3": "fino a tre self-repair e poi handoff per errori di codice/esecuzione",
+    "stage_4": "handoff se la soluzione non supera la validazione indipendente"
+  },
+  "artifact_sha256": {
+    "esperimenti_cap5/models.json": "90e8876993ec1198589dbed2a36a96a61b2f95f028f5393839f6734716f97ef4",
+    "esperimenti_cap5/system_prompt_c.txt": "e59b209b08326819b84f23362d3f5990c9bbab7c67ebd945907e301314ae7754",
+    "esperimenti_cap5/system_prompt_repair_c.txt": "6df229e198eea4c53a1576d200f9d92be59642d58bdeea4d91def31ee5dffe96",
+    "esperimenti_cap5/scenario_c_core.py": "f24a332e3436ce42dbea5ca679b973e77fbf15ce61706545868692ac44639e87",
+    "esperimenti_cap5/run_scenario_c.py": "f3e1d5158ee56d277d138458c9663336f6847d89e05469279825ee1eb51aaaeb",
+    "esperimenti_cap5/analyze_scenario_c.py": "e83e5ddb9ec7f3aad5b33a60ac1af6a1dc575da1ff8b0d5aec71490d21da7763",
+    "esperimenti_cap5/submit_handoff.py": "04380ef8233cbc4a243d34bafc254adc5d1b7a3695ab8a6fc8a3b2181f3e8e6a",
+    "esperimenti_cap5/submit_direct_expert_code.py": "46d8a624b9e8c0de4723e0afd7aa485dd89efaa4f43681d24e154f88a44203d2",
+    "esperimenti_cap5/execute_response.py": "2bf36e51189b923bc0f7ec44e0406968da4f91b4a1cac03e46fe7eee52e97792",
+    "esperimenti_cap5/audit_scenario_b.py": "b9696ac601443a8b3207208d1bb1abcdd2799a16943dfbb6340fdf28e66461a0",
+    "esperimenti_cap5/validate_candidate.py": "fbdc8b2d7ad3d7ffe270ab6cae64cc4902b178978e52906850f8dc7e6715bdb1",
+    "esperimenti_cap5/revalidate_aliases.py": "e79eacdc3ec788275e43abbb6f651648242649fee4b45faf946058f2dc009ba6",
+    "dataset_cap4/problems.jsonl": "ea924c83cbb4223d12557a332736a086d79eb668abf98f79be1653c1624dc684",
+    "dataset_cap4/ground_truth.json": "c176ee32772b1e0c85f3575a7b28ae452495446c32c63d738e10ea1906a23cad",
+    "dataset_cap4/prompts/H01.md": "b487035ba1ff1745499bed3b7389002374c9250f9330032a956bbdf5d5246129",
+    "dataset_cap4/prompts/H02.md": "9cede4c157c1b1e34906cb9c18ce37a8755df58105b970ee641fb7f5b5ef9d0e",
+    "dataset_cap4/prompts/H03.md": "803cb5b4e84f6d92b181e32a0b1b5718e0e95578686a7de9760042c0fd782022",
+    "dataset_cap4/prompts/H04.md": "ae0e9cd218fd3d0f7ccc6b9edee754d3612bba4e54f410f5b5a2809d28d07a7c",
+    "dataset_cap4/prompts/H05.md": "5753e11852639f3b7656a5b4dca9549c29049a5521a7633526aa3e24520225e8",
+    "dataset_cap4/prompts/H06.md": "b886b21ee5331840459e4459b620b56497464cf6266a004cbe5caa4e67e19eca",
+    "dataset_cap4/prompts/H07.md": "7a9adee3b706fe08e6e8c47e72b8c174aec4458384c1df7b7ba0372731d6bca7",
+    "dataset_cap4/prompts/H08.md": "b12ee060563fc648b1e2d6ab5c69770828a868f4f1d3e298a57c71d968c6b95a",
+    "dataset_cap4/prompts/H09.md": "e16b16e30c267b993d5793333d86c51d423cd085f6ce7c2aea7082bb0419833a",
+    "dataset_cap4/prompts/H10.md": "776bb4fbfe5dacd4183d46c7ed9933af3029e3769f29da59a02c64d3140caa1d",
+    "dataset_cap4/prompts/M01.md": "8b4ace0baffc36213bd9a662bf2b5f0749df2723395fcd3afc47957753f13bf0",
+    "dataset_cap4/prompts/M02.md": "c84b718c12c26abc61183c7f5c78dfc96e204c263e77817b179f5e7bb7f18d55",
+    "dataset_cap4/prompts/M03.md": "0df71cc16904d06ff89fbcf35c329ae6cf6b3bff5bbe7913ce08289a793061ef",
+    "dataset_cap4/prompts/M04.md": "740dac37af52fc919c534a53f474d572af704ff18fc28d6cbf8b1d7126fc2566",
+    "dataset_cap4/prompts/M05.md": "c29372c4e25e1f75d29218f80360d1b2ba7651131541b39b7f6bc35ff75ea271",
+    "dataset_cap4/prompts/M06.md": "9785a18c50a040660e9b1d887b7c8db14f18a0dfc6d1a2b6abf9aaefa664bf7d",
+    "dataset_cap4/prompts/M07.md": "a280f5292a6dc2f0bcc77e2717268df62cf627252b9cb7b1ab4b3a47a8271b6b",
+    "dataset_cap4/prompts/M08.md": "eabf926e8219cf04398d3ef9b6b7a2fd5296f824c80bd9a3e04837497ffc5268",
+    "dataset_cap4/prompts/M09.md": "a8bf0c44bfdbe15b932999ea9a0600088b2b312e15422ba89d841eaaf9070e66",
+    "dataset_cap4/prompts/M10.md": "d0e8e63ac37940ca8ee29104ddd3ba26e76e710939a33c7ca3f9dfd3381c1eb6"
+  }
+}

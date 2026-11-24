@@ -1,0 +1,325 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+### Insiemi
+
+- Nodi:
+  \[
+  N=\{S,A,B,C,T\}.
+  \]
+
+- Archi attivabili:
+  \[
+  E=\{(S,A),(S,B),(A,B),(A,C),(B,C),(B,T),(C,T)\}.
+  \]
+
+### Parametri
+
+Per ogni arco \((i,j)\in E\):
+
+- \(F_{ij}\): costo fisso di attivazione;
+- \(c_{ij}\): costo di trasporto per unità;
+- \(U_{ij}\): capacità massima.
+
+I dati sono:
+
+\[
+\begin{array}{c|ccc}
+(i,j) & F_{ij} & c_{ij} & U_{ij}\\ \hline
+(S,A)&40&2&30\\
+(S,B)&35&3&35\\
+(A,B)&15&1&15\\
+(A,C)&30&2&25\\
+(B,C)&18&2&20\\
+(B,T)&45&4&25\\
+(C,T)&38&2&35
+\end{array}
+\]
+
+Il bilancio associato a ciascun nodo è:
+
+\[
+b_i=
+\begin{cases}
+40 & i=S,\\
+-40 & i=T,\\
+0 & i\in\{A,B,C\}.
+\end{cases}
+\]
+
+### Variabili decisionali
+
+Per ogni \((i,j)\in E\):
+
+- \(x_{ij}\in\mathbb Z_+\): flusso intero inviato sull’arco \((i,j)\);
+- \(y_{ij}\in\{0,1\}\): vale 1 se l’arco \((i,j)\) è attivato, 0 altrimenti.
+
+Nel codice i nomi sono, ad esempio, `x_S_A` e `y_S_A`.
+
+---
+
+## 2. Formulazione matematica completa
+
+### Funzione obiettivo
+
+Minimizzare la somma dei costi fissi di attivazione e dei costi variabili di trasporto:
+
+\[
+\min \quad
+\sum_{(i,j)\in E}\left(F_{ij}y_{ij}+c_{ij}x_{ij}\right).
+\]
+
+Esplicitamente:
+
+\[
+\begin{aligned}
+\min\quad
+&40y_{SA}+2x_{SA}
++35y_{SB}+3x_{SB}\\
+&+15y_{AB}+x_{AB}
++30y_{AC}+2x_{AC}\\
+&+18y_{BC}+2x_{BC}
++45y_{BT}+4x_{BT}\\
+&+38y_{CT}+2x_{CT}.
+\end{aligned}
+\]
+
+### Conservazione del flusso
+
+In forma generale:
+
+\[
+\sum_{j:(i,j)\in E}x_{ij}
+-
+\sum_{j:(j,i)\in E}x_{ji}
+=b_i
+\qquad \forall i\in N.
+\]
+
+Esplicitamente:
+
+\[
+x_{SA}+x_{SB}=40,
+\]
+
+\[
+x_{AB}+x_{AC}-x_{SA}=0,
+\]
+
+\[
+x_{BC}+x_{BT}-x_{SB}-x_{AB}=0,
+\]
+
+\[
+x_{CT}-x_{AC}-x_{BC}=0,
+\]
+
+\[
+-x_{BT}-x_{CT}=-40.
+\]
+
+### Capacità e attivazione degli archi
+
+\[
+x_{ij}\le U_{ij}y_{ij}
+\qquad \forall (i,j)\in E.
+\]
+
+Esplicitamente:
+
+\[
+\begin{aligned}
+x_{SA}&\le30y_{SA},&
+x_{SB}&\le35y_{SB},\\
+x_{AB}&\le15y_{AB},&
+x_{AC}&\le25y_{AC},\\
+x_{BC}&\le20y_{BC},&
+x_{BT}&\le25y_{BT},\\
+x_{CT}&\le35y_{CT}.
+\end{aligned}
+\]
+
+### Domini
+
+\[
+x_{ij}\in\mathbb Z_+
+\qquad \forall(i,j)\in E,
+\]
+
+\[
+y_{ij}\in\{0,1\}
+\qquad \forall(i,j)\in E.
+\]
+
+---
+
+## 3. Codice Python eseguibile con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+nodes = ["S", "A", "B", "C", "T"]
+
+arcs = [
+    ("S", "A"),
+    ("S", "B"),
+    ("A", "B"),
+    ("A", "C"),
+    ("B", "C"),
+    ("B", "T"),
+    ("C", "T"),
+]
+
+fixed_cost = {
+    ("S", "A"): 40,
+    ("S", "B"): 35,
+    ("A", "B"): 15,
+    ("A", "C"): 30,
+    ("B", "C"): 18,
+    ("B", "T"): 45,
+    ("C", "T"): 38,
+}
+
+unit_cost = {
+    ("S", "A"): 2,
+    ("S", "B"): 3,
+    ("A", "B"): 1,
+    ("A", "C"): 2,
+    ("B", "C"): 2,
+    ("B", "T"): 4,
+    ("C", "T"): 2,
+}
+
+capacity = {
+    ("S", "A"): 30,
+    ("S", "B"): 35,
+    ("A", "B"): 15,
+    ("A", "C"): 25,
+    ("B", "C"): 20,
+    ("B", "T"): 25,
+    ("C", "T"): 35,
+}
+
+balance = {
+    "S": 40,
+    "A": 0,
+    "B": 0,
+    "C": 0,
+    "T": -40,
+}
+
+model = gp.Model("M10_rete_distributiva")
+model.Params.OutputFlag = 0
+
+x = {
+    (i, j): model.addVar(
+        vtype=GRB.INTEGER,
+        lb=0,
+        name=f"x_{i}_{j}"
+    )
+    for i, j in arcs
+}
+
+y = {
+    (i, j): model.addVar(
+        vtype=GRB.BINARY,
+        name=f"y_{i}_{j}"
+    )
+    for i, j in arcs
+}
+
+model.setObjective(
+    gp.quicksum(
+        fixed_cost[i, j] * y[i, j] + unit_cost[i, j] * x[i, j]
+        for i, j in arcs
+    ),
+    GRB.MINIMIZE
+)
+
+for node in nodes:
+    outgoing = gp.quicksum(
+        x[i, j] for i, j in arcs if i == node
+    )
+    incoming = gp.quicksum(
+        x[i, j] for i, j in arcs if j == node
+    )
+    model.addConstr(
+        outgoing - incoming == balance[node],
+        name=f"flow_balance_{node}"
+    )
+
+for i, j in arcs:
+    model.addConstr(
+        x[i, j] <= capacity[i, j] * y[i, j],
+        name=f"capacity_{i}_{j}"
+    )
+
+model.optimize()
+
+status_names = {
+    GRB.LOADED: "LOADED",
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.INF_OR_UNBD: "INF_OR_UNBD",
+    GRB.UNBOUNDED: "UNBOUNDED",
+    GRB.CUTOFF: "CUTOFF",
+    GRB.ITERATION_LIMIT: "ITERATION_LIMIT",
+    GRB.NODE_LIMIT: "NODE_LIMIT",
+    GRB.TIME_LIMIT: "TIME_LIMIT",
+    GRB.SOLUTION_LIMIT: "SOLUTION_LIMIT",
+    GRB.INTERRUPTED: "INTERRUPTED",
+    GRB.NUMERIC: "NUMERIC",
+    GRB.SUBOPTIMAL: "SUBOPTIMAL",
+    GRB.INPROGRESS: "INPROGRESS",
+    GRB.USER_OBJ_LIMIT: "USER_OBJ_LIMIT",
+}
+
+status = status_names.get(model.Status, str(model.Status))
+
+if model.Status == GRB.OPTIMAL:
+    variables = {}
+
+    for i, j in arcs:
+        variables[f"x_{i}_{j}"] = float(round(x[i, j].X))
+
+    for i, j in arcs:
+        variables[f"y_{i}_{j}"] = float(round(y[i, j].X))
+
+    result = {
+        "status": "OPTIMAL",
+        "objective": float(model.ObjVal),
+        "variables": variables,
+    }
+else:
+    result = {
+        "status": status,
+        "objective": None,
+        "variables": {},
+    }
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+La soluzione ottima ha costo totale:
+
+\[
+z^*=443.
+\]
+
+Vengono inviate 25 unità lungo \(S\to A\to C\to T\) e 15 unità lungo \(S\to B\to T\). Gli archi \(A\to B\) e \(B\to C\) non vengono attivati.
+
+Le decisioni non nulle sono:
+
+\[
+x_{SA}=25,\quad x_{SB}=15,\quad x_{AC}=25,\quad
+x_{BT}=15,\quad x_{CT}=25,
+\]
+
+\[
+y_{SA}=y_{SB}=y_{AC}=y_{BT}=y_{CT}=1.
+\]
+
+Il costo è composto da 188 unità di costi fissi e 255 unità di costi di trasporto.

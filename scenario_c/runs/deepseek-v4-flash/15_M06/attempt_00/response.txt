@@ -1,0 +1,119 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["Minimizzare il makespan -> funzione obiettivo min C","Ogni lavoro va eseguito interamente su una sola macchina -> vincoli di assegnamento","J7 non compatibile con la macchina A -> insieme E esclude (J7,A)","Tempi dipendenti dalla macchina scelta -> parametri p_im","Makespan come massimo dei carichi -> vincoli C >= somma p_im x_im"]}
+
+## Insiemi, parametri e variabili decisionali
+
+- \(I = \{J1, J2, J3, J4, J5, J6, J7\}\)
+- \(M = \{A, B\}\)
+- \(E = \{(i,m) \in I \times M : p_{im} \text{ è definito}\}\), cioè tutte le coppie tranne \((J7,A)\)
+- \(p_{im}\): tempo di lavorazione del lavoro \(i\) sulla macchina \(m\), per \((i,m)\in E\)
+- \(x_{im} \in \{0,1\}\): vale 1 se il lavoro \(i\) è assegnato alla macchina \(m\), per \((i,m)\in E\)
+- \(C \ge 0\): makespan, cioè il massimo carico tra le due macchine
+
+## Formulazione matematica
+
+\[
+\min C
+\]
+
+soggetto a:
+
+\[
+\sum_{m: (i,m)\in E} x_{im} = 1 \qquad \forall i \in I
+\]
+
+\[
+\sum_{i: (i,m)\in E} p_{im} x_{im} \le C \qquad \forall m \in M
+\]
+
+\[
+x_{im} \in \{0,1\} \qquad \forall (i,m) \in E
+\]
+
+\[
+C \ge 0
+\]
+
+## Codice Python con Gurobi
+
+```python
+import json
+from gurobipy import Model, GRB, quicksum
+
+jobs = ["J1", "J2", "J3", "J4", "J5", "J6", "J7"]
+machines = ["A", "B"]
+
+p = {
+    ("J1", "A"): 7, ("J1", "B"): 9,
+    ("J2", "A"): 6, ("J2", "B"): 5,
+    ("J3", "A"): 8, ("J3", "B"): 7,
+    ("J4", "A"): 5, ("J4", "B"): 8,
+    ("J5", "A"): 9, ("J5", "B"): 6,
+    ("J6", "A"): 4, ("J6", "B"): 7,
+    ("J7", "B"): 5,
+}
+
+E = [(i, m) for i in jobs for m in machines if (i, m) in p]
+
+status = "ERROR"
+objective = None
+variables = {}
+
+try:
+    model = Model("M06_bilanciamento")
+    model.Params.OutputFlag = 0
+
+    x = {}
+    for i, m in E:
+        x[i, m] = model.addVar(vtype=GRB.BINARY, name=f"x_{i}_{m}")
+
+    C = model.addVar(lb=0, vtype=GRB.CONTINUOUS, name="C")
+    model.update()
+
+    model.setObjective(C, GRB.MINIMIZE)
+
+    for i in jobs:
+        model.addConstr(
+            quicksum(x[i, m] for m in machines if (i, m) in E) == 1,
+            name=f"assegnamento_{i}"
+        )
+
+    for m in machines:
+        model.addConstr(
+            C >= quicksum(p[i, m] * x[i, m] for i in jobs if (i, m) in E),
+            name=f"carico_{m}"
+        )
+
+    model.optimize()
+
+    if model.Status == GRB.OPTIMAL:
+        status = "OPTIMAL"
+        objective = C.X
+        variables = {v.VarName: v.X for v in model.getVars()}
+    elif model.Status == GRB.INFEASIBLE:
+        status = "INFEASIBLE"
+    elif model.Status == GRB.UNBOUNDED:
+        status = "UNBOUNDED"
+    else:
+        status = str(model.Status)
+
+except Exception:
+    status = "ERROR"
+
+print("SOLUTION_JSON=" + json.dumps({
+    "status": status,
+    "objective": objective,
+    "variables": variables
+}))
+```
+
+## Sintesi della soluzione
+
+Il solver restituisce stato **OPTIMAL** con makespan ottimo **22**.  
+Una soluzione ottima è:
+
+- Macchina A: J1, J2, J4, J6 → carico \(7+6+5+4 = 22\)
+- Macchina B: J3, J5, J7 → carico \(7+6+5 = 18\)
+
+Decisioni non nulle:  
+\(x_{J1,A}=1\), \(x_{J2,A}=1\), \(x_{J4,A}=1\), \(x_{J6,A}=1\),  
+\(x_{J3,B}=1\), \(x_{J5,B}=1\), \(x_{J7,B}=1\), \(C=22\).

@@ -1,0 +1,24 @@
+# Cache Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# macOS
+.DS_Store
+
+# History di sessioni R
+.Rhistory
+*.Rhistory
+
+# Credenziali: non devono mai finire nel repository
+.env
+.env.*
+*.pem
+*_key.txt
+gurobi.lic
+
+# Editor
+.vscode/
+.idea/

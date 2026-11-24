@@ -1,0 +1,66 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "gpt-5.6-sol",
+  "problem_id": "M09",
+  "problem_sequence": 7,
+  "domain": "Inventory management",
+  "difficulty": "Media",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-24T18:11:11.190809+00:00",
+  "updated_at_utc": "2026-08-24T18:13:21.629371+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:13:21.628586+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "sei periodi -> T={1,...,6}",
+              "scorta iniziale 10 -> I_0=10",
+              "assenza di arretrati -> I_t>=0",
+              "scorta finale almeno 5 -> I_6>=5",
+              "ordine minimo 10 se attivato -> 10y_t<=q_t",
+              "capacità periodale -> q_t<=U_ty_t",
+              "costo fisso di ordine -> 40y_t in obiettivo",
+              "integralità di ordini e scorte -> q_t,I_t interi"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "gpt-5.6-sol",
+    "problem_id": "M09",
+    "retrieved_at_utc": "2026-08-24T18:11:11.190799+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

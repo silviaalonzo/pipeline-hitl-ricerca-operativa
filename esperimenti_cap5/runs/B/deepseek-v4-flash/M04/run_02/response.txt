@@ -1,0 +1,195 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+Sia \(I=\{\text{Van}, \text{Autocarro}, \text{Refrigerato}, \text{Elettrico}, \text{Bilico}\}\).
+
+Per ogni tipo \(i \in I\):
+
+- \(V_i\): volume offerto  
+- \(P_i\): portata offerta  
+- \(C_i\): costo giornaliero  
+- \(E_i\): emissioni giornaliere  
+- \(D_i\): disponibilità massima  
+
+| Tipo \(i\) | \(V_i\) | \(P_i\) | \(C_i\) | \(E_i\) | \(D_i\) |
+|---|---:|---:|---:|---:|---:|
+| Van | 18 | 8 | 120 | 12 | 8 |
+| Autocarro | 30 | 18 | 180 | 22 | 6 |
+| Refrigerato | 20 | 10 | 210 | 15 | 4 |
+| Elettrico | 16 | 7 | 150 | 4 | 5 |
+| Bilico | 42 | 28 | 260 | 32 | 3 |
+
+Variabile decisionale:
+
+\[
+x_i \in \mathbb{Z}_+, \qquad 0 \le x_i \le D_i
+\]
+
+numero di veicoli del tipo \(i\) impiegati.
+
+## 2. Formulazione matematica
+
+\[
+\min \sum_{i \in I} C_i x_i
+\]
+
+soggetto a:
+
+\[
+\sum_{i \in I} V_i x_i \ge 180
+\]
+
+\[
+\sum_{i \in I} P_i x_i \ge 95
+\]
+
+\[
+\sum_{i \in I} E_i x_i \le 145
+\]
+
+\[
+x_{\text{Refrigerato}} \ge 1
+\]
+
+\[
+x_{\text{Elettrico}} \ge 1
+\]
+
+\[
+x_i \in \mathbb{Z}_+, \quad 0 \le x_i \le D_i, \quad \forall i \in I
+\]
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+tipi = ["Van", "Autocarro", "Refrigerato", "Elettrico", "Bilico"]
+
+volume = {
+    "Van": 18,
+    "Autocarro": 30,
+    "Refrigerato": 20,
+    "Elettrico": 16,
+    "Bilico": 42,
+}
+
+portata = {
+    "Van": 8,
+    "Autocarro": 18,
+    "Refrigerato": 10,
+    "Elettrico": 7,
+    "Bilico": 28,
+}
+
+costo = {
+    "Van": 120,
+    "Autocarro": 180,
+    "Refrigerato": 210,
+    "Elettrico": 150,
+    "Bilico": 260,
+}
+
+emissioni = {
+    "Van": 12,
+    "Autocarro": 22,
+    "Refrigerato": 15,
+    "Elettrico": 4,
+    "Bilico": 32,
+}
+
+disponibilita = {
+    "Van": 8,
+    "Autocarro": 6,
+    "Refrigerato": 4,
+    "Elettrico": 5,
+    "Bilico": 3,
+}
+
+modello = gp.Model("flotta_giornaliera")
+modello.setParam("OutputFlag", 0)
+
+x = {}
+for t in tipi:
+    x[t] = modello.addVar(
+        vtype=GRB.INTEGER,
+        lb=0,
+        ub=disponibilita[t],
+        name=f"x_{t}"
+    )
+
+modello.update()
+
+modello.setObjective(
+    gp.quicksum(costo[t] * x[t] for t in tipi),
+    GRB.MINIMIZE
+)
+
+modello.addConstr(
+    gp.quicksum(volume[t] * x[t] for t in tipi) >= 180,
+    "volume_min"
+)
+
+modello.addConstr(
+    gp.quicksum(portata[t] * x[t] for t in tipi) >= 95,
+    "portata_min"
+)
+
+modello.addConstr(
+    gp.quicksum(emissioni[t] * x[t] for t in tipi) <= 145,
+    "emissioni_max"
+)
+
+modello.addConstr(x["Refrigerato"] >= 1, "refrigerato_min")
+modello.addConstr(x["Elettrico"] >= 1, "elettrico_min")
+
+modello.optimize()
+
+stati = {
+    GRB.LOADED: "LOADED",
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.INF_OR_UNBD: "INF_OR_UNBD",
+    GRB.UNBOUNDED: "UNBOUNDED",
+    GRB.CUTOFF: "CUTOFF",
+    GRB.ITERATION_LIMIT: "ITERATION_LIMIT",
+    GRB.NODE_LIMIT: "NODE_LIMIT",
+    GRB.TIME_LIMIT: "TIME_LIMIT",
+    GRB.SOLUTION_LIMIT: "SOLUTION_LIMIT",
+    GRB.INTERRUPTED: "INTERRUPTED",
+    GRB.NUMERIC: "NUMERIC",
+    GRB.SUBOPTIMAL: "SUBOPTIMAL",
+    GRB.INPROGRESS: "INPROGRESS",
+}
+
+if modello.Status == GRB.OPTIMAL:
+    variabili = {f"x_{t}": float(x[t].X) for t in tipi}
+    payload = {
+        "status": "OPTIMAL",
+        "objective": float(modello.ObjVal),
+        "variables": variabili,
+    }
+else:
+    payload = {
+        "status": stati.get(modello.Status, "UNKNOWN"),
+        "objective": None,
+        "variables": {},
+    }
+
+print("SOLUTION_JSON=" + json.dumps(payload, ensure_ascii=False))
+```
+
+## 4. Sintesi della soluzione
+
+Il solver termina con stato **OPTIMAL**.  
+Costo ottimo giornaliero: **1240.0**.
+
+Decisioni non nulle:
+
+- Autocarro: 2
+- Bilico: 2
+- Refrigerato: 1
+- Elettrico: 1
+
+Il Van non viene impiegato. La soluzione offre volume 180, portata 109 ed emissioni 127, rispettando tutti i vincoli.

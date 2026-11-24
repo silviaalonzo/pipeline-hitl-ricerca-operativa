@@ -1,0 +1,164 @@
+{
+  "schema_version": 1,
+  "chapter": 7,
+  "experiment": "paired_memory_ablation",
+  "dataset_version": "definitivo_v2",
+  "frozen_at_utc": "2026-08-26T17:00:29.219072+00:00",
+  "model": "deepseek-v4-flash",
+  "model_configuration": {
+    "reasoning_effort": "high",
+    "max_output_tokens": 64000,
+    "gateway": "OpenRouter",
+    "required_upstream_provider": "deepseek",
+    "fallbacks": false
+  },
+  "problem_ids": [
+    "L01",
+    "L02",
+    "L03",
+    "L04",
+    "L05"
+  ],
+  "executions": 10,
+  "replicates_per_condition_problem": 1,
+  "order": [
+    {
+      "global_order": 1,
+      "pair_sequence": 1,
+      "within_pair": 1,
+      "problem_id": "L01",
+      "condition": "C0",
+      "model": "deepseek-v4-flash",
+      "status": "PENDING"
+    },
+    {
+      "global_order": 2,
+      "pair_sequence": 1,
+      "within_pair": 2,
+      "problem_id": "L01",
+      "condition": "Cmem",
+      "model": "deepseek-v4-flash",
+      "status": "PENDING"
+    },
+    {
+      "global_order": 3,
+      "pair_sequence": 2,
+      "within_pair": 1,
+      "problem_id": "L02",
+      "condition": "Cmem",
+      "model": "deepseek-v4-flash",
+      "status": "PENDING"
+    },
+    {
+      "global_order": 4,
+      "pair_sequence": 2,
+      "within_pair": 2,
+      "problem_id": "L02",
+      "condition": "C0",
+      "model": "deepseek-v4-flash",
+      "status": "PENDING"
+    },
+    {
+      "global_order": 5,
+      "pair_sequence": 3,
+      "within_pair": 1,
+      "problem_id": "L03",
+      "condition": "C0",
+      "model": "deepseek-v4-flash",
+      "status": "PENDING"
+    },
+    {
+      "global_order": 6,
+      "pair_sequence": 3,
+      "within_pair": 2,
+      "problem_id": "L03",
+      "condition": "Cmem",
+      "model": "deepseek-v4-flash",
+      "status": "PENDING"
+    },
+    {
+      "global_order": 7,
+      "pair_sequence": 4,
+      "within_pair": 1,
+      "problem_id": "L04",
+      "condition": "Cmem",
+      "model": "deepseek-v4-flash",
+      "status": "PENDING"
+    },
+    {
+      "global_order": 8,
+      "pair_sequence": 4,
+      "within_pair": 2,
+      "problem_id": "L04",
+      "condition": "C0",
+      "model": "deepseek-v4-flash",
+      "status": "PENDING"
+    },
+    {
+      "global_order": 9,
+      "pair_sequence": 5,
+      "within_pair": 1,
+      "problem_id": "L05",
+      "condition": "C0",
+      "model": "deepseek-v4-flash",
+      "status": "PENDING"
+    },
+    {
+      "global_order": 10,
+      "pair_sequence": 5,
+      "within_pair": 2,
+      "problem_id": "L05",
+      "condition": "Cmem",
+      "model": "deepseek-v4-flash",
+      "status": "PENDING"
+    }
+  ],
+  "conditions": {
+    "Cmem": "snapshot congelato con cinque episodi e cinque principi semantici",
+    "C0": "memoria vuota e congelata"
+  },
+  "memory_updates_during_test": false,
+  "same_components_except_memory": true,
+  "preliminary_calibration": {
+    "excluded_from_results": true,
+    "reason": "il primo insieme di cinque istanze ha prodotto un effetto soffitto: entrambe le condizioni hanno risolto tutti i problemi e non si sono verificate correzioni umane. Prima del congelamento del protocollo definitivo sono quindi aumentate dimensione e densità relazionale delle istanze",
+    "archive": "archivio_cap7/calibrazione_v1_20260826",
+    "used_in_main_analysis": false
+  },
+  "memory_snapshot_source": "scenario_c/memory/deepseek-v4-flash.json",
+  "memory_sha256": {
+    "Cmem": "5ecfa21ddb2e834c388cf1bbece9008ae9a88585f2feda1e7c2e69c470e0abc6",
+    "C0": "7b8bcf3a436f07fe0fbdf1167141de2b03b01757e71ca8f2ab7016ede89d032b"
+  },
+  "gates": {
+    "traceability_repairs": 1,
+    "self_repairs": 3,
+    "solver_timeout_seconds": 300,
+    "relative_gap_tolerance": 0.001,
+    "assurance_review_after_repair_on_high_difficulty": true
+  },
+  "artifact_sha256": {
+    "esperimenti_cap7/freeze_protocol.py": "3aa3a26bb1e14530f39ed327bc374775766e28c3196a9febadca9d33730d00f3",
+    "esperimenti_cap7/run_ablation.py": "8c0455745f042892834832baf170976a2f1afeaba1fc588d1357a8f333bd09ae",
+    "esperimenti_cap7/check_setup.py": "e9b80f3699395f6444927bfecdc00ffa2d5ca3c37ce6bc5bb082a46007c090df",
+    "esperimenti_cap7/cap7_aliases.py": "77fee2a38beaae8411ddc7b1b45ad485b13dfe03de29e6b583cc9dbbf271b480",
+    "esperimenti_cap7/system_prompt_cap7.txt": "3eb3dda0cfdb289fff872ad9c52cd875fa63cb827848f0b4720be17f8c460e55",
+    "esperimenti_cap5/scenario_c_core.py": "f24a332e3436ce42dbea5ca679b973e77fbf15ce61706545868692ac44639e87",
+    "esperimenti_cap5/system_prompt_repair_c.txt": "6df229e198eea4c53a1576d200f9d92be59642d58bdeea4d91def31ee5dffe96",
+    "esperimenti_cap5/models.json": "90e8876993ec1198589dbed2a36a96a61b2f95f028f5393839f6734716f97ef4",
+    "dataset_cap7/problems.jsonl": "0cb1c7db4abcbeef98c226c429cf8d95ad7307d98f40939234893d7f04148b85",
+    "dataset_cap7/ground_truth.json": "74135a08f81b6f721a16f50d3b5b2d116f2306664c94f17421cb79c51bcbfd1b",
+    "dataset_cap7/build_dataset_cap7.py": "52f6890d6a6a2460568ec5d5d6ca7919c9412e6cb389667b62e8eae00f915233",
+    "dataset_cap7/verify_with_gurobi.py": "f4438a888fe259ba2c5809d80a4dfcf8565bdac96fd5cc0390d528d562653247",
+    "dataset_cap7/audit_target_patterns.py": "fd2716db8abec547fca1ac93c1ad794fe0b3e472b47ea4b094608b4ce83ffc33",
+    "dataset_cap7/solutions_summary.csv": "254fe2d5a04b49470b51a565b40c1ae3539981d2962ab1826993269e08be684c",
+    "dataset_cap7/verification_report.json": "6d883e3e17fa0c0af515f5244278387202bc032f419e3e0377eed1b4df20b703",
+    "dataset_cap7/target_pattern_audit.json": "9e4a493fb008b1638550a648adbe222dd5d7e71102c495b6208745ce06b92786",
+    "scenario_c/memory/deepseek-v4-flash.json": "5ecfa21ddb2e834c388cf1bbece9008ae9a88585f2feda1e7c2e69c470e0abc6",
+    "dataset_cap7/prompts/L01.md": "979f17efda4741507f7b2e638df3f31dfcac02ce9d29ea31d22d36eab3b012cf",
+    "dataset_cap7/prompts/L02.md": "046e9650f8f7d6e77af2c24aec2dfbf1b968b3d0d9f536a3deec8d32920ed29b",
+    "dataset_cap7/prompts/L03.md": "38063905138a0f2e50ed7b28769f552bf5c3fc086f36ce60e04588d9de754395",
+    "dataset_cap7/prompts/L04.md": "90c5bb9c711e4edee6dd8192646e62ebd5a4e07c13daab65c8950a820c6835fa",
+    "dataset_cap7/prompts/L05.md": "39759785c2ca452521531b12d211d8d306d3ecf5be30f01f23e316c89260752e"
+  }
+}

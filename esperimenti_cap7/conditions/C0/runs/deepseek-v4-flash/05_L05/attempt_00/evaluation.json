@@ -1,0 +1,33 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "copertura audit ordinari e ad alto rischio -> sum_i x_{i,a}=r_a",
+        "due ispettori distinti negli audit ad alto rischio -> r_a=2 e x_{i,a} binaria",
+        "almeno un senior negli audit ad alto rischio -> sum_{i in S} x_{i,a} >= 1",
+        "celle di qualificazione assente -> x_{i,a} definita solo per Q",
+        "monte ore -> sum_a d_a x_{i,a} <= h_i",
+        "numero massimo di audit -> sum_a x_{i,a} <= m_i",
+        "incompatibilita di coppia -> x_{i,p}+x_{i,q} <= 1",
+        "massimo 10 ispettori attivati -> sum_i y_i <= 10",
+        "minimizzazione costi fissi e di assegnazione -> funzione obiettivo"
+      ],
+      "memory_items_used": []
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

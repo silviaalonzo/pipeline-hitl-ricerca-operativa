@@ -1,0 +1,30 @@
+{
+  "status": "OPTIMAL",
+  "objective": 962.0,
+  "variables": {
+    "x_R1_Piccolo": -0.0,
+    "y_R1_Piccolo": 0.0,
+    "x_R1_Medio": 3.0,
+    "y_R1_Medio": 1.0,
+    "x_R1_Grande": 0.0,
+    "y_R1_Grande": 1.0,
+    "x_R2_Piccolo": -0.0,
+    "y_R2_Piccolo": 0.0,
+    "x_R2_Medio": 4.0,
+    "y_R2_Medio": 1.0,
+    "x_R2_Grande": -0.0,
+    "y_R2_Grande": 1.0,
+    "x_R3_Piccolo": 0.0,
+    "y_R3_Piccolo": 0.0,
+    "x_R3_Medio": -0.0,
+    "y_R3_Medio": 1.0,
+    "x_R3_Grande": 2.0,
+    "y_R3_Grande": 1.0,
+    "x_R4_Piccolo": -0.0,
+    "y_R4_Piccolo": 0.0,
+    "x_R4_Medio": 2.0,
+    "y_R4_Medio": 1.0,
+    "x_R4_Grande": 2.0,
+    "y_R4_Grande": 1.0
+  }
+}

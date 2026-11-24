@@ -1,0 +1,37 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "domanda per prodotto e periodo -> parametri d_{p,t} e bilancio di magazzino",
+        "scorta iniziale e finale minima per prodotto -> parametri S_p/F_p e vincolo I_{p,8}>=F_p",
+        "scorta di fine periodo intera non negativa <=75 -> variabili I_{p,t} in Z_+ e vincoli I_{p,t}<=75",
+        "giacenza complessiva <=150 -> vincoli sum_p I_{p,t}<=150",
+        "capacità condivisa in ore -> vincoli sum_p h_p*x_{p,t}<=H_t",
+        "setup con lotto minimo/massimo -> variabili binarie y_{p,t} e vincoli Lmin_p*y<=x<=Lmax_p*y",
+        "limite complessivo di setup -> vincolo sum_{p,t} y_{p,t}<=18",
+        "limite prodotti in T3 e T6 -> vincoli sum_p y_{p,3}<=2 e sum_p y_{p,6}<=2",
+        "minimizzazione costi -> funzione obiettivo"
+      ],
+      "memory_items_used": [
+        "S-001",
+        "S-002",
+        "S-004"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

@@ -1,0 +1,157 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["Domanda soddisfatta integralmente per ogni zona -> vincolo di bilancio della domanda sum_j x_ij = d_i","Apertura tra 3 e 4 centri su 6 -> vincoli 3<=sum_j y_j<=4","Movimentazione minima 20 unità per centro aperto -> vincolo sum_i x_ij >= 20*y_j","Capacità massima dei centri -> vincolo sum_i x_ij <= cap_j*y_j","Almeno un sito aperto nel gruppo Nord e uno nel gruppo Sud -> vincoli sum_{j in Nord} y_j>=1 e sum_{j in Sud} y_j>=1","Limite massimo di emissioni complessive -> vincolo sum_i sum_j e_ij*x_ij <= 470","Costo totale (fissi + distribuzione) da minimizzare -> funzione obiettivo min sum f_j*y_j + sum c_ij*x_ij"]}
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- I = {Z1, Z2, Z3, Z4, Z5, Z6, Z7, Z8} — zone di domanda
+- J = {A, B, C, D, E, F} — siti candidati
+- North = {A, B, C} ⊂ J
+- South = {D, E, F} ⊂ J
+
+**Parametri**
+- d_i : domanda della zona i ∈ I
+- f_j : costo fisso di apertura del sito j ∈ J
+- cap_j : capacità massima del sito j ∈ J
+- c_ij : costo unitario di trasporto da j a i
+- e_ij : coefficiente di emissione da j a i
+- minOpen = 3, maxOpen = 4 : numero minimo/massimo di siti da aprire
+- minThroughput = 20 : movimentazione minima per centro aperto
+- Ecap = 470 : limite massimo di emissioni complessive
+
+**Variabili decisionali**
+- x_ij ≥ 0 (continua): unità spedite dal sito j alla zona i, ∀ i∈I, j∈J
+- y_j ∈ {0,1}: 1 se il sito j è aperto, 0 altrimenti, ∀ j∈J
+
+## 2. Formulazione matematica
+
+**Funzione obiettivo**
+
+min Σ_{j∈J} f_j·y_j + Σ_{i∈I} Σ_{j∈J} c_ij·x_ij
+
+**Vincoli**
+
+1. Soddisfacimento della domanda:
+   Σ_{j∈J} x_ij = d_i,  ∀ i∈I
+
+2. Capacità (attivata solo se il sito è aperto):
+   Σ_{i∈I} x_ij ≤ cap_j · y_j,  ∀ j∈J
+
+3. Movimentazione minima per centro aperto:
+   Σ_{i∈I} x_ij ≥ minThroughput · y_j,  ∀ j∈J
+
+4. Numero di siti aperti:
+   minOpen ≤ Σ_{j∈J} y_j ≤ maxOpen
+
+5. Presenza minima nei gruppi geografici:
+   Σ_{j∈North} y_j ≥ 1
+   Σ_{j∈South} y_j ≥ 1
+
+6. Limite emissioni:
+   Σ_{i∈I} Σ_{j∈J} e_ij·x_ij ≤ Ecap
+
+7. Dominio delle variabili:
+   x_ij ≥ 0 ∀ i,j
+   y_j ∈ {0,1} ∀ j
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+
+# --- Dati ---
+zones = ["Z1","Z2","Z3","Z4","Z5","Z6","Z7","Z8"]
+sites = ["A","B","C","D","E","F"]
+north = ["A","B","C"]
+south = ["D","E","F"]
+
+demand = {"Z1":30,"Z2":25,"Z3":35,"Z4":20,"Z5":28,"Z6":32,"Z7":24,"Z8":26}
+
+fixed_cost = {"A":110,"B":95,"C":120,"D":90,"E":105,"F":100}
+capacity   = {"A":90,"B":80,"C":110,"D":75,"E":95,"F":85}
+
+unit_cost = {
+    ("Z1","A"):4, ("Z1","B"):7, ("Z1","C"):6, ("Z1","D"):10, ("Z1","E"):9, ("Z1","F"):11,
+    ("Z2","A"):5, ("Z2","B"):4, ("Z2","C"):8, ("Z2","D"):9,  ("Z2","E"):7, ("Z2","F"):10,
+    ("Z3","A"):7, ("Z3","B"):5, ("Z3","C"):4, ("Z3","D"):8,  ("Z3","E"):9, ("Z3","F"):7,
+    ("Z4","A"):9, ("Z4","B"):8, ("Z4","C"):7, ("Z4","D"):4,  ("Z4","E"):5, ("Z4","F"):6,
+    ("Z5","A"):8, ("Z5","B"):9, ("Z5","C"):6, ("Z5","D"):5,  ("Z5","E"):4, ("Z5","F"):7,
+    ("Z6","A"):10,("Z6","B"):8, ("Z6","C"):7, ("Z6","D"):6,  ("Z6","E"):5, ("Z6","F"):4,
+    ("Z7","A"):6, ("Z7","B"):7, ("Z7","C"):5, ("Z7","D"):8,  ("Z7","E"):6, ("Z7","F"):7,
+    ("Z8","A"):7, ("Z8","B"):6, ("Z8","C"):8, ("Z8","D"):5,  ("Z8","E"):7, ("Z8","F"):4,
+}
+
+emission = {
+    ("Z1","A"):1, ("Z1","B"):2, ("Z1","C"):2, ("Z1","D"):4, ("Z1","E"):3, ("Z1","F"):4,
+    ("Z2","A"):2, ("Z2","B"):1, ("Z2","C"):3, ("Z2","D"):3, ("Z2","E"):2, ("Z2","F"):4,
+    ("Z3","A"):3, ("Z3","B"):2, ("Z3","C"):1, ("Z3","D"):3, ("Z3","E"):4, ("Z3","F"):3,
+    ("Z4","A"):4, ("Z4","B"):3, ("Z4","C"):3, ("Z4","D"):1, ("Z4","E"):2, ("Z4","F"):2,
+    ("Z5","A"):3, ("Z5","B"):4, ("Z5","C"):2, ("Z5","D"):2, ("Z5","E"):1, ("Z5","F"):3,
+    ("Z6","A"):4, ("Z6","B"):3, ("Z6","C"):3, ("Z6","D"):2, ("Z6","E"):2, ("Z6","F"):1,
+    ("Z7","A"):2, ("Z7","B"):3, ("Z7","C"):1, ("Z7","D"):3, ("Z7","E"):2, ("Z7","F"):3,
+    ("Z8","A"):3, ("Z8","B"):2, ("Z8","C"):3, ("Z8","D"):1, ("Z8","E"):3, ("Z8","F"):1,
+}
+
+minOpen = 3
+maxOpen = 4
+minThroughput = 20
+Ecap = 470
+
+# --- Modello ---
+m = gp.Model("H01_rete_distributiva")
+
+x = m.addVars(zones, sites, lb=0.0, vtype=GRB.CONTINUOUS, name="x")
+y = m.addVars(sites, vtype=GRB.BINARY, name="y")
+
+# Obiettivo
+m.setObjective(
+    gp.quicksum(fixed_cost[j]*y[j] for j in sites) +
+    gp.quicksum(unit_cost[i,j]*x[i,j] for i in zones for j in sites),
+    GRB.MINIMIZE
+)
+
+# Domanda
+for i in zones:
+    m.addConstr(gp.quicksum(x[i,j] for j in sites) == demand[i], name=f"dem_{i}")
+
+# Capacità
+for j in sites:
+    m.addConstr(gp.quicksum(x[i,j] for i in zones) <= capacity[j]*y[j], name=f"cap_{j}")
+
+# Movimentazione minima
+for j in sites:
+    m.addConstr(gp.quicksum(x[i,j] for i in zones) >= minThroughput*y[j], name=f"minflow_{j}")
+
+# Numero siti aperti
+m.addConstr(gp.quicksum(y[j] for j in sites) >= minOpen, name="minOpen")
+m.addConstr(gp.quicksum(y[j] for j in sites) <= maxOpen, name="maxOpen")
+
+# Gruppi geografici
+m.addConstr(gp.quicksum(y[j] for j in north) >= 1, name="north_min")
+m.addConstr(gp.quicksum(y[j] for j in south) >= 1, name="south_min")
+
+# Emissioni
+m.addConstr(
+    gp.quicksum(emission[i,j]*x[i,j] for i in zones for j in sites) <= Ecap,
+    name="emission_cap"
+)
+
+m.optimize()
+
+status = m.Status
+if status == GRB.OPTIMAL:
+    variables = {}
+    for j in sites:
+        variables[f"y_{j}"] = round(y[j].X, 4)
+    for i in zones:
+        for j in sites:
+            variables[f"x_{i}_{j}"] = round(x[i,j].X, 4)
+    obj_val = round(m.ObjVal, 4)
+    print(f"SOLUTION_JSON={{\"status\":\"OPTIMAL\",\"objective\":{obj_val},\"variables\":{variables}}}")
+else:
+    print(f"SOLUTION_JSON={{\"status\":\"{status}\",\"objective\":null,\"variables\":{{}}}}")
+```
+
+## 4. Sintesi della soluzione
+
+Il modello MILP determina quali dei sei siti candidati aprire (tra 3 e 4, con almeno uno nel gruppo Nord A–C e uno nel gruppo Sud D–F) e come ripartire la domanda delle otto zone tra i centri aperti, minimizzando la somma dei costi fissi di apertura e dei costi di trasporto unitari, nel rispetto dei vincoli di capacità massima, movimentazione minima (20 unità) per ogni centro aperto e limite complessivo di emissioni (≤ 470 unità). Eseguendo il codice con Gurobi si ottiene lo stato del solver (atteso OPTIMAL), il valore ottimo della funzione obiettivo e i valori di tutte le variabili y_j (apertura dei siti) e x_ij (flussi zona-sito), inclusi quelli nulli, riportati nella riga finale `SOLUTION_JSON`.

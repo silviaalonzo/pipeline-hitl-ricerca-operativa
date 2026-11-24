@@ -1,0 +1,57 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 26 rows, 36 columns and 92 nonzeros (Min)
+Model fingerprint: 0x08a58be8
+Model has 28 linear objective coefficients
+Variable types: 0 continuous, 36 integer (36 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+00]
+  Objective range  [7e+00, 1e+01]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 2e+00]
+
+Found heuristic solution: objective 58.0000000
+Presolve removed 11 rows and 8 columns
+Presolve time: 0.00s
+Presolved: 15 rows, 28 columns, 62 nonzeros
+Variable types: 0 continuous, 28 integer (28 binary)
+
+Root relaxation: objective 4.900000e+01, 6 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+*    0     0               0      49.0000000   49.00000  0.00%     -    0s
+
+Explored 1 nodes (6 simplex iterations) in 0.00 seconds (0.00 work units)
+Thread count was 8 (of 8 available processors)
+
+Solution count 2: 49 58 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 4.900000000000e+01, best bound 4.900000000000e+01, gap 0.0000%
+
+======================================================================
+RISULTATO M03 - Assegnazione del personale ai turni
+======================================================================
+Numero di vincoli di indisponibilita' inseriti: 8
+Stato finale Gurobi      : OPTIMAL (codice 2)
+Tempo di esecuzione Gurobi: 0.0012 s
+Valore funzione obiettivo : 49
+
+Decisioni non nulle (x_ij = 1):
+    x[Bruno,M1] = 1   (costo 7)
+    x[Ana,M2] = 1   (costo 7)
+    x[Bruno,P1] = 1   (costo 8)
+    x[Fabio,P2] = 1   (costo 7)
+    x[Diego,N1] = 1   (costo 10)
+    x[Elena,N2] = 1   (costo 10)
+
+File soluzione scritto: /Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_a/M03/M03.sol
+======================================================================

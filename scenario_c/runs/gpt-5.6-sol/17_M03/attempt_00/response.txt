@@ -1,0 +1,247 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["copertura esatta dei sei turni -> vincoli di copertura","massimo due turni per dipendente -> vincoli di carico","massimo un turno notturno per dipendente -> vincoli sui turni N1 e N2","celle indisponibili -> variabili fissate a zero","minimizzazione del costo complessivo -> funzione obiettivo","assegnazioni binarie -> dominio delle variabili"]}
+
+## 1. Insiemi, parametri e variabili decisionali
+
+### Insiemi
+
+- Dipendenti:
+  \[
+  D=\{\text{Ana, Bruno, Carla, Diego, Elena, Fabio}\}.
+  \]
+
+- Turni:
+  \[
+  T=\{\text{M1, M2, P1, P2, N1, N2}\}.
+  \]
+
+- Turni notturni:
+  \[
+  N=\{\text{N1, N2}\}\subseteq T.
+  \]
+
+- Coppie dipendente-turno disponibili:
+  \[
+  A\subseteq D\times T,
+  \]
+  costituito dalle celle della tabella che contengono un costo.
+
+### Parametri
+
+Per ogni \((i,t)\in A\), \(c_{it}\) è il costo di assegnare il dipendente \(i\) al turno \(t\):
+
+\[
+\begin{aligned}
+c_{\text{Ana},t}&=(8,7,9,8) && t=(M1,M2,P1,P2),\\
+c_{\text{Bruno},t}&=(7,8,8,9) && t=(M1,M2,P1,P2),\\
+c_{\text{Carla},t}&=(9,8,8,11,12) && t=(M2,P1,P2,N1,N2),\\
+c_{\text{Diego},t}&=(10,9,8,10,11) && t=(M1,P1,P2,N1,N2),\\
+c_{\text{Elena},t}&=(8,10,9,9,12,10) && t=(M1,M2,P1,P2,N1,N2),\\
+c_{\text{Fabio},t}&=(9,8,10,7) && t=(M1,M2,P1,P2).
+\end{aligned}
+\]
+
+### Variabili decisionali
+
+Per ogni \(i\in D\) e \(t\in T\):
+
+\[
+x_{it}=
+\begin{cases}
+1 & \text{se il dipendente }i\text{ viene assegnato al turno }t,\\
+0 & \text{altrimenti.}
+\end{cases}
+\]
+
+Le variabili associate alle coppie non disponibili sono presenti nel modello ma vengono fissate a zero.
+
+## 2. Formulazione matematica completa
+
+### Funzione obiettivo
+
+Minimizzare il costo totale delle assegnazioni:
+
+\[
+\min \quad \sum_{(i,t)\in A} c_{it}x_{it}.
+\]
+
+### Copertura dei turni
+
+Ogni turno deve essere assegnato esattamente a un dipendente:
+
+\[
+\sum_{i\in D}x_{it}=1
+\qquad \forall t\in T.
+\]
+
+### Carico massimo per dipendente
+
+Ogni dipendente può lavorare al massimo due turni:
+
+\[
+\sum_{t\in T}x_{it}\leq 2
+\qquad \forall i\in D.
+\]
+
+### Limite sui turni notturni
+
+Ogni dipendente può lavorare al massimo un turno notturno:
+
+\[
+\sum_{t\in N}x_{it}\leq 1
+\qquad \forall i\in D.
+\]
+
+### Indisponibilità
+
+Le assegnazioni non disponibili sono vietate:
+
+\[
+x_{it}=0
+\qquad \forall (i,t)\in (D\times T)\setminus A.
+\]
+
+### Dominio
+
+\[
+x_{it}\in\{0,1\}
+\qquad \forall i\in D,\ \forall t\in T.
+\]
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+employees = ["Ana", "Bruno", "Carla", "Diego", "Elena", "Fabio"]
+shifts = ["M1", "M2", "P1", "P2", "N1", "N2"]
+night_shifts = ["N1", "N2"]
+
+costs = {
+    ("Ana", "M1"): 8,
+    ("Ana", "M2"): 7,
+    ("Ana", "P1"): 9,
+    ("Ana", "P2"): 8,
+
+    ("Bruno", "M1"): 7,
+    ("Bruno", "M2"): 8,
+    ("Bruno", "P1"): 8,
+    ("Bruno", "P2"): 9,
+
+    ("Carla", "M2"): 9,
+    ("Carla", "P1"): 8,
+    ("Carla", "P2"): 8,
+    ("Carla", "N1"): 11,
+    ("Carla", "N2"): 12,
+
+    ("Diego", "M1"): 10,
+    ("Diego", "P1"): 9,
+    ("Diego", "P2"): 8,
+    ("Diego", "N1"): 10,
+    ("Diego", "N2"): 11,
+
+    ("Elena", "M1"): 8,
+    ("Elena", "M2"): 10,
+    ("Elena", "P1"): 9,
+    ("Elena", "P2"): 9,
+    ("Elena", "N1"): 12,
+    ("Elena", "N2"): 10,
+
+    ("Fabio", "M1"): 9,
+    ("Fabio", "M2"): 8,
+    ("Fabio", "P1"): 10,
+    ("Fabio", "P2"): 7
+}
+
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+model = gp.Model("assegnazione_personale_turni", env=env)
+
+x = {
+    (i, t): model.addVar(vtype=GRB.BINARY, name=f"x[{i},{t}]")
+    for i in employees
+    for t in shifts
+}
+
+model.setObjective(
+    gp.quicksum(costs[i, t] * x[i, t] for (i, t) in costs),
+    GRB.MINIMIZE
+)
+
+for t in shifts:
+    model.addConstr(
+        gp.quicksum(x[i, t] for i in employees) == 1,
+        name=f"copertura[{t}]"
+    )
+
+for i in employees:
+    model.addConstr(
+        gp.quicksum(x[i, t] for t in shifts) <= 2,
+        name=f"massimo_due_turni[{i}]"
+    )
+
+for i in employees:
+    model.addConstr(
+        gp.quicksum(x[i, t] for t in night_shifts) <= 1,
+        name=f"massimo_un_notturno[{i}]"
+    )
+
+for i in employees:
+    for t in shifts:
+        if (i, t) not in costs:
+            model.addConstr(
+                x[i, t] == 0,
+                name=f"indisponibilita[{i},{t}]"
+            )
+
+model.optimize()
+
+status_map = {
+    GRB.LOADED: "LOADED",
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.INF_OR_UNBD: "INF_OR_UNBD",
+    GRB.UNBOUNDED: "UNBOUNDED",
+    GRB.CUTOFF: "CUTOFF",
+    GRB.ITERATION_LIMIT: "ITERATION_LIMIT",
+    GRB.NODE_LIMIT: "NODE_LIMIT",
+    GRB.TIME_LIMIT: "TIME_LIMIT",
+    GRB.SOLUTION_LIMIT: "SOLUTION_LIMIT",
+    GRB.INTERRUPTED: "INTERRUPTED",
+    GRB.NUMERIC: "NUMERIC",
+    GRB.SUBOPTIMAL: "SUBOPTIMAL",
+    GRB.USER_OBJ_LIMIT: "USER_OBJ_LIMIT"
+}
+
+solver_status = status_map.get(model.Status, f"STATUS_{model.Status}")
+
+if model.Status == GRB.OPTIMAL:
+    variable_values = {}
+    for i in employees:
+        for t in shifts:
+            value = float(round(x[i, t].X, 10))
+            if abs(value) < 1e-9:
+                value = 0.0
+            variable_values[f"x[{i},{t}]"] = value
+
+    payload = {
+        "status": "OPTIMAL",
+        "objective": float(round(model.ObjVal, 10)),
+        "variables": variable_values
+    }
+else:
+    payload = {
+        "status": solver_status,
+        "objective": None,
+        "variables": {}
+    }
+
+print("SOLUTION_JSON=" + json.dumps(payload, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Il valore ottimo è **49**. Una soluzione ottima assegna Ana a M2, Bruno a M1 e P1, Fabio a P2, Diego a N1 ed Elena a N2. Carla non viene assegnata. Esiste anche un ottimo alternativo di costo 49 nel quale P1 è assegnato a Carla anziché a Bruno.

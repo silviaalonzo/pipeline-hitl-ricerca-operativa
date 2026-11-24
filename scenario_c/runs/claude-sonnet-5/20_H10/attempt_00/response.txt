@@ -1,0 +1,153 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["Trasporto di 28 unità di K1 e 22 di K2 da S a T -> vincoli di conservazione del flusso con domanda per prodotto k","Archi condividono la capacità tra i due prodotti -> vincolo di capacità congiunta sum_k x[a,k] <= cap[a]*y[a]","Entrambi gli archi in uscita da S devono essere attivati -> vincoli y[S,A]=1, y[S,B]=1","Al massimo sette archi attivabili complessivamente -> vincolo sum_a y[a] <= 7","Costi unitari dipendenti dal prodotto -> parametro cost[a,k] nella funzione obiettivo","Flussi interi -> dominio intero delle variabili x[a,k]","Minimizzare costi fissi e di flusso -> funzione obiettivo con termini fixed[a]*y[a] + cost[a,k]*x[a,k]"]}
+
+## 1. Insiemi, parametri e variabili
+
+**Insiemi**
+- N = {S, A, B, C, D, T} — nodi della rete
+- A = {(S,A),(S,B),(A,B),(A,C),(B,C),(B,D),(C,D),(C,T),(D,T)} — archi disponibili
+- K = {K1, K2} — prodotti
+
+**Parametri**
+- fixed[a] — costo fisso di attivazione dell'arco a
+- cap[a] — capacità condivisa dell'arco a
+- cost[a,k] — costo unitario di trasporto del prodotto k sull'arco a
+- demand[k] — quantità da instradare da S a T per il prodotto k (K1=28, K2=22)
+- MAXARCS = 7 — numero massimo di archi attivabili
+
+**Variabili decisionali**
+- y[a] ∈ {0,1} — 1 se l'arco a è attivato, 0 altrimenti
+- x[a,k] ∈ ℤ≥0 — flusso intero del prodotto k sull'arco a
+
+## 2. Formulazione matematica
+
+**Funzione obiettivo**
+
+min Σ_a fixed[a]·y[a] + Σ_a Σ_k cost[a,k]·x[a,k]
+
+**Vincoli**
+
+1. Conservazione del flusso per ogni nodo n ∈ N e prodotto k ∈ K:
+
+Σ_{a=(i,n)} x[a,k] − Σ_{a=(n,j)} x[a,k] =
+- −demand[k] se n = S
+- +demand[k] se n = T
+- 0 altrimenti
+
+2. Capacità condivisa per ogni arco a ∈ A:
+
+Σ_k x[a,k] ≤ cap[a]·y[a]
+
+3. Attivazione obbligatoria degli archi in uscita da S:
+
+y[(S,A)] = 1, y[(S,B)] = 1
+
+4. Limite sul numero di archi attivati:
+
+Σ_a y[a] ≤ 7
+
+5. Dominio:
+
+y[a] ∈ {0,1} ∀a ; x[a,k] ∈ ℤ≥0 ∀a,k
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+
+# --- Insiemi ---
+ARCS = [('S','A'), ('S','B'), ('A','B'), ('A','C'), ('B','C'),
+         ('B','D'), ('C','D'), ('C','T'), ('D','T')]
+NODES = ['S','A','B','C','D','T']
+PRODUCTS = ['K1','K2']
+
+# --- Parametri ---
+fixed = {
+    ('S','A'):55, ('S','B'):50, ('A','B'):18, ('A','C'):38,
+    ('B','C'):22, ('B','D'):35, ('C','D'):20, ('C','T'):48, ('D','T'):44
+}
+cap = {
+    ('S','A'):35, ('S','B'):35, ('A','B'):15, ('A','C'):30,
+    ('B','C'):25, ('B','D'):25, ('C','D'):20, ('C','T'):35, ('D','T'):35
+}
+cost = {
+    ('S','A'): {'K1':2, 'K2':3},
+    ('S','B'): {'K1':3, 'K2':2},
+    ('A','B'): {'K1':1, 'K2':2},
+    ('A','C'): {'K1':2, 'K2':3},
+    ('B','C'): {'K1':2, 'K2':1},
+    ('B','D'): {'K1':3, 'K2':2},
+    ('C','D'): {'K1':1, 'K2':2},
+    ('C','T'): {'K1':3, 'K2':2},
+    ('D','T'): {'K1':2, 'K2':3},
+}
+demand = {'K1':28, 'K2':22}
+MAXARCS = 7
+
+model = gp.Model("H10_multiproduct_network")
+model.setParam('OutputFlag', 0)
+
+# --- Variabili ---
+y = model.addVars(ARCS, vtype=GRB.BINARY, name="y")
+x = model.addVars(ARCS, PRODUCTS, vtype=GRB.INTEGER, lb=0, name="x")
+
+# --- Funzione obiettivo ---
+obj = gp.quicksum(fixed[a] * y[a] for a in ARCS) + \
+      gp.quicksum(cost[a][k] * x[a, k] for a in ARCS for k in PRODUCTS)
+model.setObjective(obj, GRB.MINIMIZE)
+
+# --- Vincoli di conservazione del flusso ---
+for n in NODES:
+    for k in PRODUCTS:
+        inflow = gp.quicksum(x[a, k] for a in ARCS if a[1] == n)
+        outflow = gp.quicksum(x[a, k] for a in ARCS if a[0] == n)
+        if n == 'S':
+            rhs = -demand[k]
+        elif n == 'T':
+            rhs = demand[k]
+        else:
+            rhs = 0
+        model.addConstr(inflow - outflow == rhs, name=f"balance_{n}_{k}")
+
+# --- Capacità condivisa ---
+for a in ARCS:
+    model.addConstr(
+        gp.quicksum(x[a, k] for k in PRODUCTS) <= cap[a] * y[a],
+        name=f"cap_{a[0]}_{a[1]}"
+    )
+
+# --- Attivazione obbligatoria degli archi da S ---
+model.addConstr(y[('S','A')] == 1, name="force_SA")
+model.addConstr(y[('S','B')] == 1, name="force_SB")
+
+# --- Limite sul numero di archi attivati ---
+model.addConstr(gp.quicksum(y[a] for a in ARCS) <= MAXARCS, name="max_arcs")
+
+model.optimize()
+
+variables = {}
+status_str = "UNKNOWN"
+objective_value = None
+
+if model.status == GRB.OPTIMAL:
+    status_str = "OPTIMAL"
+    objective_value = model.ObjVal
+    for a in ARCS:
+        variables[f"y_{a[0]}_{a[1]}"] = float(round(y[a].X))
+    for a in ARCS:
+        for k in PRODUCTS:
+            variables[f"x_{a[0]}_{a[1]}_{k}"] = float(round(x[a, k].X))
+else:
+    status_str = "INFEASIBLE" if model.status == GRB.INFEASIBLE else str(model.status)
+
+import json
+print("SOLUTION_JSON=" + json.dumps({
+    "status": status_str,
+    "objective": objective_value,
+    "variables": variables
+}))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello MILP attiva obbligatoriamente gli archi S→A e S→B, sceglie fino a 7 archi complessivi tra i 9 disponibili e instrada in modo intero 28 unità di K1 e 22 unità di K2 da S a T, rispettando la capacità condivisa su ciascun arco attivato. La funzione obiettivo minimizza la somma dei costi fissi di attivazione e dei costi di trasporto specifici per prodotto. Il codice Gurobi risolve il problema e stampa un'unica riga `SOLUTION_JSON` con lo stato del solver (atteso OPTIMAL), il valore ottimo della funzione obiettivo e tutti i valori delle variabili di attivazione `y` e di flusso `x` per ciascun arco e prodotto, incluse quelle nulle.

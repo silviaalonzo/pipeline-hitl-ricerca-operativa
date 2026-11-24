@@ -1,0 +1,116 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["Coprire dieci zone -> vincoli di copertura per ogni zona Z1..Z10","Zone critiche Z3 e Z7 con doppia copertura -> vincoli >=2 per Z3 e Z7","Massimo cinque centri apribili -> vincolo sum(x_i) <= 5","Minimizzare il costo di apertura -> funzione obiettivo di costo","Centri e zone coperte da matrice -> parametro di copertura a_{i,j} e insieme Centri/Zone"]}
+
+## 2. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- I = {A, B, C, D, E, F, G, H} — centri di servizio candidati
+- J = {Z1, Z2, ..., Z10} — zone da coprire
+- J_crit = {Z3, Z7} ⊆ J — zone critiche che richiedono doppia copertura
+
+**Parametri**
+- c_i = costo di apertura del centro i ∈ I (A:24, B:20, C:27, D:22, E:25, F:19, G:23, H:21)
+- a_{i,j} = 1 se il centro i copre la zona j, 0 altrimenti (dato dalla tabella)
+- K = 5 — numero massimo di centri apribili
+
+**Variabili decisionali**
+- x_i ∈ {0,1} per ogni i ∈ I: 1 se il centro i viene aperto, 0 altrimenti
+
+## 3. Formulazione matematica
+
+**Funzione obiettivo**
+
+min Σ_{i∈I} c_i · x_i
+
+**Vincoli**
+
+1. Copertura semplice per zone non critiche:
+   Σ_{i∈I} a_{i,j} · x_i ≥ 1  ∀ j ∈ J \ J_crit
+
+2. Doppia copertura per zone critiche:
+   Σ_{i∈I} a_{i,j} · x_i ≥ 2  ∀ j ∈ J_crit
+
+3. Limite massimo sul numero di centri aperti:
+   Σ_{i∈I} x_i ≤ K
+
+4. Dominio delle variabili:
+   x_i ∈ {0,1}  ∀ i ∈ I
+
+## 4. Codice Python con gurobipy
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# Insiemi
+centri = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+zone = ['Z1', 'Z2', 'Z3', 'Z4', 'Z5', 'Z6', 'Z7', 'Z8', 'Z9', 'Z10']
+zone_critiche = ['Z3', 'Z7']
+
+# Parametri: costi
+costo = {
+    'A': 24, 'B': 20, 'C': 27, 'D': 22,
+    'E': 25, 'F': 19, 'G': 23, 'H': 21
+}
+
+# Parametri: copertura zone per centro
+copertura = {
+    'A': ['Z1', 'Z2', 'Z3'],
+    'B': ['Z2', 'Z3', 'Z4', 'Z5'],
+    'C': ['Z1', 'Z5', 'Z6'],
+    'D': ['Z3', 'Z6', 'Z7'],
+    'E': ['Z4', 'Z7', 'Z8'],
+    'F': ['Z5', 'Z8', 'Z9'],
+    'G': ['Z6', 'Z9', 'Z10'],
+    'H': ['Z7', 'Z8', 'Z10']
+}
+
+# Matrice a_{i,j}
+a = {(i, j): 1 if j in copertura[i] else 0 for i in centri for j in zone}
+
+K = 5  # numero massimo di centri apribili
+
+# Modello
+m = gp.Model("copertura_zone")
+
+# Variabili decisionali
+x = m.addVars(centri, vtype=GRB.BINARY, name="x")
+
+# Funzione obiettivo
+m.setObjective(gp.quicksum(costo[i] * x[i] for i in centri), GRB.MINIMIZE)
+
+# Vincoli di copertura
+for j in zone:
+    coeff = gp.quicksum(a[i, j] * x[i] for i in centri)
+    if j in zone_critiche:
+        m.addConstr(coeff >= 2, name=f"copertura_critica_{j}")
+    else:
+        m.addConstr(coeff >= 1, name=f"copertura_{j}")
+
+# Vincolo sul numero massimo di centri aperti
+m.addConstr(gp.quicksum(x[i] for i in centri) <= K, name="max_centri")
+
+# Risoluzione
+m.optimize()
+
+# Output
+if m.Status == GRB.OPTIMAL:
+    variables = {f"x_{i}": x[i].X for i in centri}
+    solution = {
+        "status": "OPTIMAL",
+        "objective": m.ObjVal,
+        "variables": variables
+    }
+else:
+    solution = {
+        "status": str(m.Status),
+        "objective": None,
+        "variables": {}
+    }
+
+print(f"SOLUTION_JSON={json.dumps(solution)}")
+```
+
+## 5. Sintesi della soluzione
+
+Il modello è un problema di Set Covering binario con vincoli aggiuntivi di copertura multipla per le zone critiche Z3 e Z7 e un vincolo cardinale sul numero massimo di centri apribili (≤5). La funzione obiettivo minimizza il costo totale di apertura dei centri, garantendo che ogni zona sia coperta almeno una volta (o almeno due volte se critica) da centri effettivamente aperti. Il codice Gurobi costruisce il modello a partire dai dati forniti nella tabella (costi e matrice di copertura), risolve il problema di ottimizzazione intera e restituisce lo stato, il valore ottimo della funzione obiettivo e i valori di tutte le variabili decisionali x_i (0 o 1) tramite l'output SOLUTION_JSON.

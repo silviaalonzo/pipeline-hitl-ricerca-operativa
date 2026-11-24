@@ -1,0 +1,11 @@
+{
+  "scenario": "C",
+  "problem_id": "H10",
+  "problem_sequence": 20,
+  "attempt_number": 4,
+  "attempt_kind": "EXPERT_DIRECT_CODE",
+  "source_path": "/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_a/H10/modello.py",
+  "source_sha256": "3014d853c4a802c4674c90c2dca224cc12b92e1e5b78b327cfdf234d13364d48",
+  "api_call": false,
+  "created_at_utc": "2026-08-24T19:30:58.856429+00:00"
+}

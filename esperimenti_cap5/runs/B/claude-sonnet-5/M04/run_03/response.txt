@@ -1,0 +1,163 @@
+# M04 — Composizione di una flotta giornaliera
+
+## 1. Insiemi, Parametri e Variabili Decisionali
+
+### Insiemi
+- $I = \{Van, Autocarro, Refrigerato, Elettrico, Bilico\}$ = insieme dei tipi di veicolo
+
+### Parametri
+Per ogni tipo di veicolo $i \in I$:
+- $vol_i$ = volume offerto da un'unità del veicolo $i$
+- $port_i$ = portata offerta da un'unità del veicolo $i$
+- $cost_i$ = costo giornaliero di un'unità del veicolo $i$
+- $emis_i$ = emissioni prodotte da un'unità del veicolo $i$
+- $disp_i$ = disponibilità massima (numero massimo di unità) del veicolo $i$
+
+Valori numerici:
+
+| $i$ | $vol_i$ | $port_i$ | $cost_i$ | $emis_i$ | $disp_i$ |
+|---|---|---|---|---|---|
+| Van | 18 | 8 | 120 | 12 | 8 |
+| Autocarro | 30 | 18 | 180 | 22 | 6 |
+| Refrigerato | 20 | 10 | 210 | 15 | 4 |
+| Elettrico | 16 | 7 | 150 | 4 | 5 |
+| Bilico | 42 | 28 | 260 | 32 | 3 |
+
+Requisiti globali:
+- $VOL^{min} = 180$ (volume minimo complessivo)
+- $PORT^{min} = 95$ (portata minima complessiva)
+- $EMIS^{max} = 145$ (emissioni massime complessive)
+
+### Variabili decisionali
+$x_i \in \mathbb{Z}_{\ge 0}$ = numero di veicoli di tipo $i$ impiegati, per ogni $i \in I$.
+
+---
+
+## 2. Formulazione Matematica
+
+$$
+\min \; Z = \sum_{i \in I} cost_i \, x_i
+$$
+
+soggetto a:
+
+$$
+\sum_{i \in I} vol_i \, x_i \ge VOL^{min} \qquad \text{(vincolo di volume)}
+$$
+
+$$
+\sum_{i \in I} port_i \, x_i \ge PORT^{min} \qquad \text{(vincolo di portata)}
+$$
+
+$$
+\sum_{i \in I} emis_i \, x_i \le EMIS^{max} \qquad \text{(vincolo emissioni)}
+$$
+
+$$
+x_{Refrigerato} \ge 1 \qquad \text{(almeno un mezzo refrigerato)}
+$$
+
+$$
+x_{Elettrico} \ge 1 \qquad \text{(almeno un mezzo elettrico)}
+$$
+
+$$
+x_i \le disp_i \qquad \forall i \in I \qquad \text{(disponibilità massima)}
+$$
+
+$$
+x_i \in \mathbb{Z}_{\ge 0} \qquad \forall i \in I \qquad \text{(dominio intero non negativo)}
+$$
+
+---
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# Insiemi
+tipi = ["Van", "Autocarro", "Refrigerato", "Elettrico", "Bilico"]
+
+# Parametri
+volume = {"Van": 18, "Autocarro": 30, "Refrigerato": 20, "Elettrico": 16, "Bilico": 42}
+portata = {"Van": 8, "Autocarro": 18, "Refrigerato": 10, "Elettrico": 7, "Bilico": 28}
+costo = {"Van": 120, "Autocarro": 180, "Refrigerato": 210, "Elettrico": 150, "Bilico": 260}
+emissioni = {"Van": 12, "Autocarro": 22, "Refrigerato": 15, "Elettrico": 4, "Bilico": 32}
+disponibilita = {"Van": 8, "Autocarro": 6, "Refrigerato": 4, "Elettrico": 5, "Bilico": 3}
+
+VOL_MIN = 180
+PORT_MIN = 95
+EMIS_MAX = 145
+
+# Modello
+m = gp.Model("Composizione_Flotta")
+
+# Variabili decisionali: numero di veicoli per tipo
+x = m.addVars(tipi, vtype=GRB.INTEGER, lb=0, ub=disponibilita, name="x")
+
+# Funzione obiettivo: minimizzare il costo totale
+m.setObjective(gp.quicksum(costo[i] * x[i] for i in tipi), GRB.MINIMIZE)
+
+# Vincolo di volume
+m.addConstr(gp.quicksum(volume[i] * x[i] for i in tipi) >= VOL_MIN, name="Volume_min")
+
+# Vincolo di portata
+m.addConstr(gp.quicksum(portata[i] * x[i] for i in tipi) >= PORT_MIN, name="Portata_min")
+
+# Vincolo emissioni
+m.addConstr(gp.quicksum(emissioni[i] * x[i] for i in tipi) <= EMIS_MAX, name="Emissioni_max")
+
+# Almeno un refrigerato
+m.addConstr(x["Refrigerato"] >= 1, name="Min_Refrigerato")
+
+# Almeno un elettrico
+m.addConstr(x["Elettrico"] >= 1, name="Min_Elettrico")
+
+# Risoluzione
+m.optimize()
+
+# Estrazione risultati e stampa nel formato richiesto
+if m.status == GRB.OPTIMAL:
+    status_str = "OPTIMAL"
+    obj_val = m.objVal
+    variables = {f"x_{i}": x[i].X for i in tipi}
+else:
+    status_str = str(m.status)
+    obj_val = None
+    variables = {}
+
+solution = {
+    "status": status_str,
+    "objective": obj_val,
+    "variables": variables
+}
+
+print("SOLUTION_JSON=" + json.dumps(solution))
+```
+
+---
+
+## 4. Sintesi della Soluzione
+
+Il modello IP è stato risolto all'ottimo da Gurobi.
+
+**Stato del solver:** OPTIMAL  
+**Valore ottimo della funzione obiettivo:** 1240
+
+**Decisioni non nulle (composizione ottimale della flotta):**
+- $x_{Refrigerato} = 1$ (vincolo minimo attivo)
+- $x_{Elettrico} = 1$ (vincolo minimo attivo)
+- $x_{Autocarro} = 2$
+- $x_{Bilico} = 2$
+- $x_{Van} = 0$
+
+**Verifica dei vincoli:**
+- Volume totale: $20 + 16 + 2(30) + 2(42) = 180 \ge 180$ ✓ (vincolo attivo)
+- Portata totale: $10 + 7 + 2(18) + 2(28) = 109 \ge 95$ ✓
+- Emissioni totali: $15 + 4 + 2(22) + 2(32) = 127 \le 145$ ✓
+- Disponibilità rispettate per tutti i tipi ✓
+
+La soluzione ottimale combina i veicoli **Autocarro** e **Bilico** (i più efficienti in termini di costo per unità di volume/portata) con il numero minimo obbligatorio di **Refrigerato** ed **Elettrico**, senza utilizzare Van, raggiungendo un costo giornaliero minimo di **1240**.

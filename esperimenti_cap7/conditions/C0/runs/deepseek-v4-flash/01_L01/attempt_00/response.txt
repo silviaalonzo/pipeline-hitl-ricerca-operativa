@@ -1,0 +1,87 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["ogni rotta a un solo veicolo -> vincolo sum_i x_ij = 1","attivazione veicoli -> vincoli x_ij <= y_i","limiti di carico -> vincoli di capacità","limite numero rotte -> vincoli route max","max 7 veicoli attivati -> vincolo sum_i y_i <= 7","almeno 2 elettrici attivati -> vincolo sum_{E1,E2,E3} y_i >= 2","elettrici max una rotta lunga -> vincoli su L","diesel max due rotte centro -> vincoli su C","limite emissioni -> vincolo di emissione","minimizzazione costi fissi e assegnazione -> funzione obiettivo"],"memory_items_used":[]}
+
+## 2. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- \(I = \{E1,E2,E3,D1,D2,D3,D4,D5\}\)
+- \(J = \{R01,\dots,R16\}\)
+- \(E = \{E1,E2,E3\}\)
+- \(D = \{D1,\dots,D5\}\)
+- \(L = \{R06,R09,R11,R13,R15,R16\}\)
+- \(C = \{R01,R03,R05,R08,R12\}\)
+
+**Parametri**
+- \(f_i\): costo fisso del veicolo \(i\)
+- \(q_i\): capacità di carico del veicolo \(i\)
+- \(r_i\): numero massimo di rotte del veicolo \(i\)
+- \(e_i\): fattore di emissione del veicolo \(i\)
+- \(l_j\): carico della rotta \(j\)
+- \(d_j\): distanza della rotta \(j\)
+- \(a_{ij}\): costo di assegnazione della rotta \(j\) al veicolo \(i\)
+- \(T = 1050\): limite di emissioni
+
+**Variabili decisionali**
+- \(y_i \in \{0,1\}\): vale 1 se il veicolo \(i\) è attivato
+- \(x_{ij} \in \{0,1\}\): vale 1 se la rotta \(j\) è assegnata al veicolo \(i\)
+
+## 3. Formulazione matematica
+
+\[
+\min \sum_{i \in I} f_i y_i + \sum_{i \in I}\sum_{j \in J} a_{ij} x_{ij}
+\]
+
+vincoli:
+
+\[
+\sum_{i \in I} x_{ij} = 1 \qquad \forall j \in J
+\]
+
+\[
+x_{ij} \le y_i \qquad \forall i \in I,\; j \in J
+\]
+
+\[
+\sum_{j \in J} l_j x_{ij} \le q_i y_i \qquad \forall i \in I
+\]
+
+\[
+\sum_{j \in J} x_{ij} \le r_i y_i \qquad \forall i \in I
+\]
+
+\[
+\sum_{i \in I} y_i \le 7
+\]
+
+\[
+\sum_{i \in E} y_i \ge 2
+\]
+
+\[
+\sum_{j \in L} x_{ij} \le 1 \qquad \forall i \in E
+\]
+
+\[
+\sum_{j \in C} x_{ij} \le 2 \qquad \forall i \in D
+\]
+
+\[
+\sum_{i \in I}\sum_{j \in J} e_i d_j x_{ij} \le 1050
+\]
+
+\[
+x_{ij} \in \{0,1\}, \quad y_i \in \{0,1\}
+\]
+
+## 4. Codice Python con Gurobi
+
+```python
+from gurobipy import Model, GRB, quicksum
+import json
+
+vehicles = ["E1", "E2", "E3", "D1", "D2", "D3", "D4", "D5"]
+routes = ["R01", "R02", "R03", "R04", "R05", "R06", "R07", "R08",
+          "R09", "R10", "R11", "R12", "R13", "R14", "R15", "R16"]
+
+fixed_cost = {
+    "E1": 62, "E2": 58, "E3": 55,
+    "D1": 46

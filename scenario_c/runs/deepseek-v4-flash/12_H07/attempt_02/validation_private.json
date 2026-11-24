@@ -1,0 +1,61 @@
+{
+  "problem_id": "H07",
+  "validated_at_utc": "2026-08-24T21:12:18.450006+00:00",
+  "correct": true,
+  "status_optimal": true,
+  "known_optimum": 2160.0,
+  "projected_feasible": true,
+  "projected_objective": 2160.0,
+  "relative_gap": 0.0,
+  "gap_tolerance": 0.001,
+  "declared_objective": 2160.0,
+  "declared_objective_delta": 0.0,
+  "declared_objective_corrected_automatically": false,
+  "unknown_nonzero_variables": [],
+  "aliases": {},
+  "auxiliary_variables_completed": [],
+  "algebraic": {
+    "problem_id": "H07",
+    "candidate_status": "OPTIMAL",
+    "feasible": true,
+    "correct": true,
+    "recomputed_objective": 2160.0,
+    "known_optimum": 2160.0,
+    "relative_gap": 0.0,
+    "max_violation": 0.0,
+    "declared_objective": 2160.0,
+    "declared_objective_delta": 0.0,
+    "missing_variables_assumed_zero": [
+      "x_D_C1",
+      "x_E_C3",
+      "x_F_C2",
+      "z_D_C1",
+      "z_E_C3",
+      "z_F_C2"
+    ],
+    "unknown_variables": [],
+    "duplicate_variable_names": [],
+    "normalized_variable_names": {},
+    "numeric_error": null,
+    "bound_violations": [],
+    "integrality_violations": [],
+    "constraint_violations": [],
+    "tolerances": {
+      "feasibility": 1e-06,
+      "integrality": 1e-05,
+      "relative_gap": 0.001
+    }
+  },
+  "independent": {
+    "gurobi_feasible": true,
+    "gurobi_objective": 2160.0,
+    "unknown_variables": [],
+    "unknown_nonzero": [],
+    "candidate_auxiliary_variables_ignored": [],
+    "duplicates": [],
+    "projected_feasible": true,
+    "projected_objective": 2160.0,
+    "projected_correct": true,
+    "auxiliary_variables_completed": []
+  }
+}

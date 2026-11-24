@@ -1,0 +1,21 @@
+{
+  "problem_id": "H07",
+  "correct": true,
+  "candidate_status": "OPTIMAL",
+  "feasible_in_original_problem": true,
+  "gap_within_tolerance": true,
+  "declared_objective_corrected_automatically": false,
+  "max_constraint_violation": 0.0,
+  "constraint_violations": [],
+  "bound_violations": [],
+  "integrality_violations": [],
+  "unknown_nonzero_variables": [],
+  "missing_variables_assumed_zero": [
+    "x_D_C1",
+    "x_E_C3",
+    "x_F_C2",
+    "z_D_C1",
+    "z_E_C3",
+    "z_F_C2"
+  ]
+}

@@ -1,0 +1,69 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 11 rows, 8 columns and 33 nonzeros (Min)
+Model fingerprint: 0xef8416d0
+Model has 8 linear objective coefficients
+Variable types: 0 continuous, 8 integer (8 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+00]
+  Objective range  [2e+01, 3e+01]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 5e+00]
+
+Presolve removed 3 rows and 1 columns
+Presolve time: 0.00s
+Presolved: 8 rows, 7 columns, 22 nonzeros
+Variable types: 0 continuous, 7 integer (7 binary)
+Found heuristic solution: objective 106.0000000
+
+Root relaxation: cutoff, 7 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0     cutoff    0       106.00000  106.00000  0.00%     -    0s
+
+Explored 1 nodes (7 simplex iterations) in 0.00 seconds (0.00 work units)
+Thread count was 8 (of 8 available processors)
+
+Solution count 1: 106 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 1.060000000000e+02, best bound 1.060000000000e+02, gap 0.0000%
+
+======================================================================
+RISULTATO M08 - Copertura di zone con centri di servizio
+======================================================================
+Stato finale Gurobi      : OPTIMAL (codice 2)
+Tempo di esecuzione Gurobi: 0.0006 s
+Valore funzione obiettivo : 106
+
+Decisioni non nulle (y_i = 1):
+    y[A] = 1   (costo 24)
+    y[B] = 1   (costo 20)
+    y[D] = 1   (costo 22)
+    y[F] = 1   (costo 19)
+    y[H] = 1   (costo 21)
+
+Centri aperti: 5 (ammessi <= 5)
+
+Copertura ottenuta:
+    Z1  : 1 copertura/e (richieste 1)   centri A
+    Z2  : 2 copertura/e (richieste 1)   centri A, B
+    Z3  : 3 copertura/e (richieste 2)   centri A, B, D
+    Z4  : 1 copertura/e (richieste 1)   centri B
+    Z5  : 2 copertura/e (richieste 1)   centri B, F
+    Z6  : 1 copertura/e (richieste 1)   centri D
+    Z7  : 2 copertura/e (richieste 2)   centri D, H
+    Z8  : 2 copertura/e (richieste 1)   centri F, H
+    Z9  : 1 copertura/e (richieste 1)   centri F
+    Z10 : 1 copertura/e (richieste 1)   centri H
+
+File soluzione scritto: /Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_a/M08/M08.sol
+======================================================================

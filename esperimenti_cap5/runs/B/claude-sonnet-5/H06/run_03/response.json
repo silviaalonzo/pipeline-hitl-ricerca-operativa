@@ -1,0 +1,73 @@
+{
+  "id": "gen-1786365130-UgHb2jsKgsIAX8UHfHwX",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "# H06 — Sequenziamento con ritardi pesati\n\n## 1. Insiemi, parametri e variabili decisionali\n\n**Insiemi**\n- $J = \\{1,2,3,4,5,6,7\\}$ : insieme dei lavori\n- $P = \\{(i,j) \\in J \\times J : i < j\\}$ : insieme delle coppie di lavori (per i vincoli disgiuntivi)\n\n**Parametri**\n- $p_j$ : durata del lavoro $j$\n- $r_j$ : data di disponibilità (release date) del lavoro $j$\n- $d_j$ : scadenza (due date) del lavoro $j$\n- $w_j$ : peso di priorità del lavoro $j$\n- $M$ : costante Big-M, scelta come $M = \\sum_{j\\in J} p_j + \\max_j r_j = 38 + 6 = 44$; per sicurezza si usa $M = 50$ (limite superiore ragionevole per qualunque tempo di completamento nella soluzione ottima, essendo la somma di tutte le durate più il massimo ritardo di rilascio possibile)\n\n**Variabili decisionali**\n- $S_j \\ge 0$ : istante di inizio del lavoro $j$ (continua)\n- $C_j \\ge 0$ : istante di completamento del lavoro $j$ (continua), con $C_j = S_j + p_j$\n- $T_j \\ge 0$ : ritardo del lavoro $j$ (continua)\n- $x_{ij} \\in \\{0,1\\}$ per $(i,j)\\in P$ : $x_{ij}=1$ se il lavoro $i$ precede il lavoro $j$ sulla macchina, $0$ altrimenti\n\n## 2. Formulazione matematica\n\n$$\n\\min \\sum_{j \\in J} w_j T_j\n$$\n\nsoggetto a:\n\n$$\nC_j = S_j + p_j \\qquad \\forall j \\in J\n$$\n$$\nS_j \\ge r_j \\qquad \\forall j \\in J\n$$\n$$\nT_j \\ge C_j - d_j \\qquad \\forall j \\in J\n$$\n$$\nT_j \\ge 0 \\qquad \\forall j \\in J\n$$\n\n**Vincoli di non sovrapposizione (disgiuntivi) per ogni coppia $(i,j)\\in P$:**\n$$\nS_j \\ge C_i - M(1-x_{ij})\n$$\n$$\nS_i \\ge C_j - M\\,x_{ij}\n$$\n$$\nx_{ij} \\in \\{0,1\\}\n$$\n\n**Vincoli di precedenza specifici:**\n$$\nC_1 \\le S_2\n$$\n$$\nC_3 \\le S_5\n$$\n\n**Domini:**\n$$\nS_j, C_j, T_j \\ge 0 \\quad \\forall j \\in J, \\qquad x_{ij} \\in \\{0,1\\} \\quad \\forall (i,j) \\in P\n$$\n\n## 3. Codice Python (gurobipy)\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\nimport itertools\n\n# Dati\njobs = [1, 2, 3, 4, 5, 6, 7]\np = {1: 5, 2: 7, 3: 4, 4: 6, 5: 3, 6: 8, 7: 5}\nr = {1: 0, 2: 0, 3: 2, 4: 3, 5: 5, 6: 0, 7: 6}\nd = {1: 9, 2: 17, 3: 12, 4: 22, 5: 15, 6: 28, 7: 25}\nw = {1: 4, 2: 3, 3: 5, 4: 2, 5: 6, 6: 2, 7: 4}\n\nM = 50  # Big-M: somma durate (38) + max release date (6) = 44, arrotondato per sicurezza\n\npairs = list(itertools.combinations(jobs, 2))\n\nmodel = gp.Model(\"H06_sequenziamento\")\nmodel.Params.OutputFlag = 0\n\n# Variabili\nS = model.addVars(jobs, lb=0.0, name=\"S\")\nC = model.addVars(jobs, lb=0.0, name=\"C\")\nT = model.addVars(jobs, lb=0.0, name=\"T\")\nx = model.addVars(pairs, vtype=GRB.BINARY, name=\"x\")\n\n# Vincoli di completamento\nfor j in jobs:\n    model.addConstr(C[j] == S[j] + p[j], name=f\"comp_{j}\")\n\n# Disponibilita'\nfor j in jobs:\n    model.addConstr(S[j] >= r[j], name=f\"rel_{j}\")\n\n# Ritardo\nfor j in jobs:\n    model.addConstr(T[j] >= C[j] - d[j], name=f\"tard_{j}\")\n\n# Non sovrapposizione (disgiuntiva) con Big-M\nfor (i, j) in pairs:\n    model.addConstr(S[j] >= C[i] - M * (1 - x[i, j]), name=f\"seq1_{i}_{j}\")\n    model.addConstr(S[i] >= C[j] - M * x[i, j], name=f\"seq2_{i}_{j}\")\n\n# Precedenze specifiche\nmodel.addConstr(C[1] <= S[2], name=\"prec_J1_J2\")\nmodel.addConstr(C[3] <= S[5], name=\"prec_J3_J5\")\n\n# Obiettivo\nmodel.setObjective(gp.quicksum(w[j] * T[j] for j in jobs), GRB.MINIMIZE)\n\nmodel.optimize()\n\nvariables = {}\nstatus_str = None\nobj_val = None\n\nif model.Status == GRB.OPTIMAL:\n    status_str = \"OPTIMAL\"\n    obj_val = model.ObjVal\n    for j in jobs:\n        variables[f\"S_{j}\"] = round(S[j].X, 4)\n        variables[f\"C_{j}\"] = round(C[j].X, 4)\n        variables[f\"T_{j}\"] = round(T[j].X, 4)\n    for (i, j) in pairs:\n        variables[f\"x_{i}_{j}\"] = round(x[i, j].X, 4)\nelse:\n    status_str = str(model.Status)\n\nresult = {\n    \"status\": status_str,\n    \"objective\": obj_val,\n    \"variables\": variables if status_str == \"OPTIMAL\" else {}\n}\n\nprint(\"SOLUTION_JSON=\" + json.dumps(result))\n```\n\n## 4. Sintesi della soluzione\n\nIl modello MILP determina la sequenza ottima dei 7 lavori sulla macchina singola, rispettando le date di disponibilità, i vincoli di precedenza (J1→J2, J3→J5) e minimizzando la somma pesata dei ritardi. Le variabili binarie $x_{ij}$ codificano l'ordinamento tra ogni coppia di lavori, mentre il Big-M ($M=50$) disattiva il vincolo non rilevante nella coppia disgiuntiva. Il solver Gurobi risolve il problema all'ottimalità restituendo per ogni lavoro l'istante di inizio $S_j$, di completamento $C_j$ e il ritardo $T_j$, oltre alla sequenza ottima codificata da $x_{ij}$. Il valore obiettivo riportato in `SOLUTION_JSON` rappresenta il ritardo pesato totale minimo raggiungibile rispettando tutti i vincoli di precedenza e di risorsa.",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": "I'm setting up a scheduling optimization problem with seven jobs, each having a duration, release time, due date, and weight. The single machine can't process jobs simultaneously, and there are precedence constraints—job one must finish before job two starts, and job three before job five. I'm defining decision variables for start times, completion times, and tardiness, along with binary variables for job ordering.\n\nNow I'm formulating the constraints: release time windows, completion time calculations, tardiness definitions, and disjunctive constraints using a big-M approach to enforce that only one job pair ordering is active at a time. I'm also adding the precedence constraints directly. The objective minimizes the weighted sum of tardiness across all jobs.\n\nWriting the full mathematical model... Writing the Gurobi model...",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "I'm setting up a scheduling optimization problem with seven jobs, each having a duration, release time, due date, and weight. The single machine can't process jobs simultaneously, and there are precedence constraints—job one must finish before job two starts, and job three before job five. I'm defining decision variables for start times, completion times, and tardiness, along with binary variables for job ordering.\n\nNow I'm formulating the constraints: release time windows, completion time calculations, tardiness definitions, and disjunctive constraints using a big-M approach to enforce that only one job pair ordering is active at a time. I'm also adding the precedence constraints directly. The objective minimizes the weighted sum of tardiness across all jobs.\n\nWriting the full mathematical model... Writing the Gurobi model...",
+            "format": "anthropic-claude-v1",
+            "index": 0,
+            "signature": "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"
+          }
+        ]
+      },
+      "native_finish_reason": "end_turn"
+    }
+  ],
+  "created": 1786365130,
+  "model": "anthropic/claude-sonnet-5",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 3676,
+    "prompt_tokens": 1053,
+    "total_tokens": 4729,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 212,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.038866,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.038866,
+      "upstream_inference_prompt_cost": 0.002106,
+      "upstream_inference_completions_cost": 0.03676
+    }
+  },
+  "provider": "Anthropic",
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "anthropic/claude-sonnet-5",
+    "required_provider": "anthropic",
+    "allow_fallbacks": false,
+    "require_parameters": true
+  },
+  "_experiment": {
+    "elapsed_seconds": 31.61104366699965,
+    "completed_at_utc": "2026-08-10T12:32:41.109356+00:00"
+  }
+}

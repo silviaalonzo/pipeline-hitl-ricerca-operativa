@@ -1,0 +1,64 @@
+{
+  "id": "gen-1786362904-P4B5ubNbVojpWHvi9FI4",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "# 1. Insiemi, Parametri e Variabili Decisionali\n\n**Insiemi:**\n- $I = \\{1,2,...,8\\}$: indice dei progetti\n\n**Parametri:**\n- $v_i$: valore del progetto $i$\n- $b_i$: budget richiesto dal progetto $i$\n- $p_i$: personale richiesto dal progetto $i$\n- $B = 100$: budget totale disponibile\n- $P = 18$: personale totale disponibile\n\n| Progetto | Valore ($v_i$) | Budget ($b_i$) | Personale ($p_i$) |\n|---|---|---|---|\n| P1 | 30 | 20 | 4 |\n| P2 | 24 | 18 | 3 |\n| P3 | 35 | 27 | 5 |\n| P4 | 28 | 24 | 4 |\n| P5 | 33 | 22 | 4 |\n| P6 | 26 | 19 | 3 |\n| P7 | 38 | 30 | 5 |\n| P8 | 21 | 15 | 2 |\n\n**Variabili decisionali:**\n- $x_i \\in \\{0,1\\}$ per $i \\in I$: 1 se il progetto $i$ è selezionato, 0 altrimenti\n\n---\n\n# 2. Formulazione Matematica\n\n**Funzione obiettivo:**\n$$\\max \\sum_{i \\in I} v_i x_i$$\n\n**Vincoli:**\n\n1. Vincolo di budget:\n$$\\sum_{i \\in I} b_i x_i \\le 100$$\n\n2. Vincolo di personale:\n$$\\sum_{i \\in I} p_i x_i \\le 18$$\n\n3. Dipendenza P5 richiede P2:\n$$x_5 \\le x_2$$\n\n4. Dipendenza P7 richiede P3:\n$$x_7 \\le x_3$$\n\n5. Incompatibilità P4-P6:\n$$x_4 + x_6 \\le 1$$\n\n6. Almeno un progetto digitale tra P1, P3, P7:\n$$x_1 + x_3 + x_7 \\ge 1$$\n\n7. Almeno tre progetti complessivi:\n$$\\sum_{i \\in I} x_i \\ge 3$$\n\n8. Dominio delle variabili:\n$$x_i \\in \\{0,1\\} \\quad \\forall i \\in I$$\n\n---\n\n# 3. Codice Python con Gurobi\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\n# Dati del problema\nprogetti = ['P1','P2','P3','P4','P5','P6','P7','P8']\nvalore = {'P1':30,'P2':24,'P3':35,'P4':28,'P5':33,'P6':26,'P7':38,'P8':21}\nbudget = {'P1':20,'P2':18,'P3':27,'P4':24,'P5':22,'P6':19,'P7':30,'P8':15}\npersonale = {'P1':4,'P2':3,'P3':5,'P4':4,'P5':4,'P6':3,'P7':5,'P8':2}\n\nB_max = 100\nP_max = 18\n\n# Creazione modello\nm = gp.Model(\"Selezione_Portafoglio\")\n\n# Variabili decisionali binarie\nx = m.addVars(progetti, vtype=GRB.BINARY, name=\"x\")\n\n# Funzione obiettivo: massimizzare il valore totale\nm.setObjective(gp.quicksum(valore[i]*x[i] for i in progetti), GRB.MAXIMIZE)\n\n# Vincolo di budget\nm.addConstr(gp.quicksum(budget[i]*x[i] for i in progetti) <= B_max, name=\"Budget\")\n\n# Vincolo di personale\nm.addConstr(gp.quicksum(personale[i]*x[i] for i in progetti) <= P_max, name=\"Personale\")\n\n# P5 richiede P2\nm.addConstr(x['P5'] <= x['P2'], name=\"P5_richiede_P2\")\n\n# P7 richiede P3\nm.addConstr(x['P7'] <= x['P3'], name=\"P7_richiede_P3\")\n\n# P4 e P6 incompatibili\nm.addConstr(x['P4'] + x['P6'] <= 1, name=\"P4_P6_incompatibili\")\n\n# Almeno un progetto digitale tra P1, P3, P7\nm.addConstr(x['P1'] + x['P3'] + x['P7'] >= 1, name=\"Digitale_minimo\")\n\n# Almeno tre progetti complessivi\nm.addConstr(gp.quicksum(x[i] for i in progetti) >= 3, name=\"Minimo_tre_progetti\")\n\n# Risoluzione\nm.optimize()\n\n# Estrazione risultati\nif m.status == GRB.OPTIMAL:\n    status_str = \"OPTIMAL\"\n    obj_val = m.objVal\n    variables = {f\"x_{i}\": x[i].X for i in progetti}\nelse:\n    status_str = str(m.status)\n    obj_val = None\n    variables = {}\n\n# Output finale\nresult = {\n    \"status\": status_str,\n    \"objective\": obj_val,\n    \"variables\": variables\n}\n\nprint(\"SOLUTION_JSON=\" + json.dumps(result))\n```\n\n---\n\n# 4. Sintesi della Soluzione\n\nIl modello seleziona il sottoinsieme di progetti che massimizza il valore complessivo rispettando i vincoli di budget (≤100), personale (≤18 unità), le dipendenze logiche (P5→P2, P7→P3), l'incompatibilità P4-P6, la presenza di almeno un progetto digitale (P1, P3, P7) e la scelta di almeno 3 progetti in totale.\n\n**Analisi della soluzione ottima attesa:**\n\nValutando le combinazioni possibili, la soluzione ottima tende a selezionare progetti ad alto valore rispettando i vincoli di risorse. Una combinazione promettente è **{P1, P3, P7, P8}**:\n- Valore: 30+35+38+21 = **124**\n- Budget: 20+27+30+15 = 92 ≤ 100 ✓\n- Personale: 4+5+5+2 = 16 ≤ 18 ✓\n- P7 richiede P3: soddisfatto (entrambi selezionati) ✓\n- Digitale presente (P1, P3, P7): soddisfatto ✓\n- Almeno 3 progetti: soddisfatto (4 progetti) ✓\n\nQuesta combinazione rappresenta un buon candidato per l'ottimo, ma il solver Gurobi verificherà rigorosamente tutte le combinazioni ammissibili per garantire l'ottimalità globale, considerando anche alternative come l'inclusione di P2-P5 o P4/P6.",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": null
+      },
+      "native_finish_reason": "end_turn"
+    }
+  ],
+  "created": 1786362904,
+  "model": "anthropic/claude-sonnet-5",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 2274,
+    "prompt_tokens": 950,
+    "total_tokens": 3224,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.02464,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.02464,
+      "upstream_inference_prompt_cost": 0.0019,
+      "upstream_inference_completions_cost": 0.02274
+    }
+  },
+  "provider": "Anthropic",
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "anthropic/claude-sonnet-5",
+    "required_provider": "anthropic",
+    "allow_fallbacks": false,
+    "require_parameters": true
+  },
+  "_experiment": {
+    "elapsed_seconds": 20.02673170900016,
+    "completed_at_utc": "2026-08-10T11:55:23.493915+00:00"
+  }
+}

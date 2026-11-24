@@ -1,0 +1,145 @@
+# 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $I = \{A, B, C, D\}$: siti candidati per i centri di assistenza
+- $J = \{Z1, Z2, Z3, Z4, Z5, Z6\}$: zone commerciali da servire
+
+**Parametri**
+- $f_i$: costo fisso di apertura del sito $i \in I$ (in migliaia di euro)
+- $Q_i$: capacità massima (numero di zone assegnabili) del sito $i \in I$
+- $c_{ij}$: costo di assegnazione della zona $j \in J$ al sito $i \in I$ (in migliaia di euro)
+- $P = 2$: numero esatto di centri da aprire
+
+Valori:
+
+| Sito | $f_i$ | $Q_i$ |
+|---|---|---|
+| A | 38 | 2 |
+| B | 42 | 3 |
+| C | 35 | 2 |
+| D | 46 | 3 |
+
+| Zona | A | B | C | D |
+|---|---|---|---|---|
+| Z1 | 8 | 14 | 11 | 17 |
+| Z2 | 10 | 9 | 13 | 15 |
+| Z3 | 12 | 8 | 14 | 10 |
+| Z4 | 15 | 11 | 9 | 7 |
+| Z5 | 9 | 13 | 8 | 14 |
+| Z6 | 14 | 10 | 7 | 9 |
+
+**Variabili decisionali**
+- $y_i \in \{0,1\}$ per $i \in I$: 1 se il sito $i$ viene aperto, 0 altrimenti
+- $x_{ij} \in \{0,1\}$ per $i \in I, j \in J$: 1 se la zona $j$ è assegnata al sito $i$, 0 altrimenti
+
+# 2. Formulazione matematica
+
+**Funzione obiettivo** (minimizzare costi totali: fissi + assegnazione)
+
+$$\min \; Z = \sum_{i \in I} f_i \, y_i \;+\; \sum_{i \in I} \sum_{j \in J} c_{ij} \, x_{ij}$$
+
+**Vincoli**
+
+1. Ogni zona assegnata a esattamente un sito:
+$$\sum_{i \in I} x_{ij} = 1 \qquad \forall j \in J$$
+
+2. Assegnazione possibile solo a siti aperti:
+$$x_{ij} \le y_i \qquad \forall i \in I, \forall j \in J$$
+
+3. Rispetto della capacità di ciascun sito:
+$$\sum_{j \in J} x_{ij} \le Q_i \, y_i \qquad \forall i \in I$$
+
+4. Numero esatto di centri aperti:
+$$\sum_{i \in I} y_i = P$$
+
+5. Domini:
+$$x_{ij} \in \{0,1\} \quad \forall i \in I, j \in J \qquad\qquad y_i \in \{0,1\} \quad \forall i \in I$$
+
+# 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# Insiemi
+siti = ['A', 'B', 'C', 'D']
+zone = ['Z1', 'Z2', 'Z3', 'Z4', 'Z5', 'Z6']
+
+# Parametri
+costo_fisso = {'A': 38, 'B': 42, 'C': 35, 'D': 46}
+capacita = {'A': 2, 'B': 3, 'C': 2, 'D': 3}
+P = 2  # numero esatto di centri da aprire
+
+costo_assegnazione = {
+    ('Z1', 'A'): 8,  ('Z1', 'B'): 14, ('Z1', 'C'): 11, ('Z1', 'D'): 17,
+    ('Z2', 'A'): 10, ('Z2', 'B'): 9,  ('Z2', 'C'): 13, ('Z2', 'D'): 15,
+    ('Z3', 'A'): 12, ('Z3', 'B'): 8,  ('Z3', 'C'): 14, ('Z3', 'D'): 10,
+    ('Z4', 'A'): 15, ('Z4', 'B'): 11, ('Z4', 'C'): 9,  ('Z4', 'D'): 7,
+    ('Z5', 'A'): 9,  ('Z5', 'B'): 13, ('Z5', 'C'): 8,  ('Z5', 'D'): 14,
+    ('Z6', 'A'): 14, ('Z6', 'B'): 10, ('Z6', 'C'): 7,  ('Z6', 'D'): 9,
+}
+
+# Modello
+m = gp.Model("Localizzazione_centri_assistenza")
+
+# Variabili decisionali
+y = m.addVars(siti, vtype=GRB.BINARY, name="y")
+x = m.addVars(zone, siti, vtype=GRB.BINARY, name="x")
+
+# Funzione obiettivo
+m.setObjective(
+    gp.quicksum(costo_fisso[i] * y[i] for i in siti) +
+    gp.quicksum(costo_assegnazione[j, i] * x[j, i] for j in zone for i in siti),
+    GRB.MINIMIZE
+)
+
+# Vincolo 1: ogni zona assegnata a esattamente un sito
+for j in zone:
+    m.addConstr(gp.quicksum(x[j, i] for i in siti) == 1, name=f"assegna_{j}")
+
+# Vincolo 2: assegnazione solo a siti aperti
+for j in zone:
+    for i in siti:
+        m.addConstr(x[j, i] <= y[i], name=f"link_{j}_{i}")
+
+# Vincolo 3: capacità dei siti
+for i in siti:
+    m.addConstr(gp.quicksum(x[j, i] for j in zone) <= capacita[i] * y[i], name=f"cap_{i}")
+
+# Vincolo 4: numero esatto di centri aperti
+m.addConstr(gp.quicksum(y[i] for i in siti) == P, name="num_centri")
+
+# Risoluzione
+m.optimize()
+
+# Costruzione output
+result = {"status": "UNKNOWN", "objective": None, "variables": {}}
+
+if m.Status == GRB.OPTIMAL:
+    result["status"] = "OPTIMAL"
+    result["objective"] = round(m.ObjVal, 4)
+    variables = {}
+    for i in siti:
+        variables[f"y_{i}"] = round(y[i].X, 4)
+    for j in zone:
+        for i in siti:
+            variables[f"x_{j}_{i}"] = round(x[j, i].X, 4)
+    result["variables"] = variables
+else:
+    result["status"] = str(m.Status)
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+# 4. Sintesi della soluzione
+
+Il modello, risolto con Gurobi, individua la combinazione ottima di **2 centri su 4** da aprire e la relativa assegnazione delle 6 zone, minimizzando la somma di costi fissi e costi di assegnazione.
+
+**Analisi della soluzione attesa:**
+- Confrontando i costi, i siti **A** e **D** (o **A** e **C**) risultano economicamente più vantaggiosi da aprire.
+- Con l'apertura di **A** (capacità 2) e **D** (capacità 3): si possono coprire al massimo 5 zone, insufficiente per 6 zone (serve capacità totale ≥ 6).
+- Quindi è necessaria una combinazione con capacità totale ≥ 6: **B+D** (3+3=6), **A+D+...**, ecc. La combinazione **A (cap 2) + B (cap 3)** dà capacità 5, insufficiente. Serve **B+D** (cap 6) o **A+B** con cap 5 insufficiente.
+- L'ottimo trovato da Gurobi apre i siti che minimizzano costo fisso + costo di assegnazione rispettando la capacità totale ≥ 6 zone: la soluzione ottima risulta apertura di **A** e **D**... ma la capacità A+D è solo 5 (< 6), quindi non fattibile; la soluzione fattibile con capacità ≥ 6 è **B+D** (costo fisso 42+46=88) o **A+B** (cap 5, non fattibile) o **C+D** (cap 5, non fattibile) — l'unica combinazione con capacità sufficiente a coprire le 6 zone è **B+D** (o **B+C** con cap 5, insufficiente).
+
+Il solver Gurobi determina automaticamente la soluzione **realmente ottima**, garantendo il rispetto di tutti i vincoli di capacità e assegnazione, fornendo lo **stato**, il **valore ottimo della funzione obiettivo** (in migliaia di euro) e le **variabili decisionali non nulle** (siti aperti e assegnazioni zona-sito), come riportato nell'output `SOLUTION_JSON` generato dall'esecuzione del codice.

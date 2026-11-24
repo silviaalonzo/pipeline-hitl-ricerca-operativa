@@ -1,0 +1,185 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["40 unità da S a T -> d=40 e vincoli di bilancio ai nodi S/T","attivazione degli archi -> variabile binaria y_a e vincolo x_a <= u_a*y_a","costo fisso -> parametro f_a e termine f_a*y_a nell'obiettivo","costo per unità -> parametro c_a e termine c_a*x_a nell'obiettivo","capacità degli archi -> parametro u_a e vincolo di capacità","flusso intero -> variabili x_a in Z_+","conservazione del flusso -> vincoli di bilancio ai nodi"]}
+
+## Insiemi, parametri e variabili decisionali
+
+Insiemi:
+- \(N=\{S,A,B,C,T\}\)
+- \(\mathcal A=\{(S,A),(S,B),(A,B),(A,C),(B,C),(B,T),(C,T)\}\)
+- \(\delta^+(n)=\{(n,j)\in\mathcal A\}\), \(\delta^-(n)=\{(i,n)\in\mathcal A\}\)
+
+Parametri:
+- \(d=40\): unità da inviare da \(S\) a \(T\)
+- \(f_{ij}\): costo fisso di attivazione dell'arco \((i,j)\)
+- \(c_{ij}\): costo di trasporto per unità sull'arco \((i,j)\)
+- \(u_{ij}\): capacità dell'arco \((i,j)\)
+
+Variabili:
+- \(x_{ij}\in\mathbb Z_+\): flusso intero sull'arco \((i,j)\)
+- \(y_{ij}\in\{0,1\}\): vale 1 se l'arco \((i,j)\) è attivato
+
+## Formulazione matematica
+
+\[
+\min \sum_{(i,j)\in\mathcal A} \left(f_{ij}y_{ij}+c_{ij}x_{ij}\right)
+\]
+
+soggetto a:
+
+\[
+\sum_{(i,j)\in\delta^+(i)}x_{ij}
+-
+\sum_{(k,i)\in\delta^-(i)}x_{ki}
+=
+\begin{cases}
+40 & \text{se } i=S\\
+-40 & \text{se } i=T\\
+0 & \text{se } i\in\{A,B,C\}
+\end{cases}
+\]
+
+\[
+x_{ij}\le u_{ij}y_{ij},\qquad \forall (i,j)\in\mathcal A
+\]
+
+\[
+x_{ij}\in\mathbb Z_+,\qquad y_{ij}\in\{0,1\},\qquad \forall (i,j)\in\mathcal A
+\]
+
+## Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+nodes = ["S", "A", "B", "C", "T"]
+arcs = [
+    ("S", "A"),
+    ("S", "B"),
+    ("A", "B"),
+    ("A", "C"),
+    ("B", "C"),
+    ("B", "T"),
+    ("C", "T"),
+]
+
+fixed = {
+    ("S", "A"): 40,
+    ("S", "B"): 35,
+    ("A", "B"): 15,
+    ("A", "C"): 30,
+    ("B", "C"): 18,
+    ("B", "T"): 45,
+    ("C", "T"): 38,
+}
+
+cost = {
+    ("S", "A"): 2,
+    ("S", "B"): 3,
+    ("A", "B"): 1,
+    ("A", "C"): 2,
+    ("B", "C"): 2,
+    ("B", "T"): 4,
+    ("C", "T"): 2,
+}
+
+capacity = {
+    ("S", "A"): 30,
+    ("S", "B"): 35,
+    ("A", "B"): 15,
+    ("A", "C"): 25,
+    ("B", "C"): 20,
+    ("B", "T"): 25,
+    ("C", "T"): 35,
+}
+
+demand = 40
+
+m = gp.Model("rete_distributiva")
+m.Params.OutputFlag = 0
+
+x = {}
+y = {}
+
+for i, j in arcs:
+    x[(i, j)] = m.addVar(
+        lb=0,
+        ub=capacity[(i, j)],
+        vtype=GRB.INTEGER,
+        name=f"x_{i}{j}"
+    )
+    y[(i, j)] = m.addVar(
+        vtype=GRB.BINARY,
+        name=f"y_{i}{j}"
+    )
+
+m.update()
+
+outgoing = {n: [] for n in nodes}
+incoming = {n: [] for n in nodes}
+
+for i, j in arcs:
+    outgoing[i].append((i, j))
+    incoming[j].append((i, j))
+
+for n in nodes:
+    lhs = gp.quicksum(x[a] for a in outgoing[n]) - gp.quicksum(x[a] for a in incoming[n])
+    if n == "S":
+        rhs = demand
+    elif n == "T":
+        rhs = -demand
+    else:
+        rhs = 0
+    m.addConstr(lhs == rhs, name=f"flow_{n}")
+
+for i, j in arcs:
+    m.addConstr(x[(i, j)] <= capacity[(i, j)] * y[(i, j)], name=f"cap_{i}{j}")
+
+m.setObjective(
+    gp.quicksum(fixed[a] * y[a] + cost[a] * x[a] for a in arcs),
+    GRB.MINIMIZE
+)
+
+m.optimize()
+
+if m.status == GRB.OPTIMAL:
+    status = "OPTIMAL"
+    objective = m.ObjVal
+    variables = {v.VarName: v.X for v in m.getVars()}
+else:
+    status = {
+        GRB.INFEASIBLE: "INFEASIBLE",
+        GRB.UNBOUNDED: "UNBOUNDED",
+        GRB.INF_OR_UNBD: "INF_OR_UNBD",
+        GRB.TIME_LIMIT: "TIME_LIMIT",
+        GRB.NODE_LIMIT: "NODE_LIMIT",
+        GRB.ITERATION_LIMIT: "ITERATION_LIMIT",
+        GRB.SOLUTION_LIMIT: "SOLUTION_LIMIT",
+        GRB.INTERRUPTED: "INTERRUPTED",
+        GRB.NUMERIC: "NUMERIC",
+        GRB.SUBOPTIMAL: "SUBOPTIMAL",
+    }.get(m.status, "UNKNOWN")
+    objective = None
+    variables = {}
+
+result = {
+    "status": status,
+    "objective": objective,
+    "variables": variables,
+}
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## Sintesi della soluzione
+
+Il solver termina con stato **OPTIMAL** e valore ottimo **443.0**.  
+Le decisioni non nulle sono:
+
+- \(x_{SA}=25\), \(x_{SB}=15\)
+- \(x_{AC}=25\)
+- \(x_{BT}=15\), \(x_{CT}=25\)
+- Archi attivati: \(S\to A\), \(S\to B\), \(A\to C\), \(B\to T\), \(C\to T\)
+- Archi non attivati: \(A\to B\), \(B\to C\)
+
+Costo fisso totale: 188, costo variabile totale: 255.

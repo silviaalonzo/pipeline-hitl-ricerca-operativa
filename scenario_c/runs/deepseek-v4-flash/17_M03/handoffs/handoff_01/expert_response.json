@@ -1,0 +1,12 @@
+{
+  "status": "SUBMITTED",
+  "action": "CORRECT",
+  "correction_mode": "DIRECT_CODE",
+  "active_minutes": 10.0,
+  "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+  "correction_summary": "Dopo tre riparazioni automatiche concluse senza codice completo, l’esperto ha fornito un modello eseguibile che copre esattamente ogni turno, limita a due i turni per dipendente e a uno i notturni e rappresenta esplicitamente tutte le indisponibilità.",
+  "semantic_principle": "Nei problemi di assegnazione con celle non disponibili, mantenere una variabile binaria per ogni coppia e imporre esplicitamente a zero le combinazioni vietate, oppure creare variabili soltanto per le coppie ammesse; in entrambi i casi la copertura deve essere imposta su ciascun turno.",
+  "expert_artifact_source": "/Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_c/runs/deepseek-v4-flash/17_M03/handoffs/handoff_01/expert_code_M03_sandbox.py",
+  "expert_artifact_sha256": "34743b7e68c369c9e86dda15fa4db1ca2d1028621b411abc8f293171bce599e0",
+  "submitted_at_utc": "2026-08-24T22:11:39.349529+00:00"
+}

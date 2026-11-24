@@ -1,0 +1,298 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["volume minimo 180 -> vincolo di capacità volumetrica","portata minima 95 -> vincolo di portata","almeno un refrigerato -> x_Refrigerato >= 1","almeno un elettrico -> x_Elettrico >= 1","emissioni massime 145 -> vincolo sulle emissioni","disponibilità dei mezzi -> limiti superiori sulle variabili","minimizzare il costo giornaliero -> funzione obiettivo"]}
+
+## Insiemi, parametri e variabili decisionali
+
+### Insieme
+
+\[
+T=\{\text{Van},\text{Autocarro},\text{Refrigerato},\text{Elettrico},\text{Bilico}\}
+\]
+
+è l’insieme dei tipi di veicolo.
+
+### Parametri
+
+Per ogni \(t\in T\):
+
+- \(v_t\): volume offerto;
+- \(p_t\): portata offerta;
+- \(c_t\): costo giornaliero;
+- \(e_t\): emissioni;
+- \(u_t\): disponibilità massima.
+
+| \(t\) | \(v_t\) | \(p_t\) | \(c_t\) | \(e_t\) | \(u_t\) |
+|---|---:|---:|---:|---:|---:|
+| Van | 18 | 8 | 120 | 12 | 8 |
+| Autocarro | 30 | 18 | 180 | 22 | 6 |
+| Refrigerato | 20 | 10 | 210 | 15 | 4 |
+| Elettrico | 16 | 7 | 150 | 4 | 5 |
+| Bilico | 42 | 28 | 260 | 32 | 3 |
+
+### Variabili decisionali
+
+\[
+x_t=\text{numero di veicoli del tipo }t\text{ impiegati nella giornata}
+\]
+
+con:
+
+\[
+x_t\in\mathbb{Z}_{+},\qquad 0\le x_t\le u_t \quad \forall t\in T.
+\]
+
+## Formulazione matematica completa
+
+### Funzione obiettivo
+
+\[
+\min \sum_{t\in T} c_t x_t
+\]
+
+ossia:
+
+\[
+\min\;
+120x_{\text{Van}}
++180x_{\text{Autocarro}}
++210x_{\text{Refrigerato}}
++150x_{\text{Elettrico}}
++260x_{\text{Bilico}}.
+\]
+
+### Vincolo di volume
+
+\[
+\sum_{t\in T}v_t x_t\ge 180,
+\]
+
+ossia:
+
+\[
+18x_{\text{Van}}
++30x_{\text{Autocarro}}
++20x_{\text{Refrigerato}}
++16x_{\text{Elettrico}}
++42x_{\text{Bilico}}
+\ge 180.
+\]
+
+### Vincolo di portata
+
+\[
+\sum_{t\in T}p_t x_t\ge 95,
+\]
+
+ossia:
+
+\[
+8x_{\text{Van}}
++18x_{\text{Autocarro}}
++10x_{\text{Refrigerato}}
++7x_{\text{Elettrico}}
++28x_{\text{Bilico}}
+\ge 95.
+\]
+
+### Presenza dei veicoli obbligatori
+
+\[
+x_{\text{Refrigerato}}\ge 1,
+\]
+
+\[
+x_{\text{Elettrico}}\ge 1.
+\]
+
+### Vincolo sulle emissioni
+
+\[
+\sum_{t\in T}e_t x_t\le 145,
+\]
+
+ossia:
+
+\[
+12x_{\text{Van}}
++22x_{\text{Autocarro}}
++15x_{\text{Refrigerato}}
++4x_{\text{Elettrico}}
++32x_{\text{Bilico}}
+\le 145.
+\]
+
+### Disponibilità e dominio
+
+\[
+0\le x_{\text{Van}}\le 8,
+\quad
+0\le x_{\text{Autocarro}}\le 6,
+\quad
+0\le x_{\text{Refrigerato}}\le 4,
+\]
+
+\[
+0\le x_{\text{Elettrico}}\le 5,
+\quad
+0\le x_{\text{Bilico}}\le 3,
+\]
+
+\[
+x_t\in\mathbb{Z}\qquad \forall t\in T.
+\]
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+types = ["Van", "Autocarro", "Refrigerato", "Elettrico", "Bilico"]
+
+volume = {
+    "Van": 18,
+    "Autocarro": 30,
+    "Refrigerato": 20,
+    "Elettrico": 16,
+    "Bilico": 42
+}
+
+payload = {
+    "Van": 8,
+    "Autocarro": 18,
+    "Refrigerato": 10,
+    "Elettrico": 7,
+    "Bilico": 28
+}
+
+cost = {
+    "Van": 120,
+    "Autocarro": 180,
+    "Refrigerato": 210,
+    "Elettrico": 150,
+    "Bilico": 260
+}
+
+emissions = {
+    "Van": 12,
+    "Autocarro": 22,
+    "Refrigerato": 15,
+    "Elettrico": 4,
+    "Bilico": 32
+}
+
+availability = {
+    "Van": 8,
+    "Autocarro": 6,
+    "Refrigerato": 4,
+    "Elettrico": 5,
+    "Bilico": 3
+}
+
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+model = gp.Model("composizione_flotta_giornaliera", env=env)
+
+x = {
+    t: model.addVar(
+        lb=0,
+        ub=availability[t],
+        vtype=GRB.INTEGER,
+        name=f"x_{t}"
+    )
+    for t in types
+}
+
+model.setObjective(
+    gp.quicksum(cost[t] * x[t] for t in types),
+    GRB.MINIMIZE
+)
+
+model.addConstr(
+    gp.quicksum(volume[t] * x[t] for t in types) >= 180,
+    name="volume_minimo"
+)
+
+model.addConstr(
+    gp.quicksum(payload[t] * x[t] for t in types) >= 95,
+    name="portata_minima"
+)
+
+model.addConstr(
+    x["Refrigerato"] >= 1,
+    name="almeno_un_refrigerato"
+)
+
+model.addConstr(
+    x["Elettrico"] >= 1,
+    name="almeno_un_elettrico"
+)
+
+model.addConstr(
+    gp.quicksum(emissions[t] * x[t] for t in types) <= 145,
+    name="emissioni_massime"
+)
+
+model.optimize()
+
+status_names = {
+    GRB.LOADED: "LOADED",
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.INF_OR_UNBD: "INF_OR_UNBD",
+    GRB.UNBOUNDED: "UNBOUNDED",
+    GRB.CUTOFF: "CUTOFF",
+    GRB.ITERATION_LIMIT: "ITERATION_LIMIT",
+    GRB.NODE_LIMIT: "NODE_LIMIT",
+    GRB.TIME_LIMIT: "TIME_LIMIT",
+    GRB.SOLUTION_LIMIT: "SOLUTION_LIMIT",
+    GRB.INTERRUPTED: "INTERRUPTED",
+    GRB.NUMERIC: "NUMERIC",
+    GRB.SUBOPTIMAL: "SUBOPTIMAL",
+    GRB.INPROGRESS: "INPROGRESS",
+    GRB.USER_OBJ_LIMIT: "USER_OBJ_LIMIT"
+}
+
+status_code = model.Status
+status = status_names.get(status_code, f"STATUS_{status_code}")
+
+if status_code == GRB.OPTIMAL:
+    result = {
+        "status": "OPTIMAL",
+        "objective": float(round(model.ObjVal, 10)),
+        "variables": {
+            f"x_{t}": float(round(x[t].X))
+            for t in types
+        }
+    }
+else:
+    result = {
+        "status": status,
+        "objective": None,
+        "variables": {}
+    }
+
+model.dispose()
+env.dispose()
+
+print("SOLUTION_JSON=" + json.dumps(result, ensure_ascii=False, separators=(",", ":")))
+```
+
+## Sintesi della soluzione
+
+Lo stato è **OPTIMAL** e il costo giornaliero minimo è:
+
+\[
+z^*=1240.
+\]
+
+Le decisioni non nulle sono:
+
+\[
+x_{\text{Autocarro}}=2,\quad
+x_{\text{Refrigerato}}=1,\quad
+x_{\text{Elettrico}}=1,\quad
+x_{\text{Bilico}}=2.
+\]
+
+Il volume totale è \(180\), la portata totale è \(109\) e le emissioni complessive sono \(127\), quindi tutti i vincoli sono rispettati.

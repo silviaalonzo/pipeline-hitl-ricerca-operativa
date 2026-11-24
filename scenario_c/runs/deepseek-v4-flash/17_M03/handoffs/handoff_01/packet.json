@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "created_at_utc": "2026-08-24T22:05:16.777512+00:00",
+  "model": "deepseek-v4-flash",
+  "problem_id": "M03",
+  "problem_sequence": 17,
+  "handoff_number": 1,
+  "stage": 3,
+  "failure_class": "output_troncato_o_senza_codice",
+  "failure_detail": "Atteso un solo blocco Python, trovati 0",
+  "handoff_mode": "CORRECTION",
+  "allowed_actions": [
+    "CORRECT",
+    "ACCEPT_FAILURE"
+  ],
+  "automatic_repairs_exhausted": 3,
+  "problem_prompt": "# M03 — Assegnazione del personale ai turni\n\nDifficoltà: Media\nClasse: IP binaria\n\nUn centro operativo deve coprire sei turni con sei dipendenti. Ogni turno richiede esattamente una persona; ogni dipendente può lavorare al massimo due turni e non più di un turno notturno.\nLe celle indicate con “—” rappresentano indisponibilità. Minimizzare il costo complessivo dei turni.\n\n## Costi e disponibilità\n\nDipendente | M1 | M2 | P1 | P2 | N1 | N2\n--- | --- | --- | --- | --- | --- | ---\nAna | 8 | 7 | 9 | 8 | — | —\nBruno | 7 | 8 | 8 | 9 | — | —\nCarla | — | 9 | 8 | 8 | 11 | 12\nDiego | 10 | — | 9 | 8 | 10 | 11\nElena | 8 | 10 | 9 | 9 | 12 | 10\nFabio | 9 | 8 | 10 | 7 | — | —\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n",
+  "last_code": "",
+  "last_response_excerpt": "```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\nemployees = [\"Ana\", \"Bruno\", \"Carla\", \"Diego\", \"Elena\", \"Fabio\"]\nshifts = [\"M1\", \"M2\", \"P1\", \"P2\", \"N1\", \"N2\"]\n\ncost = {\n    (\"Ana\", \"M1\"): 8, (\"Ana\", \"M2\"): 7, (\"Ana\", \"P1\"): 9, (\"Ana\", \"P2\"): 8,\n    (\"Bruno\", \"M1\"): 7, (\"Bruno\", \"M2\"): 8, (\"Bruno\", \"P1\"): 8, (\"Bruno\", \"P2\"): 9,\n    (\"Carla\", \"M2\"): 9, (\"Carla\", \"P1\"): 8, (\"Carla\", \"P2\"): 8, (\"Carla\", \"N1\"): 11, (\"Carla\", \"N2\"): 12,\n    (\"Diego\", \"M1\"): 10, (\"Diego\", \"P1\"): 9, (\"Diego\", \"P2\"): 8, (\"Diego\", \"N1\"): 10, (\"Diego\", \"N2\"): 11,\n    (\"Elena\", \"M1\"): 8, (\"Elena\", \"M2\"): 10, (\"Elena\", \"P1\"): 9, (\"Elena\", \"P2\"): 9, (\"Elena\", \"N1\"): 12, (\"Elena\", \"N2\"): 10,\n    (\"Fabio\", \"M1\"): 9, (\"Fabio\", \"M2\"): 8, (\"Fabio\", \"P1\"): 10, (\"Fabio\", \"P2\"): 7,\n}\n\navailable = [(e, s) for e in employees for s in shifts if (e, s) in cost]\n\nm = gp.Model(\"M03_Turni\")\nm.Params.OutputFlag = 0\n\nx = {}\nfor e, s in available:\n    x[e, s] = m.addVar(vtype=GRB.BINARY, name=f\"x[{e},{s}]\")\n\nm.setObjective(gp.quicksum(cost[e, s] * x[e, s] for e, s in available), GRB.MINIMIZE)\n\nfor s in shifts:\n    m.addConstr(gp.quicksum(x[e, s] for e in employees if (e, s) in x) == 1, name=f\"turno_{s}\")\n\nfor e in employees:\n    m.addConstr(gp.quicksum(x[e, s] for s in shifts if (e, s) in x) <= 2, name=f\"max_turni_{e}\")\n    m.addConstr(gp.quicksum(x[e, s] for s in (\"N1\", \"N2\") if (e, s) in x) <= 1, name=f\"max_notte_{e}\")\n\nm.update()\nm.optimize()\n\nif m.Status == GRB.OPTIMAL:\n    status = \"OPTIMAL\"\n    objective = float(m.ObjVal)\n    variables = {v.VarName: float(v.X) for v in m.getVars()}\nelse:\n    status = {\n        GRB.INFEASIBLE: \"INFEASIBLE\",\n        GRB",
+  "response_source_attempt": 1,
+  "validation": null,
+  "attempt_history": [
+    {
+      "attempt_number": 0,
+      "attempt_kind": "INITIAL",
+      "finish_reason": "length",
+      "content_characters": 0,
+      "completion_tokens": 24000,
+      "reasoning_tokens": 24000,
+      "code_extracted": false,
+      "failure_class": "output_troncato_o_senza_codice",
+      "failure_detail": "Atteso un solo blocco Python, trovati 0"
+    },
+    {
+      "attempt_number": 1,
+      "attempt_kind": "AUTO_REPAIR",
+      "finish_reason": "length",
+      "content_characters": 1658,
+      "completion_tokens": 23999,
+      "reasoning_tokens": 23240,
+      "code_extracted": false,
+      "failure_class": "output_troncato_o_senza_codice",
+      "failure_detail": "Atteso un solo blocco Python, trovati 0"
+    },
+    {
+      "attempt_number": 2,
+      "attempt_kind": "AUTO_REPAIR",
+      "finish_reason": "length",
+      "content_characters": 0,
+      "completion_tokens": 24000,
+      "reasoning_tokens": 24000,
+      "code_extracted": false,
+      "failure_class": "output_troncato_o_senza_codice",
+      "failure_detail": "Atteso un solo blocco Python, trovati 0"
+    },
+    {
+      "attempt_number": 3,
+      "attempt_kind": "AUTO_REPAIR",
+      "finish_reason": "length",
+      "content_characters": 0,
+      "completion_tokens": 24000,
+      "reasoning_tokens": 24000,
+      "code_extracted": false,
+      "failure_class": "output_troncato_o_senza_codice",
+      "failure_detail": "Atteso un solo blocco Python, trovati 0"
+    }
+  ],
+  "automatic_diagnosis": "Atteso un solo blocco Python, trovati 0",
+  "ground_truth_disclosed": false
+}

@@ -1,0 +1,52 @@
+[
+  {
+    "recorded_at_utc": "2026-08-26T17:53:51Z",
+    "type": "validator_alias_normalization",
+    "affected_problem": "L03",
+    "affected_condition": "Cmem",
+    "reason": "Il modello ha usato y[i,j] per la binaria di utilizzo della coppia fornitore-componente e z[i] per l'attivazione del fornitore, convenzione matematicamente equivalente a z[i,j] e y[i] della ground truth. Il valutatore aveva interpretato i nomi come variabili mancanti.",
+    "changes": {
+      "problem_text": false,
+      "model_output": false,
+      "ground_truth": false,
+      "acceptance_criterion": false,
+      "alias_normalizer_only": true
+    },
+    "counts_as_handoff": false,
+    "counts_as_human_time": false,
+    "ground_truth_disclosed_to_model_or_expert": false,
+    "sha256_before": {
+      "protocol.json": "a1f0b412dd479b4ecf0352637d6834abccff60eda120e0f493cbb44ae71da566",
+      "cap7_aliases.py": "3e9548bd077de778011ddf6799001513caf0aaced97d6e3ff41f71064768b8ae"
+    },
+    "sha256_after": {
+      "protocol.json": "92e43416f9c95ed1ac6084b8ce4735177f14285a3fdb332cd2743bef7a388bd3",
+      "cap7_aliases.py": "3c9b9a7584a78b56639df4c7a0b3774b15f6be6576cc3cee7c9742031d71173a"
+    }
+  },
+  {
+    "recorded_at_utc": "2026-08-26T17:59:17Z",
+    "type": "validator_alias_normalization",
+    "affected_problem": "L04",
+    "affected_condition": "Cmem",
+    "reason": "Il modello ha usato z[t] per la binaria di attivazione dello straordinario, convenzione matematicamente equivalente a u[t] della ground truth. Il valutatore aveva interpretato z[t] come variabile sconosciuta e u[t] come mancante.",
+    "changes": {
+      "problem_text": false,
+      "model_output": false,
+      "ground_truth": false,
+      "acceptance_criterion": false,
+      "alias_normalizer_only": true
+    },
+    "counts_as_handoff": false,
+    "counts_as_human_time": false,
+    "ground_truth_disclosed_to_model_or_expert": false,
+    "sha256_before": {
+      "protocol.json": "92e43416f9c95ed1ac6084b8ce4735177f14285a3fdb332cd2743bef7a388bd3",
+      "cap7_aliases.py": "3c9b9a7584a78b56639df4c7a0b3774b15f6be6576cc3cee7c9742031d71173a"
+    },
+    "sha256_after": {
+      "protocol.json": "0fa2f07e2a2107782f02532856b2d2c9b1783179839372f94b0974ee7396d985",
+      "cap7_aliases.py": "77fee2a38beaae8411ddc7b1b45ad485b13dfe03de29e6b583cc9dbbf271b480"
+    }
+  }
+]

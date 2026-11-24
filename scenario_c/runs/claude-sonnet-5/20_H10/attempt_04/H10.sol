@@ -1,0 +1,29 @@
+# Solution for model H10
+# Objective value = 583
+x[SA,K1] 28
+x[SA,K2] 0
+x[SB,K1] 0
+x[SB,K2] 22
+x[AB,K1] 0
+x[AB,K2] 0
+x[AC,K1] 28
+x[AC,K2] 0
+x[BC,K1] 0
+x[BC,K2] 22
+x[BD,K1] 0
+x[BD,K2] 0
+x[CD,K1] 15
+x[CD,K2] 0
+x[CT,K1] 13
+x[CT,K2] 22
+x[DT,K1] 15
+x[DT,K2] 0
+y[SA] 1
+y[SB] 1
+y[AB] 0
+y[AC] 1
+y[BC] 1
+y[BD] 0
+y[CD] 1
+y[CT] 1
+y[DT] 1

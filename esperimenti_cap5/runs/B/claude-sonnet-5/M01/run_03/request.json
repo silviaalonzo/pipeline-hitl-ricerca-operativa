@@ -1,0 +1,17 @@
+{
+  "scenario": "B",
+  "provider": "openrouter",
+  "model": "anthropic/claude-sonnet-5",
+  "problem_id": "M01",
+  "replicate": 3,
+  "started_at_utc": "2026-08-10T16:31:59.727027+00:00",
+  "configuration": {
+    "provider": "openrouter",
+    "upstream_provider": "anthropic",
+    "model": "anthropic/claude-sonnet-5",
+    "reasoning_effort": "high",
+    "max_output_tokens": 24000
+  },
+  "system_prompt": "Agisci come esperto di Ricerca Operativa. Devi formulare e risolvere il problema descritto dall'utente senza chiedere chiarimenti e senza usare informazioni esterne.\n\nLa risposta deve contenere, in quest'ordine:\n1. insiemi, parametri e variabili decisionali;\n2. formulazione matematica completa;\n3. un solo blocco di codice Python eseguibile con gurobipy;\n4. una breve sintesi della soluzione.\n\nIl codice deve costruire il modello a partire dai dati presenti nella traccia, chiamare Gurobi e stampare alla fine ESATTAMENTE una riga nel formato seguente:\n\nSOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":0.0,\"variables\":{\"nome_variabile\":0.0}}\n\nNel dizionario \"variables\" devono comparire tutte le variabili decisionali, comprese quelle con valore zero. Usa i nomi indicati nella formulazione e valori numerici, non espressioni testuali. Se il solver non restituisce una soluzione ottima, stampa comunque la riga SOLUTION_JSON con lo stato effettivo, objective null e variables vuoto.\n\nNon leggere o scrivere file, non accedere alla rete, non invocare altri processi e non utilizzare librerie diverse da gurobipy, json, math e itertools.\n\n",
+  "problem_prompt": "# M01 — Localizzazione di centri di assistenza\n\nDifficoltà: Media\nClasse: IP binaria\n\nUn’impresa deve servire sei zone commerciali aprendo esattamente due centri di assistenza tra quattro siti candidati. Ogni zona deve essere assegnata a un solo centro aperto.\nI costi fissi e i costi di servizio sono espressi in migliaia di euro. La capacità indica il numero massimo di zone assegnabili al sito.\n\n## Siti candidati\n\nSito | Costo fisso | Capacità (zone)\n--- | --- | ---\nA | 38 | 2\nB | 42 | 3\nC | 35 | 2\nD | 46 | 3\n\n## Costo di assegnazione\n\nZona | A | B | C | D\n--- | --- | --- | --- | ---\nZ1 | 8 | 14 | 11 | 17\nZ2 | 10 | 9 | 13 | 15\nZ3 | 12 | 8 | 14 | 10\nZ4 | 15 | 11 | 9 | 7\nZ5 | 9 | 13 | 8 | 14\nZ6 | 14 | 10 | 7 | 9\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n"
+}

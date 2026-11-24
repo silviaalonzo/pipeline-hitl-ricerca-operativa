@@ -1,0 +1,183 @@
+# H02 — Produzione multi-periodo con setup e scorte
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $P = \{A, B, C\}$ : insieme dei prodotti
+- $T = \{1, 2, 3, 4\}$ : insieme dei periodi
+
+**Parametri**
+- $d_{p,t}$ : domanda del prodotto $p$ nel periodo $t$
+- $c_{p,t}$ : costo unitario di produzione di $p$ in $t$
+- $s_p$ : costo di setup del prodotto $p$
+- $h_p$ : costo unitario di mantenimento a scorta di $p$
+- $a_p$ : ore richieste per unità di $p$
+- $L_p$ : lotto minimo di produzione di $p$
+- $Cap_t$ : capacità (ore) disponibile nel periodo $t$
+- $I^0_p$ : scorta iniziale di $p$ (prima di $T1$)
+- $MaxSet = 2$ : massimo numero di articoli attivabili per periodo
+- $MaxInv = 20$ : massima scorta totale per periodo
+- $M_p = \sum_{t\in T} d_{p,t}$ : big‑M per il prodotto $p$
+
+**Variabili decisionali**
+- $x_{p,t} \ge 0,\ \text{intera}$ : quantità prodotta di $p$ nel periodo $t$
+- $I_{p,t} \ge 0,\ \text{intera}$ : scorta finale di $p$ alla fine del periodo $t$
+- $y_{p,t} \in \{0,1\}$ : 1 se il prodotto $p$ viene attivato (setup) nel periodo $t$
+
+## 2. Formulazione matematica
+
+**Funzione obiettivo**
+
+$$
+\min \sum_{p\in P}\sum_{t\in T} \Big( c_{p,t}\,x_{p,t} + s_p\,y_{p,t} + h_p\,I_{p,t} \Big)
+$$
+
+**Vincoli**
+
+Bilancio di magazzino (con $I_{p,0}=I^0_p$):
+$$
+I_{p,t-1} + x_{p,t} - d_{p,t} = I_{p,t} \qquad \forall p\in P,\ t\in T
+$$
+
+Legame produzione–setup (upper bound):
+$$
+x_{p,t} \le M_p \, y_{p,t} \qquad \forall p\in P,\ t\in T
+$$
+
+Lotto minimo:
+$$
+x_{p,t} \ge L_p \, y_{p,t} \qquad \forall p\in P,\ t\in T
+$$
+
+Massimo numero di setup attivi per periodo:
+$$
+\sum_{p\in P} y_{p,t} \le 2 \qquad \forall t\in T
+$$
+
+Capacità produttiva:
+$$
+\sum_{p\in P} a_p\, x_{p,t} \le Cap_t \qquad \forall t\in T
+$$
+
+Scorta totale massima:
+$$
+\sum_{p\in P} I_{p,t} \le 20 \qquad \forall t\in T
+$$
+
+Scorta finale nulla:
+$$
+I_{p,4} = 0 \qquad \forall p\in P
+$$
+
+Dominio:
+$$
+x_{p,t}, I_{p,t} \in \mathbb{Z}_{\ge 0}, \quad y_{p,t} \in \{0,1\} \qquad \forall p\in P,\ t\in T
+$$
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# ---------------- Dati ----------------
+P = ['A', 'B', 'C']
+T = [1, 2, 3, 4]
+
+d = {
+    ('A',1):8, ('A',2):12, ('A',3):10, ('A',4):14,
+    ('B',1):10,('B',2):8,  ('B',3):14, ('B',4):12,
+    ('C',1):6, ('C',2):9,  ('C',3):7,  ('C',4):11,
+}
+
+c = {
+    ('A',1):9, ('A',2):11, ('A',3):10, ('A',4):12,
+    ('B',1):8, ('B',2):9,  ('B',3):11, ('B',4):10,
+    ('C',1):13,('C',2):12, ('C',3):14, ('C',4):11,
+}
+
+s = {'A':45, 'B':40, 'C':50}
+h = {'A':2,  'B':3,  'C':2}
+a = {'A':2,  'B':3,  'C':4}
+L = {'A':4,  'B':4,  'C':3}
+Cap = {1:90, 2:95, 3:90, 4:100}
+I0 = {'A':0, 'B':0, 'C':6}
+
+M = {p: sum(d[(p,t)] for t in T) for p in P}
+
+MaxSet = 2
+MaxInv = 20
+
+# ---------------- Modello ----------------
+m = gp.Model("H02_produzione_multiperiodo")
+
+x = m.addVars(P, T, vtype=GRB.INTEGER, lb=0, name="x")
+I = m.addVars(P, T, vtype=GRB.INTEGER, lb=0, name="I")
+y = m.addVars(P, T, vtype=GRB.BINARY, name="y")
+
+# Bilancio di magazzino
+for p in P:
+    for t in T:
+        prev = I0[p] if t == 1 else I[p, t-1]
+        m.addConstr(prev + x[p, t] - d[(p, t)] == I[p, t], name=f"bal_{p}_{t}")
+
+# Legame produzione-setup e lotto minimo
+for p in P:
+    for t in T:
+        m.addConstr(x[p, t] <= M[p] * y[p, t], name=f"link_{p}_{t}")
+        m.addConstr(x[p, t] >= L[p] * y[p, t], name=f"minlot_{p}_{t}")
+
+# Massimo numero di setup attivi per periodo
+for t in T:
+    m.addConstr(gp.quicksum(y[p, t] for p in P) <= MaxSet, name=f"maxset_{t}")
+
+# Capacità produttiva
+for t in T:
+    m.addConstr(gp.quicksum(a[p] * x[p, t] for p in P) <= Cap[t], name=f"cap_{t}")
+
+# Scorta totale massima
+for t in T:
+    m.addConstr(gp.quicksum(I[p, t] for p in P) <= MaxInv, name=f"maxinv_{t}")
+
+# Scorta finale nulla
+for p in P:
+    m.addConstr(I[p, 4] == 0, name=f"finalinv_{p}")
+
+# Funzione obiettivo
+obj = gp.quicksum(c[(p, t)] * x[p, t] + s[p] * y[p, t] + h[p] * I[p, t]
+                   for p in P for t in T)
+m.setObjective(obj, GRB.MINIMIZE)
+
+m.optimize()
+
+# ---------------- Output ----------------
+result = {"status": None, "objective": None, "variables": {}}
+
+if m.status == GRB.OPTIMAL:
+    result["status"] = "OPTIMAL"
+    result["objective"] = round(m.objVal, 4)
+    variables = {}
+    for p in P:
+        for t in T:
+            variables[f"x_{p}_{t}"] = round(x[p, t].X, 4)
+            variables[f"I_{p}_{t}"] = round(I[p, t].X, 4)
+            variables[f"y_{p}_{t}"] = round(y[p, t].X, 4)
+    result["variables"] = variables
+
+    # Stampa decisioni non nulle (report leggibile)
+    print("Stato solver:", result["status"])
+    print("Valore ottimo:", result["objective"])
+    print("Decisioni non nulle:")
+    for k, v in variables.items():
+        if abs(v) > 1e-6:
+            print(f"  {k} = {v}")
+else:
+    result["status"] = str(m.status)
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello determina il piano di produzione, scorte e setup per i tre articoli nei quattro periodi che minimizza la somma dei costi di produzione, setup e mantenimento, rispettando i vincoli di capacità orarie, lotto minimo, numero massimo di setup contemporanei, tetto massimo di scorta totale e azzeramento delle scorte finali. Il solver Gurobi risolve il problema MILP intero e la riga `SOLUTION_JSON` riporta lo stato ("OPTIMAL"), il valore ottimo della funzione obiettivo e tutti i valori delle variabili $x_{p,t}$, $I_{p,t}$ e $y_{p,t}$ (incluse quelle nulle), permettendo di ricostruire integralmente il piano produttivo ottimale.

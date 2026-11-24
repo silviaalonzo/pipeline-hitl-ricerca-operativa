@@ -1,0 +1,32 @@
+==============================================================================
+VERIFICA A POSTERIORI DELLE SOLUZIONI - SCENARIO A (M01-M10, H01-H10)
+==============================================================================
+ID     obj verificato   ottimo noto     ammissibilita         esito
+------------------------------------------------------------------------------
+M01               149           149       AMMISSIBILE      CORRETTO
+M02              1640          1640       AMMISSIBILE      CORRETTO
+M03                49            49       AMMISSIBILE      CORRETTO
+M04              1240          1240       AMMISSIBILE      CORRETTO
+M05               136           136       AMMISSIBILE      CORRETTO
+M06                22            22       AMMISSIBILE      CORRETTO
+M07              2055          2055       AMMISSIBILE      CORRETTO
+M08               106           106       AMMISSIBILE      CORRETTO
+M09              1370          1370       AMMISSIBILE      CORRETTO
+M10               443           443       AMMISSIBILE      CORRETTO
+H01              1355          1355       AMMISSIBILE      CORRETTO
+H02              1575          1575       AMMISSIBILE      CORRETTO
+H03               227           227       AMMISSIBILE      CORRETTO
+H04               962           962       AMMISSIBILE      CORRETTO
+H05               235           235       AMMISSIBILE      CORRETTO
+H06                42            42       AMMISSIBILE      CORRETTO
+H07              2090          2160   NON AMMISSIBILE  NON CORRETTO
+H08               697           697       AMMISSIBILE      CORRETTO
+H09              2941          2941       AMMISSIBILE      CORRETTO
+H10               583           583       AMMISSIBILE      CORRETTO
+------------------------------------------------------------------------------
+
+Violazioni rilevate nel problema originale:
+  H07:
+    - C2 proviene da 1 fornitore/i, ne servono almeno 2
+    - C3 proviene da 1 fornitore/i, ne servono almeno 2
+==============================================================================

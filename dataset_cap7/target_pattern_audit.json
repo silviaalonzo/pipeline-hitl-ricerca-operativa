@@ -1,0 +1,273 @@
+[
+  {
+    "id": "L01",
+    "simulated_omission": "aggregazione/omissione dei limiti individuali sulle rotte lunghe",
+    "original_objective_of_mutated_solution": 377.0,
+    "known_optimum": 394.0,
+    "relative_gap": 0.04314720812182741,
+    "violated_original_constraints": [
+      {
+        "constraint": "long_limit_E2",
+        "violation": 2.0
+      },
+      {
+        "constraint": "long_limit_E3",
+        "violation": 2.0
+      }
+    ],
+    "would_be_accepted": false,
+    "target_is_consequential": true
+  },
+  {
+    "id": "L02",
+    "simulated_omission": "assenza del collegamento tra produzione e setup",
+    "original_objective_of_mutated_solution": 7075.299999999999,
+    "known_optimum": 8134.799999999998,
+    "relative_gap": 0.13024290701676738,
+    "violated_original_constraints": [
+      {
+        "constraint": "max_lot_P1_T1",
+        "violation": 60.0
+      },
+      {
+        "constraint": "max_lot_P1_T3",
+        "violation": 98.0
+      },
+      {
+        "constraint": "max_lot_P1_T5",
+        "violation": 81.0
+      },
+      {
+        "constraint": "max_lot_P1_T6",
+        "violation": 6.0
+      },
+      {
+        "constraint": "max_lot_P1_T7",
+        "violation": 85.0
+      },
+      {
+        "constraint": "max_lot_P1_T8",
+        "violation": 19.0
+      },
+      {
+        "constraint": "max_lot_P2_T1",
+        "violation": 38.0
+      },
+      {
+        "constraint": "max_lot_P2_T2",
+        "violation": 36.0
+      },
+      {
+        "constraint": "max_lot_P2_T3",
+        "violation": 13.0
+      },
+      {
+        "constraint": "max_lot_P2_T4",
+        "violation": 60.0
+      },
+      {
+        "constraint": "max_lot_P2_T5",
+        "violation": 26.0
+      },
+      {
+        "constraint": "max_lot_P2_T6",
+        "violation": 51.0
+      },
+      {
+        "constraint": "max_lot_P2_T7",
+        "violation": 25.0
+      },
+      {
+        "constraint": "max_lot_P2_T8",
+        "violation": 54.0
+      },
+      {
+        "constraint": "max_lot_P3_T1",
+        "violation": 15.0
+      },
+      {
+        "constraint": "max_lot_P3_T2",
+        "violation": 73.0
+      },
+      {
+        "constraint": "max_lot_P3_T4",
+        "violation": 80.0
+      },
+      {
+        "constraint": "max_lot_P3_T6",
+        "violation": 89.0
+      },
+      {
+        "constraint": "max_lot_P3_T8",
+        "violation": 65.0
+      }
+    ],
+    "would_be_accepted": false,
+    "target_is_consequential": true
+  },
+  {
+    "id": "L03",
+    "simulated_omission": "binarie di utilizzo conteggiate senza quantità minima positiva",
+    "original_objective_of_mutated_solution": 2265.0,
+    "known_optimum": 2770.0,
+    "relative_gap": 0.18231046931407943,
+    "violated_original_constraints": [
+      {
+        "constraint": "lower_link_S2_C4",
+        "violation": 10.0
+      },
+      {
+        "constraint": "lower_link_S4_C2",
+        "violation": 12.0
+      },
+      {
+        "constraint": "lower_link_S4_C6",
+        "violation": 10.0
+      },
+      {
+        "constraint": "lower_link_S5_C1",
+        "violation": 14.0
+      },
+      {
+        "constraint": "lower_link_S5_C2",
+        "violation": 12.0
+      },
+      {
+        "constraint": "lower_link_S7_C1",
+        "violation": 14.0
+      },
+      {
+        "constraint": "lower_link_S7_C3",
+        "violation": 12.0
+      },
+      {
+        "constraint": "lower_link_S7_C5",
+        "violation": 11.0
+      }
+    ],
+    "would_be_accepted": false,
+    "target_is_consequential": true
+  },
+  {
+    "id": "L04",
+    "simulated_omission": "produzione non collegata ai setup",
+    "original_objective_of_mutated_solution": 7967.299999999999,
+    "known_optimum": 9077.6,
+    "relative_gap": 0.1223120648629595,
+    "violated_original_constraints": [
+      {
+        "constraint": "max_lot_A_T1",
+        "violation": 93.0
+      },
+      {
+        "constraint": "max_lot_A_T2",
+        "violation": 42.0
+      },
+      {
+        "constraint": "max_lot_A_T3",
+        "violation": 10.0
+      },
+      {
+        "constraint": "max_lot_A_T5",
+        "violation": 59.0
+      },
+      {
+        "constraint": "max_lot_A_T6",
+        "violation": 41.0
+      },
+      {
+        "constraint": "max_lot_B_T1",
+        "violation": 18.0
+      },
+      {
+        "constraint": "max_lot_B_T2",
+        "violation": 35.0
+      },
+      {
+        "constraint": "max_lot_B_T3",
+        "violation": 99.0
+      },
+      {
+        "constraint": "max_lot_B_T4",
+        "violation": 8.0
+      },
+      {
+        "constraint": "max_lot_B_T5",
+        "violation": 21.0
+      },
+      {
+        "constraint": "max_lot_B_T6",
+        "violation": 44.0
+      },
+      {
+        "constraint": "max_lot_C_T1",
+        "violation": 15.0
+      },
+      {
+        "constraint": "max_lot_C_T2",
+        "violation": 93.0
+      },
+      {
+        "constraint": "max_lot_C_T5",
+        "violation": 70.0
+      },
+      {
+        "constraint": "max_lot_D_T1",
+        "violation": 90.0
+      },
+      {
+        "constraint": "max_lot_D_T2",
+        "violation": 1.0
+      },
+      {
+        "constraint": "max_lot_D_T3",
+        "violation": 11.0
+      },
+      {
+        "constraint": "max_lot_D_T4",
+        "violation": 117.0
+      },
+      {
+        "constraint": "max_lot_D_T6",
+        "violation": 23.0
+      },
+      {
+        "constraint": "max_lot_E_T2",
+        "violation": 19.0
+      },
+      {
+        "constraint": "max_lot_E_T3",
+        "violation": 22.0
+      },
+      {
+        "constraint": "max_lot_E_T4",
+        "violation": 28.0
+      },
+      {
+        "constraint": "max_lot_E_T5",
+        "violation": 26.0
+      },
+      {
+        "constraint": "max_lot_E_T6",
+        "violation": 30.0
+      }
+    ],
+    "would_be_accepted": false,
+    "target_is_consequential": true
+  },
+  {
+    "id": "L05",
+    "simulated_omission": "mancata copertura separata dell'audit A12",
+    "original_objective_of_mutated_solution": 362.0,
+    "known_optimum": 371.0,
+    "relative_gap": 0.02425876010781671,
+    "violated_original_constraints": [
+      {
+        "constraint": "cover_A12",
+        "violation": 1.0
+      }
+    ],
+    "would_be_accepted": false,
+    "target_is_consequential": true
+  }
+]

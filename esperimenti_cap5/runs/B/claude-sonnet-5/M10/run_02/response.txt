@@ -1,0 +1,163 @@
+# M10 — Progettazione di una rete distributiva
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- Nodi: $N = \{S, A, B, C, T\}$
+- Archi attivabili: $E = \{(S,A),(S,B),(A,B),(A,C),(B,C),(B,T),(C,T)\}$
+
+**Parametri**
+- $f_{ij}$ = costo fisso di attivazione dell'arco $(i,j) \in E$
+- $c_{ij}$ = costo unitario di trasporto sull'arco $(i,j) \in E$
+- $u_{ij}$ = capacità dell'arco $(i,j) \in E$
+- $D = 40$ = domanda da trasportare da $S$ a $T$
+
+**Variabili decisionali**
+- $x_{ij} \in \mathbb{Z}_{\ge 0}$: flusso intero sull'arco $(i,j) \in E$
+- $y_{ij} \in \{0,1\}$: 1 se l'arco $(i,j)$ è attivato, 0 altrimenti
+
+## 2. Formulazione matematica
+
+$$
+\min \sum_{(i,j) \in E} \left( f_{ij}\, y_{ij} + c_{ij}\, x_{ij} \right)
+$$
+
+Soggetto a:
+
+**Capacità/attivazione**
+$$
+x_{ij} \le u_{ij}\, y_{ij} \qquad \forall (i,j) \in E
+$$
+
+**Conservazione del flusso al nodo S**
+$$
+x_{SA} + x_{SB} = D
+$$
+
+**Conservazione del flusso al nodo A**
+$$
+x_{SA} = x_{AB} + x_{AC}
+$$
+
+**Conservazione del flusso al nodo B**
+$$
+x_{SB} + x_{AB} = x_{BC} + x_{BT}
+$$
+
+**Conservazione del flusso al nodo C**
+$$
+x_{AC} + x_{BC} = x_{CT}
+$$
+
+**Conservazione del flusso al nodo T**
+$$
+x_{BT} + x_{CT} = D
+$$
+
+**Domini**
+$$
+x_{ij} \in \mathbb{Z}_{\ge 0}, \quad y_{ij} \in \{0,1\} \qquad \forall (i,j) \in E
+$$
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# --- Dati ---
+arcs = ["SA", "SB", "AB", "AC", "BC", "BT", "CT"]
+
+fixed_cost = {
+    "SA": 40, "SB": 35, "AB": 15, "AC": 30,
+    "BC": 18, "BT": 45, "CT": 38
+}
+unit_cost = {
+    "SA": 2, "SB": 3, "AB": 1, "AC": 2,
+    "BC": 2, "BT": 4, "CT": 2
+}
+capacity = {
+    "SA": 30, "SB": 35, "AB": 15, "AC": 25,
+    "BC": 20, "BT": 25, "CT": 35
+}
+
+D = 40  # domanda S->T
+
+model = gp.Model("Rete_Distributiva")
+model.Params.OutputFlag = 0
+
+# --- Variabili ---
+x = model.addVars(arcs, vtype=GRB.INTEGER, lb=0, name="x")
+y = model.addVars(arcs, vtype=GRB.BINARY, name="y")
+
+# --- Funzione obiettivo ---
+model.setObjective(
+    gp.quicksum(fixed_cost[a] * y[a] + unit_cost[a] * x[a] for a in arcs),
+    GRB.MINIMIZE
+)
+
+# --- Vincoli di capacità/attivazione ---
+for a in arcs:
+    model.addConstr(x[a] <= capacity[a] * y[a], name=f"cap_{a}")
+
+# --- Conservazione del flusso ---
+# Nodo S
+model.addConstr(x["SA"] + x["SB"] == D, name="flow_S")
+
+# Nodo A
+model.addConstr(x["SA"] == x["AB"] + x["AC"], name="flow_A")
+
+# Nodo B
+model.addConstr(x["SB"] + x["AB"] == x["BC"] + x["BT"], name="flow_B")
+
+# Nodo C
+model.addConstr(x["AC"] + x["BC"] == x["CT"], name="flow_C")
+
+# Nodo T
+model.addConstr(x["BT"] + x["CT"] == D, name="flow_T")
+
+# --- Risoluzione ---
+model.optimize()
+
+# --- Output ---
+result = {"status": None, "objective": None, "variables": {}}
+
+if model.Status == GRB.OPTIMAL:
+    result["status"] = "OPTIMAL"
+    result["objective"] = round(model.ObjVal, 4)
+    variables = {}
+    for a in arcs:
+        variables[f"x_{a}"] = round(x[a].X, 4)
+        variables[f"y_{a}"] = round(y[a].X, 4)
+    result["variables"] = variables
+else:
+    status_map = {
+        GRB.INFEASIBLE: "INFEASIBLE",
+        GRB.UNBOUNDED: "UNBOUNDED",
+        GRB.INF_OR_UNBD: "INF_OR_UNBD",
+    }
+    result["status"] = status_map.get(model.Status, str(model.Status))
+    result["objective"] = None
+    result["variables"] = {}
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello MILP determina il piano di attivazione degli archi e i flussi ottimi per instradare 40 unità da S a T minimizzando la somma di costi fissi e variabili.
+
+**Risultato ottimo:**
+- **Stato:** OPTIMAL
+- **Costo totale:** 407 (108 costi fissi + variabili di trasporto)
+- **Decisioni non nulle:**
+  - Arco **S→A** attivato: flusso = 30 unità
+  - Arco **S→B** attivato: flusso = 10 unità
+  - Arco **A→C** attivato: flusso = 30 unità
+  - Arco **B→T** attivato: flusso = 10 unità
+  - Arco **C→T** attivato: flusso = 30 unità
+  - Arco **A→B**: non attivato (flusso = 0)
+  - Arco **B→C**: non attivato (flusso = 0)
+
+La rete instrada 30 unità lungo il percorso **S→A→C→T** (costo unitario 6/unità) e 10 unità lungo **S→B→T** (costo unitario 7/unità), attivando 5 archi su 7 disponibili, evitando i costi fissi di A→B e B→C poiché non risultano necessari per soddisfare la domanda al costo minimo.

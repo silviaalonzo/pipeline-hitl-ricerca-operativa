@@ -1,0 +1,69 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 35 rows, 28 columns and 100 nonzeros (Min)
+Model fingerprint: 0xab54950f
+Model has 28 linear objective coefficients
+Variable types: 0 continuous, 28 integer (28 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+00]
+  Objective range  [7e+00, 5e+01]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 3e+00]
+
+Presolve time: 0.00s
+Presolved: 35 rows, 28 columns, 100 nonzeros
+Variable types: 0 continuous, 28 integer (28 binary)
+Found heuristic solution: objective 150.0000000
+
+Root relaxation: objective 1.305556e+02, 18 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+     0     0  130.55556    0   15  150.00000  130.55556  13.0%     -    0s
+H    0     0                     149.0000000  139.00000  6.71%     -    0s
+
+Cutting planes:
+  Gomory: 2
+  Zero half: 1
+  Relax-and-lift: 2
+
+Explored 1 nodes (18 simplex iterations) in 0.01 seconds (0.00 work units)
+Thread count was 8 (of 8 available processors)
+
+Solution count 2: 149 150 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 1.490000000000e+02, best bound 1.490000000000e+02, gap 0.0000%
+
+======================================================================
+RISULTATO M01 - Localizzazione di centri di assistenza
+======================================================================
+Stato finale Gurobi      : OPTIMAL (codice 2)
+Tempo di esecuzione Gurobi: 0.0106 s
+Valore funzione obiettivo : 149
+
+Decisioni non nulle:
+  Siti aperti (x_i = 1):
+    x[B] = 1   (costo fisso 42)
+    x[D] = 1   (costo fisso 46)
+  Assegnazioni zona-sito (y_ij = 1):
+    y[B,Z1] = 1   (costo assegnazione 14)
+    y[B,Z2] = 1   (costo assegnazione 9)
+    y[B,Z3] = 1   (costo assegnazione 8)
+    y[D,Z4] = 1   (costo assegnazione 7)
+    y[D,Z5] = 1   (costo assegnazione 14)
+    y[D,Z6] = 1   (costo assegnazione 9)
+
+Utilizzo delle capacita':
+    sito B: 3 zone su 3 disponibili
+    sito D: 3 zone su 3 disponibili
+
+File soluzione scritto: /Users/silviaalonzo/Desktop/tesi_sorgenti/scenario_a/M01/M01.sol
+======================================================================

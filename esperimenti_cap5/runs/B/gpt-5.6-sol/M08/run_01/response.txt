@@ -1,0 +1,243 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+### Insiemi
+
+- Centri candidati:
+\[
+I=\{A,B,C,D,E,F,G,H\}
+\]
+
+- Zone da coprire:
+\[
+Z=\{Z1,Z2,\ldots,Z10\}
+\]
+
+- Insieme dei centri che possono coprire ciascuna zona:
+\[
+\begin{aligned}
+C_{Z1}&=\{A,C\}, & C_{Z2}&=\{A,B\},\\
+C_{Z3}&=\{A,B,D\}, & C_{Z4}&=\{B,E\},\\
+C_{Z5}&=\{B,C,F\}, & C_{Z6}&=\{C,D,G\},\\
+C_{Z7}&=\{D,E,H\}, & C_{Z8}&=\{E,F,H\},\\
+C_{Z9}&=\{F,G\}, & C_{Z10}&=\{G,H\}.
+\end{aligned}
+\]
+
+### Parametri
+
+- Costi di apertura:
+\[
+(c_A,c_B,c_C,c_D,c_E,c_F,c_G,c_H)
+=(24,20,27,22,25,19,23,21)
+\]
+
+- Copertura richiesta:
+\[
+r_z=
+\begin{cases}
+2 & z\in\{Z3,Z7\},\\
+1 & \text{altrimenti}.
+\end{cases}
+\]
+
+- Numero massimo di centri:
+\[
+K=5.
+\]
+
+### Variabili decisionali
+
+Per ogni \(i\in I\):
+\[
+x_i=
+\begin{cases}
+1 & \text{se il centro }i\text{ viene aperto},\\
+0 & \text{altrimenti}.
+\end{cases}
+\]
+
+---
+
+## 2. Formulazione matematica completa
+
+### Funzione obiettivo
+
+\[
+\min\quad
+24x_A+20x_B+27x_C+22x_D+25x_E+19x_F+23x_G+21x_H
+\]
+
+### Vincoli di copertura
+
+\[
+x_A+x_C\geq 1 \qquad [Z1]
+\]
+
+\[
+x_A+x_B\geq 1 \qquad [Z2]
+\]
+
+\[
+x_A+x_B+x_D\geq 2 \qquad [Z3]
+\]
+
+\[
+x_B+x_E\geq 1 \qquad [Z4]
+\]
+
+\[
+x_B+x_C+x_F\geq 1 \qquad [Z5]
+\]
+
+\[
+x_C+x_D+x_G\geq 1 \qquad [Z6]
+\]
+
+\[
+x_D+x_E+x_H\geq 2 \qquad [Z7]
+\]
+
+\[
+x_E+x_F+x_H\geq 1 \qquad [Z8]
+\]
+
+\[
+x_F+x_G\geq 1 \qquad [Z9]
+\]
+
+\[
+x_G+x_H\geq 1 \qquad [Z10]
+\]
+
+### Limite sul numero di centri
+
+\[
+x_A+x_B+x_C+x_D+x_E+x_F+x_G+x_H\leq 5
+\]
+
+### Dominio
+
+\[
+x_i\in\{0,1\}\qquad \forall i\in I.
+\]
+
+---
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+centers = ["A", "B", "C", "D", "E", "F", "G", "H"]
+zones = ["Z1", "Z2", "Z3", "Z4", "Z5", "Z6", "Z7", "Z8", "Z9", "Z10"]
+
+cost = {
+    "A": 24, "B": 20, "C": 27, "D": 22,
+    "E": 25, "F": 19, "G": 23, "H": 21
+}
+
+covered_zones = {
+    "A": {"Z1", "Z2", "Z3"},
+    "B": {"Z2", "Z3", "Z4", "Z5"},
+    "C": {"Z1", "Z5", "Z6"},
+    "D": {"Z3", "Z6", "Z7"},
+    "E": {"Z4", "Z7", "Z8"},
+    "F": {"Z5", "Z8", "Z9"},
+    "G": {"Z6", "Z9", "Z10"},
+    "H": {"Z7", "Z8", "Z10"}
+}
+
+required_coverage = {
+    z: (2 if z in {"Z3", "Z7"} else 1)
+    for z in zones
+}
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+with gp.Env(empty=True) as env:
+    env.setParam("OutputFlag", 0)
+    env.start()
+
+    with gp.Model("copertura_zone", env=env) as model:
+        x = {
+            i: model.addVar(vtype=GRB.BINARY, name=f"x_{i}")
+            for i in centers
+        }
+
+        model.setObjective(
+            gp.quicksum(cost[i] * x[i] for i in centers),
+            GRB.MINIMIZE
+        )
+
+        for z in zones:
+            model.addConstr(
+                gp.quicksum(
+                    x[i] for i in centers if z in covered_zones[i]
+                ) >= required_coverage[z],
+                name=f"copertura_{z}"
+            )
+
+        model.addConstr(
+            gp.quicksum(x[i] for i in centers) <= 5,
+            name="massimo_centri"
+        )
+
+        model.optimize()
+
+        status_code = model.Status
+        status = status_names.get(status_code, f"STATUS_{status_code}")
+
+        if status_code == GRB.OPTIMAL:
+            objective = float(round(model.ObjVal, 10))
+            variables = {
+                f"x_{i}": float(round(x[i].X))
+                for i in centers
+            }
+        else:
+            objective = None
+            variables = {}
+
+        result = {
+            "status": status,
+            "objective": objective,
+            "variables": variables
+        }
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato è **OPTIMAL** e il costo minimo è:
+
+\[
+z^*=106.
+\]
+
+Vengono aperti i centri:
+
+\[
+x_A=x_B=x_D=x_F=x_H=1,
+\]
+
+mentre \(x_C=x_E=x_G=0\). Sono quindi aperti esattamente cinque centri. La zona \(Z3\) è coperta da \(A,B,D\), mentre \(Z7\) è coperta da \(D,H\); tutte le altre zone hanno almeno una copertura.

@@ -1,0 +1,55 @@
+{
+  "schema_version": 2,
+  "created_at_utc": "2026-08-24T19:09:34.691288+00:00",
+  "model": "claude-sonnet-5",
+  "problem_id": "M06",
+  "problem_sequence": 15,
+  "handoff_number": 1,
+  "stage": 4,
+  "failure_class": "validazione_indipendente_fallita",
+  "failure_detail": "sono presenti variabili operative non riconosciute",
+  "handoff_mode": "CORRECTION",
+  "allowed_actions": [
+    "CORRECT",
+    "ACCEPT_FAILURE"
+  ],
+  "automatic_repairs_exhausted": 0,
+  "problem_prompt": "# M06 — Bilanciamento di lavori su due macchine\n\nDifficoltà: Media\nClasse: MILP intera\n\nSette lavori indipendenti devono essere assegnati a due macchine parallele. Ogni lavoro va eseguito interamente su una sola macchina; i tempi dipendono dalla macchina scelta.\nJ7 non è compatibile con la macchina A. Tutti i lavori sono disponibili all’inizio e ogni macchina esegue i lavori assegnati in sequenza. Minimizzare il makespan, cioè il maggiore tra i carichi delle due macchine.\n\n## Tempi di lavorazione\n\nLavoro | Macchina A | Macchina B\n--- | --- | ---\nJ1 | 7 | 9\nJ2 | 6 | 5\nJ3 | 8 | 7\nJ4 | 5 | 8\nJ5 | 9 | 6\nJ6 | 4 | 7\nJ7 | — | 5\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n",
+  "last_code": "import gurobipy as gp\nfrom gurobipy import GRB\n\n# Dati\njobs = [\"J1\", \"J2\", \"J3\", \"J4\", \"J5\", \"J6\", \"J7\"]\nmachines = [\"A\", \"B\"]\n\n# tempi di lavorazione: solo le coppie ammesse\np = {\n    (\"J1\", \"A\"): 7, (\"J1\", \"B\"): 9,\n    (\"J2\", \"A\"): 6, (\"J2\", \"B\"): 5,\n    (\"J3\", \"A\"): 8, (\"J3\", \"B\"): 7,\n    (\"J4\", \"A\"): 5, (\"J4\", \"B\"): 8,\n    (\"J5\", \"A\"): 9, (\"J5\", \"B\"): 6,\n    (\"J6\", \"A\"): 4, (\"J6\", \"B\"): 7,\n    (\"J7\", \"B\"): 5,  # J7 non compatibile con A\n}\n\nallowed_pairs = list(p.keys())\n\n# Machine ammesse per ciascun lavoro\nmachines_for_job = {j: [m for (jj, m) in allowed_pairs if jj == j] for j in jobs}\n\nmodel = gp.Model(\"Bilanciamento_2_macchine\")\n\n# Variabili decisionali\nx = model.addVars(allowed_pairs, vtype=GRB.BINARY, name=\"x\")\nLoad = model.addVars(machines, vtype=GRB.CONTINUOUS, lb=0.0, name=\"Load\")\nCmax = model.addVar(vtype=GRB.CONTINUOUS, lb=0.0, name=\"Cmax\")\n\n# Vincolo: ogni lavoro assegnato a esattamente una macchina ammessa\nfor j in jobs:\n    model.addConstr(\n        gp.quicksum(x[j, m] for m in machines_for_job[j]) == 1,\n        name=f\"assign_{j}\"\n    )\n\n# Vincolo: definizione del carico di ciascuna macchina\nfor m in machines:\n    model.addConstr(\n        Load[m] == gp.quicksum(p[j, m] * x[j, m] for j in jobs if (j, m) in p),\n        name=f\"load_{m}\"\n    )\n\n# Vincolo: makespan >= carico di ogni macchina\nfor m in machines:\n    model.addConstr(Cmax >= Load[m], name=f\"makespan_{m}\")\n\n# Funzione obiettivo\nmodel.setObjective(Cmax, GRB.MINIMIZE)\n\nmodel.optimize()\n\nimport json\n\nstatus = model.Status\nif status == GRB.OPTIMAL:\n    variables = {}\n    for (j, m) in allowed_pairs:\n        variables[f\"x_{j}_{m}\"] = round(x[j, m].X, 4)\n    for m in machines:\n        variables[f\"Load_{m}\"] = round(Load[m].X, 4)\n    variables[\"Cmax\"] = round(Cmax.X, 4)\n    objective = round(model.ObjVal, 4)\n    print(f\"SOLUTION_JSON={json.dumps({'status': 'OPTIMAL', 'objective': objective, 'variables': variables})}\")\nelse:\n    status_name = {\n        GRB.INFEASIBLE: \"INFEASIBLE\",\n        GRB.UNBOUNDED: \"UNBOUNDED\",\n        GRB.INF_OR_UNBD: \"INF_OR_UNBD\"\n    }.get(status, \"NOT_OPTIMAL\")\n    print(f\"SOLUTION_JSON={json.dumps({'status': status_name, 'objective': None, 'variables': {}})}\")\n",
+  "last_response_excerpt": "TRACEABILITY_JSON={\"status\":\"READY\",\"unresolved\":[],\"undefined_symbols\":[],\"requirements_mapped\":[\"Ogni lavoro va eseguito su una sola macchina -> vincolo di assegnazione univoca sum_m x[j,m]=1\",\"J7 non è compatibile con la macchina A -> esclusione della variabile x[J7,A] dal modello\",\"Tempi dipendono dalla macchina scelta -> parametro p[j,m] differenziato per macchina\",\"Minimizzare il makespan tra i carichi delle due macchine -> variabile Cmax e vincoli Cmax>=Load[m] per ogni macchina\",\"Macchine eseguono lavori in sequenza (carico = somma dei tempi) -> definizione Load[m]=sum_j p[j,m]*x[j,m]\"]}\n\n## 1. Insiemi, parametri e variabili decisionali\n\n**Insiemi**\n- J = {J1, J2, J3, J4, J5, J6, J7} — lavori\n- M = {A, B} — macchine\n- A_j ⊆ M — insieme delle macchine compatibili con il lavoro j (A_j = {A,B} per j ≠ J7; A_{J7} = {B})\n\n**Parametri**\n- p[j,m] = tempo di lavorazione del lavoro j sulla macchina m, definito solo per (j,m) con m ∈ A_j:\n\n| j | pA | pB |\n|---|---|---|\n| J1 | 7 | 9 |\n| J2 | 6 | 5 |\n| J3 | 8 | 7 |\n| J4 | 5 | 8 |\n| J5 | 9 | 6 |\n| J6 | 4 | 7 |\n| J7 | — | 5 |\n\n**Variabili decisionali**\n- x[j,m] ∈ {0,1} per ogni (j,m) ammessa (m ∈ A_j): 1 se il lavoro j è assegnato alla macchina m, 0 altrimenti.\n- Load[m] ≥ 0, continua, carico totale della macchina m.\n- Cmax ≥ 0, continua, makespan (massimo carico tra le macchine).\n\n## 2. Formulazione matematica\n\n**Funzione obiettivo**\n\nmin Cmax\n\n**Vincoli**\n\n1. Assegnazione univoca di ogni lavoro (solo alle macchine compatibili):\n   Σ_{m ∈ A_j} x[j,m] = 1  ∀ j ∈ J\n\n2. Esclusione implicita: nessuna variabile x[J7,A] viene creata (J7 compatibile solo con B).\n\n3. Definizione del carico di ogni macchina:\n   Load[m] = Σ_{j: m ∈ A_j} p[j,m] · x[j,m]  ∀ m ∈ M\n\n4. Makespan come massimo dei carichi:\n   Cmax ≥ Load[m]  ∀ m ∈ M\n\n5. Dominio delle variabili:\n   x[j,m] ∈ {0,1} ∀ (j,m) ammessa\n   Load[m] ≥ 0 ∀ m ∈ M\n   Cmax ≥ 0\n\n## 3. Codice Python (gurobipy)\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\n\n# Dati\njobs = [\"J1\", \"J2\", \"J3\", \"J4\", \"J5\", \"J6\", \"J7\"]\nmachines = [\"A\", \"B\"]\n\n# tempi di lavorazione: solo le coppie ammesse\np = {\n    (\"J1\", \"A\"): 7, (\"J1\", \"B\"): 9,\n    (\"J2\", \"A\"): 6, (\"J2\", \"B\"): 5,\n    (\"J3\", \"A\"): 8, (\"J3\", \"B\"): 7,\n    (\"J4\", \"A\"): 5, (\"J4\", \"B\"): 8,\n    (\"J5\", \"A\"): 9, (\"J5\", \"B\"): 6,\n    (\"J6\", \"A\"): 4, (\"J6\", \"B\"): 7,\n    (\"J7\", \"B\"): 5,  # J7 non compatibile con A\n}\n\nallowed_pairs = list(p.keys())\n\n# Machine ammesse per ciascun lavoro\nmachines_for_job = {j: [m for (jj, m) in allowed_pairs if jj == j] for j in jobs}\n\nmodel = gp.Model(\"Bilanciamento_2_macchine\")\n\n# Variabili decisionali\nx = model.addVars(allowed_pairs, vtype=GRB.BINARY, name=\"x\")\nLoad = model.addVars(machines, vtype=GRB.CONTINUOUS, lb=0.0, name=\"Load\")\nCmax = model.addVar(vtype=GRB.CONTINUOUS, lb=0.0, name=\"Cmax\")\n\n# Vincolo: ogni lavoro assegnato a esattamente una macchina ammessa\nfor j in jobs:\n    model.addConstr(\n        gp.quicksum(x[j, m] for m in machines_for_job[j]) == 1,\n        name=f\"assign_{j}\"\n    )\n\n# Vincolo: definizione del carico di ciascuna macchina\nfor m in machines:\n    model.addConstr(\n        Load[m] == gp.quicksum(p[j, m] * x[j, m] for j in jobs if (j, m) in p),\n        name=f\"load_{m}\"\n    )\n\n# Vincolo: makespan >= carico di ogni macchina\nfor m in machines:\n    model.addConstr(Cmax >= Load[m], name=f\"makespan_{m}\")\n\n# Funzione obiettivo\nmodel.setObjective(Cmax, GRB.MINIMIZE)\n\nmodel.optimize()\n\nimport json\n\nstatus = model.Status\nif status == GRB.OPTIMAL:\n    variables = {}\n    for (j, m) in allowed_pairs:\n        variables[f\"x_{j}_{m}\"] = round(x[j, m].X, 4)\n    for m in machines:\n        variables[f\"Load_{m}\"] = round(Load[m].X, 4)\n    variables[\"Cmax\"] = round(Cmax.X, 4)\n    objective = round(model.ObjVal, 4)\n    print(f\"SOLUTION_JSON={json.dumps({'status': 'OPTIMAL', 'objective': objective, 'variables': variables})}\")\nelse:\n    status_name = {\n        GRB.INFEASIBLE: \"INFEASIBLE\",\n        GRB.UNBOUNDED: \"UNBOUNDED\",\n        GRB.INF_OR_UNBD: \"INF_OR_UNBD\"\n    }.get(status, \"NOT_OPTIMAL\")\n    print(f\"SOLUTION_JSON={json.dumps({'status': status_name, 'objective': None, 'variables': {}})}\")\n```\n\n## 4. Sintesi della soluzione\n\nIl modello assegna i 7 lavori a due macchine parallele con tempi dipendenti dalla macchina, escludendo la coppia (J7, A) in quanto non ammessa. La soluzione ottima trovata assegna:\n\n- **Macchina A**: J1, J2, J4, J6 → carico = 7+6+5+4 = 22\n- **Macchina B**: J3, J5, J7 → carico = 7+6+5 = 18\n\nIl **makespan ottimo è Cmax = 22**, corrispondente al carico della macchina A, che risulta il collo di bottiglia. Questa configurazione bilancia i carichi minimizzando il tempo massimo di completamento tra le due macchine, rispettando il vincolo di incompatibilità di J7 con la macchina A.",
+  "response_source_attempt": 0,
+  "validation": {
+    "problem_id": "M06",
+    "correct": false,
+    "candidate_status": "OPTIMAL",
+    "feasible_in_original_problem": true,
+    "gap_within_tolerance": true,
+    "declared_objective_corrected_automatically": false,
+    "max_constraint_violation": 0.0,
+    "constraint_violations": [],
+    "bound_violations": [],
+    "integrality_violations": [],
+    "unknown_nonzero_variables": [
+      "Load_A",
+      "Load_B"
+    ],
+    "missing_variables_assumed_zero": [
+      "x_J7_A"
+    ]
+  },
+  "attempt_history": [
+    {
+      "attempt_number": 0,
+      "attempt_kind": "INITIAL",
+      "finish_reason": "stop",
+      "content_characters": 4741,
+      "completion_tokens": 7876,
+      "reasoning_tokens": 5322,
+      "code_extracted": true,
+      "failure_class": "validazione_indipendente_fallita",
+      "failure_detail": "sono presenti variabili operative non riconosciute"
+    }
+  ],
+  "automatic_diagnosis": "Il codice è stato eseguito, ma la soluzione non ha superato la validazione indipendente. Esaminare le violazioni e il codice riportati nel pacchetto.",
+  "ground_truth_disclosed": false
+}

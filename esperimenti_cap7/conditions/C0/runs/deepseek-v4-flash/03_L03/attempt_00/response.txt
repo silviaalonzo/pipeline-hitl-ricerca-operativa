@@ -1,0 +1,229 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["domanda esatta -> sum_i x_ij = D_j","attivazione fornitore e capacità -> sum_j x_ij <= cap_i y_i","lotto minimo -> x_ij >= l_j z_ij","minimo/massimo fornitori per componente -> 2 <= sum_i z_ij <= 3","max 6 fornitori e almeno uno tra S1/S2 -> sum_i y_i <= 6, y_S1+y_S2 >= 1","qualità media >= 95 -> sum_i q_ij x_ij >= 95 D_j","rischio totale <= 1300 -> sum_i r_i x_ij <= 1300","costi fissi e di acquisto -> min sum_i f_i y_i + sum_ij c_ij x_ij"],"memory_items_used":[]}
+
+## Insiemi, parametri e variabili decisionali
+
+Insiemi:
+- \(I = \{S1,\dots,S8\}\): fornitori.
+- \(J = \{C1,\dots,C6\}\): componenti.
+- \(A \subseteq I \times J\): coppie fornitore-componente disponibili, cioè non marcate con «—».
+
+Parametri:
+- \(f_i\): costo fisso di attivazione del fornitore \(i\).
+- \(cap_i\): capacità complessiva del fornitore \(i\).
+- \(r_i\): rischio unitario del fornitore \(i\).
+- \(D_j\): domanda del componente \(j\).
+- \(l_j\): lotto minimo per il componente \(j\).
+- \(c_{ij}\): costo unitario di acquisto per \((i,j)\in A\).
+- \(q_{ij}\): qualità della coppia \((i,j)\in A\).
+
+Variabili decisionali:
+- \(y_i \in \{0,1\}\): vale 1 se il fornitore \(i\) è attivato.
+- \(z_{ij} \in \{0,1\}\): vale 1 se la coppia \((i,j)\in A\) viene utilizzata.
+- \(x_{ij} \in \mathbb{Z}_{\ge 0}\): quantità del componente \(j\) acquistata dal fornitore \(i\), per \((i,j)\in A\).
+
+## Formulazione matematica
+
+Funzione obiettivo:
+\[
+\min \sum_{i\in I} f_i y_i + \sum_{(i,j)\in A} c_{ij} x_{ij}
+\]
+
+Vincoli:
+\[
+\sum_{i:(i,j)\in A} x_{ij} = D_j \quad \forall j\in J
+\]
+
+\[
+\sum_{j:(i,j)\in A} x_{ij} \le cap_i\, y_i \quad \forall i\in I
+\]
+
+\[
+l_j\, z_{ij} \le x_{ij} \le \min(D_j, cap_i)\, z_{ij} \quad \forall (i,j)\in A
+\]
+
+\[
+z_{ij} \le y_i \quad \forall (i,j)\in A
+\]
+
+\[
+2 \le \sum_{i:(i,j)\in A} z_{ij} \le 3 \quad \forall j\in J
+\]
+
+\[
+\sum_{i\in I} y_i \le 6
+\]
+
+\[
+y_{S1} + y_{S2} \ge 1
+\]
+
+\[
+\sum_{i:(i,j)\in A} q_{ij} x_{ij} \ge 95\, D_j \quad \forall j\in J
+\]
+
+\[
+\sum_{(i,j)\in A} r_i\, x_{ij} \le 1300
+\]
+
+\[
+y_i \in \{0,1\}, \quad z_{ij}\in\{0,1\}, \quad x_{ij}\in\mathbb{Z}_{\ge 0}
+\]
+
+## Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+suppliers = ["S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8"]
+components = ["C1", "C2", "C3", "C4", "C5", "C6"]
+
+fixed_cost = {
+    "S1": 165, "S2": 150, "S3": 170, "S4": 145,
+    "S5": 155, "S6": 140, "S7": 160, "S8": 148
+}
+
+capacity = {
+    "S1": 125, "S2": 115, "S3": 110, "S4": 105,
+    "S5": 120, "S6": 100, "S7": 95, "S8": 115
+}
+
+risk = {
+    "S1": 2, "S2": 3, "S3": 1, "S4": 4,
+    "S5": 2, "S6": 3, "S7": 1, "S8": 4
+}
+
+demand = {"C1": 90, "C2": 80, "C3": 75, "C4": 70, "C5": 65, "C6": 60}
+min_lot = {"C1": 14, "C2": 12, "C3": 12, "C4": 10, "C5": 11, "C6": 10}
+
+cost = {
+    "S1": {"C1": 3, "C2": 11, "C3": 13, "C4": None, "C5": 12, "C6": None},
+    "S2": {"C1": 12, "C2": 3, "C3": None, "C4": 13, "C5": None, "C6": 12},
+    "S3": {"C1": 10, "C2": None, "C3": 3, "C4": 11, "C5": 13, "C6": 10},
+    "S4": {"C1": None, "C2": 10, "C3": 12, "C4": 3, "C5": None, "C6": 13},
+    "S5": {"C1": 11, "C2": 13, "C3": None, "C4": None, "C5": 3, "C6": 11},
+    "S6": {"C1": None, "C2": 11, "C3": 13, "C4": 10, "C5": 12, "C6": None},
+    "S7": {"C1": 12, "C2": None, "C3": 11, "C4": None, "C5": 10, "C6": 3},
+    "S8": {"C1": None, "C2": 12, "C3": None, "C4": 11, "C5": 13, "C6": 10}
+}
+
+quality = {
+    "S1": {"C1": 98, "C2": 95, "C3": 98, "C4": None, "C5": 97, "C6": None},
+    "S2": {"C1": 94, "C2": 98, "C3": None, "C4": 96, "C5": None, "C6": 95},
+    "S3": {"C1": 96, "C2": None, "C3": 98, "C4": 98, "C5": 94, "C6": 97},
+    "S4": {"C1": None, "C2": 94, "C3": 97, "C4": 98, "C5": None, "C6": 92},
+    "S5": {"C1": 93, "C2": 96, "C3": None, "C4": None, "C5": 98, "C6": 94},
+    "S6": {"C1": None, "C2": 98, "C3": 94, "C4": 97, "C5": 93, "C6": None},
+    "S7": {"C1": 97, "C2": None, "C3": 96, "C4": None, "C5": 95, "C6": 98},
+    "S8": {"C1": None, "C2": 95, "C3": None, "C4": 94, "C5": 97, "C6": 93}
+}
+
+available = [(s, c) for s in suppliers for c in components if cost[s][c] is not None]
+
+m = gp.Model("L03_approvvigionamento")
+m.setParam("OutputFlag", 0)
+
+y = m.addVars(suppliers, vtype=GRB.BINARY, name="y")
+x = m.addVars(available, vtype=GRB.INTEGER, name="x")
+z = m.addVars(available, vtype=GRB.BINARY, name="z")
+
+# Domanda esatta e numero fornitori per componente
+for c in components:
+    m.addConstr(
+        gp.quicksum(x[s, c] for s in suppliers if (s, c) in available) == demand[c],
+        name=f"domanda_{c}"
+    )
+    m.addConstr(
+        gp.quicksum(z[s, c] for s in suppliers if (s, c) in available) >= 2,
+        name=f"min_forn_{c}"
+    )
+    m.addConstr(
+        gp.quicksum(z[s, c] for s in suppliers if (s, c) in available) <= 3,
+        name=f"max_forn_{c}"
+    )
+    m.addConstr(
+        gp.quicksum(quality[s][c] * x[s, c] for s in suppliers if (s, c) in available) >= 95 * demand[c],
+        name=f"qualita_{c}"
+    )
+
+# Capacità e attivazione fornitori
+for s in suppliers:
+    m.addConstr(
+        gp.quicksum(x[s, c] for c in components if (s, c) in available) <= capacity[s] * y[s],
+        name=f"capacita_{s}"
+    )
+
+# Lotto minimo e uso della coppia
+for (s, c) in available:
+    m.addConstr(x[s, c] >= min_lot[c] * z[s, c], name=f"lotto_{s}_{c}")
+    m.addConstr(x[s, c] <= min(demand[c], capacity[s]) * z[s, c], name=f"link_{s}_{c}")
+    m.addConstr(z[s, c] <= y[s], name=f"attivazione_{s}_{c}")
+
+# Rischio complessivo
+m.addConstr(
+    gp.quicksum(risk[s] * x[s, c] for (s, c) in available) <= 1300,
+    name="rischio"
+)
+
+# Limiti sul numero di fornitori attivi
+m.addConstr(gp.quicksum(y[s] for s in suppliers) <= 6, name="max_attivi")
+m.addConstr(y["S1"] + y["S2"] >= 1, name="almeno_S1_S2")
+
+# Funzione obiettivo
+m.setObjective(
+    gp.quicksum(fixed_cost[s] * y[s] for s in suppliers) +
+    gp.quicksum(cost[s][c] * x[s, c] for (s, c) in available),
+    GRB.MINIMIZE
+)
+
+m.optimize()
+
+if m.status == GRB.OPTIMAL:
+    status = "OPTIMAL"
+    objective = m.ObjVal
+    variables_out = {}
+
+    for s in suppliers:
+        variables_out[f"y_{s}"] = y[s].X
+
+    for (s, c) in available:
+        variables_out[f"x_{s}_{c}"] = x[s, c].X
+        variables_out[f"z_{s}_{c}"] = z[s, c].X
+else:
+    status_map = {
+        GRB.INFEASIBLE: "INFEASIBLE",
+        GRB.UNBOUNDED: "UNBOUNDED",
+        GRB.INF_OR_UNBD: "INF_OR_UNBD"
+    }
+    status = status_map.get(m.status, f"STATUS_{m.status}")
+    objective = None
+    variables_out = {}
+
+print("SOLUTION_JSON=" + json.dumps({
+    "status": status,
+    "objective": objective,
+    "variables": variables_out
+}))
+```
+
+## Sintesi della soluzione
+
+Stato del solver: **OPTIMAL**  
+Valore ottimo: **2770.0**  
+Costi fissi: **945**  
+Costi di acquisto: **1825**
+
+Fornitori attivi: **S1, S2, S3, S4, S5, S7**.  
+Fornitori non attivi: **S6, S8**.
+
+Quantità non nulle:
+- S1 → C1: 76
+- S2 → C2: 68
+- S3 → C1: 14, C3: 63, C4: 10, C6: 10
+- S4 → C2: 12, C4: 60
+- S5 → C5: 54
+- S7 → C3: 12, C5: 11, C6: 50
+
+Le variabili \(z_{ij}\) valgono 1 esattamente per le coppie sopra elencate.  
+La soluzione rispetta qualità minima, rischio complessivo pari a 922, capacità e lotti minimi.

@@ -1,0 +1,7 @@
+{
+  "returncode": 0,
+  "timed_out": false,
+  "elapsed_seconds": 0.050239207999993596,
+  "stdout": "Set parameter Username\nSet parameter LicenseID to value 2852205\nAcademic license - for non-commercial use only - expires 2027-08-08\nStato solver: 2 -> OPTIMAL\nValore ottimo (obiettivo): 149.0 k€\nSiti aperti:\n  - B (costo fisso 42)\n  - D (costo fisso 46)\nAssegnazioni zona -> sito:\n  - Z1 -> B (costo 14)\n  - Z2 -> B (costo 9)\n  - Z3 -> B (costo 8)\n  - Z4 -> D (costo 7)\n  - Z5 -> D (costo 14)\n  - Z6 -> D (costo 9)\nSOLUTION_JSON={\"status\": \"OPTIMAL\", \"objective\": 149.0, \"variables\": {\"y_A\": 0.0, \"y_B\": 1.0, \"y_C\": 0.0, \"y_D\": 1.0, \"x_Z1_A\": 0.0, \"x_Z1_B\": 1.0, \"x_Z1_C\": -0.0, \"x_Z1_D\": -0.0, \"x_Z2_A\": -0.0, \"x_Z2_B\": 1.0, \"x_Z2_C\": -0.0, \"x_Z2_D\": -0.0, \"x_Z3_A\": -0.0, \"x_Z3_B\": 1.0, \"x_Z3_C\": -0.0, \"x_Z3_D\": 0.0, \"x_Z4_A\": -0.0, \"x_Z4_B\": -0.0, \"x_Z4_C\": -0.0, \"x_Z4_D\": 1.0, \"x_Z5_A\": -0.0, \"x_Z5_B\": -0.0, \"x_Z5_C\": 0.0, \"x_Z5_D\": 1.0, \"x_Z6_A\": -0.0, \"x_Z6_B\": -0.0, \"x_Z6_C\": -0.0, \"x_Z6_D\": 1.0}}\n",
+  "stderr": ""
+}

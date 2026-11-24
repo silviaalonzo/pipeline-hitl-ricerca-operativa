@@ -1,0 +1,168 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["aprire esattamente quattro stazioni -> vincolo sum_s y_s = 4","assegnare ogni zona a una stazione raggiungibile -> vincolo sum_{s in R_z} x_{z,s} = 1 con x_{z,s} definita solo per s in R_z","domanda consuma capacità della stazione -> vincolo sum_z d_z x_{z,s} <= cap_s y_s","almeno una stazione aperta nel gruppo Ovest e una nel gruppo Est -> vincoli sum_{s in West} y_s >=1, sum_{s in East} y_s >=1","zone critiche Z3,Z8,Z11 devono avere almeno due stazioni raggiungibili aperte -> vincolo sum_{s in R_z} y_s >= 2 per z critiche","minimizzare costi fissi più domanda per tempo di percorrenza -> funzione obiettivo min sum_s f_s y_s + sum_z sum_{s in R_z} d_z t_{z,s} x_{z,s}"]}
+
+## 1. Insiemi, parametri e variabili
+
+**Insiemi**
+- S = {A,B,C,D,E,F,G,H}: stazioni candidate
+- Z = {Z1,...,Z12}: zone da servire
+- West = {A,B,C,D} ⊂ S
+- East = {E,F,G,H} ⊂ S
+- Crit = {Z3,Z8,Z11} ⊂ Z: zone critiche
+- R_z ⊆ S: stazioni raggiungibili dalla zona z (con relativo tempo)
+
+**Parametri**
+- f_s: costo fisso di apertura stazione s ∈ S
+- cap_s: capacità della stazione s ∈ S
+- d_z: domanda della zona z ∈ Z
+- t_{z,s}: tempo di percorrenza tra zona z e stazione s, definito solo per s ∈ R_z
+
+**Variabili decisionali**
+- y_s ∈ {0,1}: 1 se la stazione s viene aperta, 0 altrimenti (∀ s ∈ S)
+- x_{z,s} ∈ {0,1}: 1 se la zona z è assegnata alla stazione s, definita solo per s ∈ R_z (∀ z ∈ Z, s ∈ R_z)
+
+## 2. Formulazione matematica
+
+**Funzione obiettivo**
+
+min Σ_{s∈S} f_s · y_s + Σ_{z∈Z} Σ_{s∈R_z} d_z · t_{z,s} · x_{z,s}
+
+**Vincoli**
+
+1. Numero di stazioni aperte:
+   Σ_{s∈S} y_s = 4
+
+2. Assegnazione univoca di ogni zona a una stazione raggiungibile:
+   Σ_{s∈R_z} x_{z,s} = 1   ∀ z ∈ Z
+
+3. Assegnazione possibile solo a stazioni aperte:
+   x_{z,s} ≤ y_s   ∀ z ∈ Z, ∀ s ∈ R_z
+
+4. Capacità delle stazioni:
+   Σ_{z∈Z : s∈R_z} d_z · x_{z,s} ≤ cap_s · y_s   ∀ s ∈ S
+
+5. Copertura geografica minima:
+   Σ_{s∈West} y_s ≥ 1
+   Σ_{s∈East} y_s ≥ 1
+
+6. Backup per zone critiche:
+   Σ_{s∈R_z} y_s ≥ 2   ∀ z ∈ Crit
+
+7. Dominio delle variabili:
+   y_s ∈ {0,1}   ∀ s ∈ S
+   x_{z,s} ∈ {0,1}   ∀ z ∈ Z, s ∈ R_z
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# ---------------- Dati ----------------
+stations = ["A","B","C","D","E","F","G","H"]
+
+fixed_cost = {"A":35,"B":32,"C":40,"D":30,"E":38,"F":33,"G":36,"H":31}
+capacity   = {"A":42,"B":44,"C":46,"D":40,"E":45,"F":43,"G":44,"H":42}
+
+west = {"A","B","C","D"}
+east = {"E","F","G","H"}
+
+zones_data = {
+    "Z1":  {"demand":8,  "reach":{"A":3, "B":5}},
+    "Z2":  {"demand":7,  "reach":{"A":6, "B":8, "C":10}},
+    "Z3":  {"demand":10, "reach":{"B":11,"C":4, "D":6}},
+    "Z4":  {"demand":6,  "reach":{"C":7, "D":9}},
+    "Z5":  {"demand":9,  "reach":{"A":6, "D":3, "E":5}},
+    "Z6":  {"demand":8,  "reach":{"B":11,"E":8, "F":10}},
+    "Z7":  {"demand":7,  "reach":{"C":7, "F":4, "G":6, "H":8}},
+    "Z8":  {"demand":11, "reach":{"D":3, "G":9, "H":11}},
+    "Z9":  {"demand":6,  "reach":{"E":8, "F":10,"H":5}},
+    "Z10": {"demand":9,  "reach":{"F":4, "G":6, "H":8}},
+    "Z11": {"demand":8,  "reach":{"A":6, "E":5, "H":11}},
+    "Z12": {"demand":7,  "reach":{"B":11,"G":3, "H":5}},
+}
+
+zones = list(zones_data.keys())
+critical = {"Z3","Z8","Z11"}
+
+# ---------------- Modello ----------------
+m = gp.Model("H08_rete_emergenza")
+
+y = m.addVars(stations, vtype=GRB.BINARY, name="y")
+
+x = {}
+for z in zones:
+    for s in zones_data[z]["reach"]:
+        x[z, s] = m.addVar(vtype=GRB.BINARY, name=f"x_{z}_{s}")
+
+m.update()
+
+# Obiettivo
+fixed_cost_expr = gp.quicksum(fixed_cost[s]*y[s] for s in stations)
+travel_cost_expr = gp.quicksum(
+    zones_data[z]["demand"] * zones_data[z]["reach"][s] * x[z, s]
+    for z in zones for s in zones_data[z]["reach"]
+)
+m.setObjective(fixed_cost_expr + travel_cost_expr, GRB.MINIMIZE)
+
+# Vincolo: esattamente 4 stazioni aperte
+m.addConstr(gp.quicksum(y[s] for s in stations) == 4, name="num_stazioni")
+
+# Vincolo: assegnazione univoca
+for z in zones:
+    m.addConstr(
+        gp.quicksum(x[z, s] for s in zones_data[z]["reach"]) == 1,
+        name=f"assign_{z}"
+    )
+
+# Vincolo: assegnazione solo a stazioni aperte
+for z in zones:
+    for s in zones_data[z]["reach"]:
+        m.addConstr(x[z, s] <= y[s], name=f"link_{z}_{s}")
+
+# Vincolo: capacità
+for s in stations:
+    m.addConstr(
+        gp.quicksum(zones_data[z]["demand"] * x[z, s]
+                    for z in zones if s in zones_data[z]["reach"])
+        <= capacity[s] * y[s],
+        name=f"cap_{s}"
+    )
+
+# Vincolo: copertura geografica minima
+m.addConstr(gp.quicksum(y[s] for s in west) >= 1, name="west_min")
+m.addConstr(gp.quicksum(y[s] for s in east) >= 1, name="east_min")
+
+# Vincolo: backup per zone critiche
+for z in critical:
+    m.addConstr(
+        gp.quicksum(y[s] for s in zones_data[z]["reach"]) >= 2,
+        name=f"backup_{z}"
+    )
+
+m.optimize()
+
+# ---------------- Output ----------------
+if m.status == GRB.OPTIMAL:
+    variables = {}
+    for s in stations:
+        variables[f"y_{s}"] = y[s].X
+    for z in zones:
+        for s in zones_data[z]["reach"]:
+            variables[f"x_{z}_{s}"] = x[z, s].X
+    print("SOLUTION_JSON=" + json.dumps({
+        "status": "OPTIMAL",
+        "objective": m.objVal,
+        "variables": variables
+    }))
+else:
+    print("SOLUTION_JSON=" + json.dumps({
+        "status": str(m.status),
+        "objective": None,
+        "variables": {}
+    }))
+```
+
+## 4. Sintesi della soluzione
+
+Il modello è un problema di localizzazione-assegnazione capacitato con vincoli di copertura geografica e ridondanza per zone critiche. Le variabili binarie y_s decidono quali 4 stazioni tra le 8 candidate aprire, mentre x_{z,s} assegnano ciascuna delle 12 zone a una stazione aperta e raggiungibile, rispettando i limiti di capacità. Sono imposti vincoli aggiuntivi per garantire almeno una stazione nel gruppo Ovest e una nell'Est, e per assicurare che le zone critiche (Z3, Z8, Z11) abbiano almeno due stazioni raggiungibili aperte come backup. L'obiettivo minimizza la somma dei costi fissi di apertura e dei costi di percorrenza pesati per la domanda. Il codice Gurobi costruisce il modello a partire esclusivamente dai dati forniti nella traccia, risolve il problema e stampa in un'unica riga JSON lo stato, il valore ottimo della funzione obiettivo e tutte le variabili decisionali (comprese quelle nulle).

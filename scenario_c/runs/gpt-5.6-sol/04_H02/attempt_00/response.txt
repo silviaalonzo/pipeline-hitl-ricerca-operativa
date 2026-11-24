@@ -1,0 +1,388 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["domanda senza arretrati -> equazioni di bilancio con scorte non negative","scorte iniziali 0,0,6 -> parametro I0 nei bilanci di T1","setup per articolo e periodo -> variabili binarie y e costi f_i y_it","lotto minimo -> vincoli L_i y_it <= x_it","massimo due articoli attivi per periodo -> somma_i y_it <= 2","capacità in ore -> somma_i a_i x_it <= H_t","scorta totale massima 20 -> somma_i I_it <= 20","scorte finali nulle -> I_i,T4 = 0","produzione e scorte intere -> x_it e I_it intere non negative","minimizzazione dei costi -> costi di produzione, setup e mantenimento in funzione obiettivo"]}
+
+## 1. Insiemi, parametri e variabili decisionali
+
+### Insiemi
+
+- Prodotti:
+  \[
+  P=\{A,B,C\}.
+  \]
+- Periodi:
+  \[
+  T=\{1,2,3,4\}.
+  \]
+
+### Parametri
+
+Domanda \(d_{it}\):
+
+\[
+(d_{it})=
+\begin{array}{c|rrrr}
+ &1&2&3&4\\ \hline
+A&8&12&10&14\\
+B&10&8&14&12\\
+C&6&9&7&11
+\end{array}
+\]
+
+Costo unitario di produzione \(c_{it}\):
+
+\[
+(c_{it})=
+\begin{array}{c|rrrr}
+ &1&2&3&4\\ \hline
+A&9&11&10&12\\
+B&8&9&11&10\\
+C&13&12&14&11
+\end{array}
+\]
+
+Per ogni prodotto \(i\):
+
+\[
+\begin{array}{c|rrrr}
+i & f_i & h_i & a_i & L_i\\ \hline
+A&45&2&2&4\\
+B&40&3&3&4\\
+C&50&2&4&3
+\end{array}
+\]
+
+dove:
+
+- \(f_i\): costo di setup;
+- \(h_i\): costo di mantenimento per unità di scorta a fine periodo;
+- \(a_i\): ore necessarie per unità prodotta;
+- \(L_i\): lotto minimo.
+
+Capacità in ore:
+
+\[
+(H_t)=(90,95,90,100).
+\]
+
+Scorte iniziali:
+
+\[
+I_{A0}=0,\qquad I_{B0}=0,\qquad I_{C0}=6.
+\]
+
+Limite di scorta aggregata:
+
+\[
+S^{\max}=20.
+\]
+
+Una costante upper-bound valida per la produzione è:
+
+\[
+M_{it}=\sum_{\tau=t}^{4}d_{i\tau}.
+\]
+
+### Variabili decisionali
+
+Per ogni \(i\in P\), \(t\in T\):
+
+- \(x_{it}\in\mathbb Z_+\): quantità prodotta;
+- \(I_{it}\in\mathbb Z_+\): scorta alla fine del periodo;
+- \(y_{it}\in\{0,1\}\): vale 1 se il prodotto \(i\) viene avviato nel periodo \(t\).
+
+## 2. Formulazione matematica completa
+
+### Funzione obiettivo
+
+\[
+\min\quad
+\sum_{i\in P}\sum_{t\in T}c_{it}x_{it}
++\sum_{i\in P}\sum_{t\in T}f_i y_{it}
++\sum_{i\in P}\sum_{t\in T}h_i I_{it}.
+\]
+
+### Bilanci di produzione e scorta
+
+Per il primo periodo:
+
+\[
+I_{i0}+x_{i1}=d_{i1}+I_{i1}
+\qquad \forall i\in P.
+\]
+
+Per i periodi successivi:
+
+\[
+I_{i,t-1}+x_{it}=d_{it}+I_{it}
+\qquad \forall i\in P,\quad t=2,3,4.
+\]
+
+La non negatività di \(I_{it}\) esclude gli arretrati.
+
+### Capacità produttiva
+
+\[
+\sum_{i\in P}a_i x_{it}\le H_t
+\qquad \forall t\in T.
+\]
+
+### Collegamento tra produzione e setup
+
+\[
+x_{it}\ge L_i y_{it}
+\qquad \forall i\in P,\ t\in T,
+\]
+
+\[
+x_{it}\le M_{it}y_{it}
+\qquad \forall i\in P,\ t\in T.
+\]
+
+Quindi \(y_{it}=0\) impedisce la produzione, mentre \(y_{it}=1\) impone almeno il lotto minimo.
+
+### Numero massimo di articoli attivati
+
+\[
+\sum_{i\in P}y_{it}\le 2
+\qquad \forall t\in T.
+\]
+
+### Limite aggregato sulle scorte
+
+\[
+\sum_{i\in P}I_{it}\le 20
+\qquad \forall t\in T.
+\]
+
+### Scorte finali nulle
+
+\[
+I_{i4}=0
+\qquad \forall i\in P.
+\]
+
+### Domini
+
+\[
+x_{it}\in\mathbb Z_+,\qquad
+I_{it}\in\mathbb Z_+,\qquad
+y_{it}\in\{0,1\}
+\qquad \forall i\in P,\ t\in T.
+\]
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+products = ["A", "B", "C"]
+periods = ["T1", "T2", "T3", "T4"]
+
+demand = {
+    ("A", "T1"): 8,  ("A", "T2"): 12, ("A", "T3"): 10, ("A", "T4"): 14,
+    ("B", "T1"): 10, ("B", "T2"): 8,  ("B", "T3"): 14, ("B", "T4"): 12,
+    ("C", "T1"): 6,  ("C", "T2"): 9,  ("C", "T3"): 7,  ("C", "T4"): 11,
+}
+
+production_cost = {
+    ("A", "T1"): 9,  ("A", "T2"): 11, ("A", "T3"): 10, ("A", "T4"): 12,
+    ("B", "T1"): 8,  ("B", "T2"): 9,  ("B", "T3"): 11, ("B", "T4"): 10,
+    ("C", "T1"): 13, ("C", "T2"): 12, ("C", "T3"): 14, ("C", "T4"): 11,
+}
+
+setup_cost = {"A": 45, "B": 40, "C": 50}
+holding_cost = {"A": 2, "B": 3, "C": 2}
+hours_per_unit = {"A": 2, "B": 3, "C": 4}
+minimum_lot = {"A": 4, "B": 4, "C": 3}
+initial_inventory = {"A": 0, "B": 0, "C": 6}
+capacity = {"T1": 90, "T2": 95, "T3": 90, "T4": 100}
+max_total_inventory = 20
+
+big_m = {}
+for i in products:
+    for position, t in enumerate(periods):
+        big_m[i, t] = sum(demand[i, tau] for tau in periods[position:])
+
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+model = gp.Model("H02_produzione_multi_periodo", env=env)
+model.Params.OutputFlag = 0
+
+x = model.addVars(
+    products,
+    periods,
+    vtype=GRB.INTEGER,
+    lb=0,
+    name="x"
+)
+inventory = model.addVars(
+    products,
+    periods,
+    vtype=GRB.INTEGER,
+    lb=0,
+    name="I"
+)
+setup = model.addVars(
+    products,
+    periods,
+    vtype=GRB.BINARY,
+    name="y"
+)
+
+model.setObjective(
+    gp.quicksum(
+        production_cost[i, t] * x[i, t]
+        for i in products for t in periods
+    )
+    + gp.quicksum(
+        setup_cost[i] * setup[i, t]
+        for i in products for t in periods
+    )
+    + gp.quicksum(
+        holding_cost[i] * inventory[i, t]
+        for i in products for t in periods
+    ),
+    GRB.MINIMIZE
+)
+
+for i in products:
+    model.addConstr(
+        initial_inventory[i] + x[i, "T1"]
+        == demand[i, "T1"] + inventory[i, "T1"],
+        name=f"balance[{i},T1]"
+    )
+    for position in range(1, len(periods)):
+        previous_t = periods[position - 1]
+        t = periods[position]
+        model.addConstr(
+            inventory[i, previous_t] + x[i, t]
+            == demand[i, t] + inventory[i, t],
+            name=f"balance[{i},{t}]"
+        )
+
+for t in periods:
+    model.addConstr(
+        gp.quicksum(hours_per_unit[i] * x[i, t] for i in products)
+        <= capacity[t],
+        name=f"capacity[{t}]"
+    )
+
+for i in products:
+    for t in periods:
+        model.addConstr(
+            x[i, t] >= minimum_lot[i] * setup[i, t],
+            name=f"minimum_lot[{i},{t}]"
+        )
+        model.addConstr(
+            x[i, t] <= big_m[i, t] * setup[i, t],
+            name=f"setup_link[{i},{t}]"
+        )
+
+for t in periods:
+    model.addConstr(
+        gp.quicksum(setup[i, t] for i in products) <= 2,
+        name=f"maximum_setups[{t}]"
+    )
+    model.addConstr(
+        gp.quicksum(inventory[i, t] for i in products)
+        <= max_total_inventory,
+        name=f"inventory_limit[{t}]"
+    )
+
+for i in products:
+    model.addConstr(
+        inventory[i, "T4"] == 0,
+        name=f"final_inventory[{i}]"
+    )
+
+model.optimize()
+
+status_names = {
+    GRB.LOADED: "LOADED",
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.INF_OR_UNBD: "INF_OR_UNBD",
+    GRB.UNBOUNDED: "UNBOUNDED",
+    GRB.CUTOFF: "CUTOFF",
+    GRB.ITERATION_LIMIT: "ITERATION_LIMIT",
+    GRB.NODE_LIMIT: "NODE_LIMIT",
+    GRB.TIME_LIMIT: "TIME_LIMIT",
+    GRB.SOLUTION_LIMIT: "SOLUTION_LIMIT",
+    GRB.INTERRUPTED: "INTERRUPTED",
+    GRB.NUMERIC: "NUMERIC",
+    GRB.SUBOPTIMAL: "SUBOPTIMAL",
+    GRB.INPROGRESS: "INPROGRESS",
+    GRB.USER_OBJ_LIMIT: "USER_OBJ_LIMIT",
+}
+
+solver_status = status_names.get(model.Status, "STATUS_" + str(model.Status))
+
+if model.Status == GRB.OPTIMAL:
+    def numeric_value(value):
+        if abs(value - round(value)) <= 1e-6:
+            return float(round(value))
+        return float(value)
+
+    variable_values = {}
+
+    for i in products:
+        for t in periods:
+            variable_values[f"x[{i},{t}]"] = numeric_value(x[i, t].X)
+
+    for i in products:
+        for t in periods:
+            variable_values[f"I[{i},{t}]"] = numeric_value(inventory[i, t].X)
+
+    for i in products:
+        for t in periods:
+            variable_values[f"y[{i},{t}]"] = numeric_value(setup[i, t].X)
+
+    payload = {
+        "status": solver_status,
+        "objective": numeric_value(model.ObjVal),
+        "variables": variable_values,
+    }
+else:
+    payload = {
+        "status": solver_status,
+        "objective": None,
+        "variables": {},
+    }
+
+model.dispose()
+env.dispose()
+
+print("SOLUTION_JSON=" + json.dumps(payload, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato è **OPTIMAL** e il costo minimo è:
+
+\[
+\boxed{1575}.
+\]
+
+Decisioni di produzione non nulle:
+
+- T1: \(x_{A1}=20,\ x_{B1}=10\);
+- T2: \(x_{B2}=8,\ x_{C2}=16\);
+- T3: \(x_{A3}=24,\ x_{B3}=14\);
+- T4: \(x_{B4}=12,\ x_{C4}=11\).
+
+Scorte non nulle:
+
+\[
+I_{A1}=12,\qquad I_{C2}=7,\qquad I_{A3}=14.
+\]
+
+Setup attivi:
+
+- A: T1 e T3;
+- B: T1, T2, T3 e T4;
+- C: T2 e T4.
+
+Il costo è composto da \(1159\) di produzione, \(350\) di setup e \(66\) di mantenimento. Tutte le domande sono soddisfatte, le scorte finali sono nulle e i limiti di capacità, setup e scorta sono rispettati.

@@ -1,0 +1,7 @@
+{
+  "returncode": 0,
+  "timed_out": false,
+  "elapsed_seconds": 0.04755808299887576,
+  "stdout": "SOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":962.0,\"variables\":{\"x[Piccolo,R1]\":0.0,\"x[Piccolo,R2]\":0.0,\"x[Piccolo,R3]\":0.0,\"x[Piccolo,R4]\":0.0,\"x[Medio,R1]\":3.0,\"x[Medio,R2]\":4.0,\"x[Medio,R3]\":0.0,\"x[Medio,R4]\":2.0,\"x[Grande,R1]\":0.0,\"x[Grande,R2]\":0.0,\"x[Grande,R3]\":2.0,\"x[Grande,R4]\":2.0,\"y[Piccolo,R1]\":0.0,\"y[Piccolo,R2]\":0.0,\"y[Piccolo,R3]\":0.0,\"y[Piccolo,R4]\":0.0,\"y[Medio,R1]\":1.0,\"y[Medio,R2]\":1.0,\"y[Medio,R3]\":0.0,\"y[Medio,R4]\":1.0,\"y[Grande,R1]\":0.0,\"y[Grande,R2]\":0.0,\"y[Grande,R3]\":1.0,\"y[Grande,R4]\":1.0}}\n",
+  "stderr": ""
+}

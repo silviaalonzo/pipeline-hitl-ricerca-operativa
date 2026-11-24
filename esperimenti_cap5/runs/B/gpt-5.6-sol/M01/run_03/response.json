@@ -1,0 +1,80 @@
+{
+  "id": "gen-1786388361-QDf6iKQP7bVMiCVeHRj3",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "## 1. Insiemi, parametri e variabili decisionali\n\n### Insiemi\n- \\(I=\\{A,B,C,D\\}\\): siti candidati.\n- \\(Z=\\{Z1,Z2,Z3,Z4,Z5,Z6\\}\\): zone commerciali.\n\n### Parametri\n- \\(f_i\\): costo fisso di apertura del sito \\(i\\), in migliaia di euro:\n  \\[\n  f_A=38,\\quad f_B=42,\\quad f_C=35,\\quad f_D=46.\n  \\]\n- \\(u_i\\): capacità massima del sito \\(i\\), espressa in numero di zone:\n  \\[\n  u_A=2,\\quad u_B=3,\\quad u_C=2,\\quad u_D=3.\n  \\]\n- \\(c_{zi}\\): costo di assegnazione della zona \\(z\\) al sito \\(i\\), secondo la tabella fornita.\n- \\(p=2\\): numero esatto di centri da aprire.\n\n### Variabili decisionali\n- \\(y_i\\in\\{0,1\\}\\): vale 1 se il sito \\(i\\) viene aperto, 0 altrimenti.\n- \\(x_{zi}\\in\\{0,1\\}\\): vale 1 se la zona \\(z\\) è assegnata al sito \\(i\\), 0 altrimenti.\n\n---\n\n## 2. Formulazione matematica completa\n\n### Funzione obiettivo\n\nMinimizzare il costo totale fisso e di assegnazione:\n\n\\[\n\\min \\quad\n\\sum_{i\\in I} f_i y_i+\n\\sum_{z\\in Z}\\sum_{i\\in I} c_{zi}x_{zi}.\n\\]\n\n### Vincolo sul numero di centri\n\nDevono essere aperti esattamente due centri:\n\n\\[\n\\sum_{i\\in I}y_i=2.\n\\]\n\n### Assegnazione delle zone\n\nOgni zona deve essere assegnata esattamente a un sito:\n\n\\[\n\\sum_{i\\in I}x_{zi}=1\n\\qquad \\forall z\\in Z.\n\\]\n\n### Capacità e apertura dei siti\n\nUn sito chiuso non può ricevere zone; un sito aperto può riceverne al massimo \\(u_i\\):\n\n\\[\n\\sum_{z\\in Z}x_{zi}\\leq u_i y_i\n\\qquad \\forall i\\in I.\n\\]\n\n### Dominio\n\n\\[\ny_i\\in\\{0,1\\}\n\\qquad \\forall i\\in I,\n\\]\n\n\\[\nx_{zi}\\in\\{0,1\\}\n\\qquad \\forall z\\in Z,\\;i\\in I.\n\\]\n\n---\n\n## 3. Codice Python eseguibile con Gurobi\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\nsites = [\"A\", \"B\", \"C\", \"D\"]\nzones = [\"Z1\", \"Z2\", \"Z3\", \"Z4\", \"Z5\", \"Z6\"]\n\nfixed_cost = {\n    \"A\": 38,\n    \"B\": 42,\n    \"C\": 35,\n    \"D\": 46\n}\n\ncapacity = {\n    \"A\": 2,\n    \"B\": 3,\n    \"C\": 2,\n    \"D\": 3\n}\n\nassignment_cost = {\n    (\"Z1\", \"A\"): 8,  (\"Z1\", \"B\"): 14, (\"Z1\", \"C\"): 11, (\"Z1\", \"D\"): 17,\n    (\"Z2\", \"A\"): 10, (\"Z2\", \"B\"): 9,  (\"Z2\", \"C\"): 13, (\"Z2\", \"D\"): 15,\n    (\"Z3\", \"A\"): 12, (\"Z3\", \"B\"): 8,  (\"Z3\", \"C\"): 14, (\"Z3\", \"D\"): 10,\n    (\"Z4\", \"A\"): 15, (\"Z4\", \"B\"): 11, (\"Z4\", \"C\"): 9,  (\"Z4\", \"D\"): 7,\n    (\"Z5\", \"A\"): 9,  (\"Z5\", \"B\"): 13, (\"Z5\", \"C\"): 8,  (\"Z5\", \"D\"): 14,\n    (\"Z6\", \"A\"): 14, (\"Z6\", \"B\"): 10, (\"Z6\", \"C\"): 7,  (\"Z6\", \"D\"): 9\n}\n\nenv = gp.Env(empty=True)\nenv.setParam(\"OutputFlag\", 0)\nenv.start()\n\nmodel = gp.Model(\"localizzazione_centri\", env=env)\n\ny = {\n    i: model.addVar(vtype=GRB.BINARY, name=f\"y[{i}]\")\n    for i in sites\n}\n\nx = {\n    (z, i): model.addVar(vtype=GRB.BINARY, name=f\"x[{z},{i}]\")\n    for z in zones\n    for i in sites\n}\n\nmodel.setObjective(\n    gp.quicksum(fixed_cost[i] * y[i] for i in sites)\n    + gp.quicksum(\n        assignment_cost[z, i] * x[z, i]\n        for z in zones\n        for i in sites\n    ),\n    GRB.MINIMIZE\n)\n\nmodel.addConstr(\n    gp.quicksum(y[i] for i in sites) == 2,\n    name=\"numero_centri\"\n)\n\nfor z in zones:\n    model.addConstr(\n        gp.quicksum(x[z, i] for i in sites) == 1,\n        name=f\"assegnazione[{z}]\"\n    )\n\nfor i in sites:\n    model.addConstr(\n        gp.quicksum(x[z, i] for z in zones) <= capacity[i] * y[i],\n        name=f\"capacita[{i}]\"\n    )\n\nmodel.optimize()\n\nstatus_names = {\n    1: \"LOADED\",\n    2: \"OPTIMAL\",\n    3: \"INFEASIBLE\",\n    4: \"INF_OR_UNBD\",\n    5: \"UNBOUNDED\",\n    6: \"CUTOFF\",\n    7: \"ITERATION_LIMIT\",\n    8: \"NODE_LIMIT\",\n    9: \"TIME_LIMIT\",\n    10: \"SOLUTION_LIMIT\",\n    11: \"INTERRUPTED\",\n    12: \"NUMERIC\",\n    13: \"SUBOPTIMAL\",\n    14: \"INPROGRESS\",\n    15: \"USER_OBJ_LIMIT\",\n    16: \"WORK_LIMIT\",\n    17: \"MEM_LIMIT\"\n}\n\nstatus = status_names.get(model.Status, \"STATUS_\" + str(model.Status))\n\nif model.Status == GRB.OPTIMAL:\n    variable_values = {}\n\n    for i in sites:\n        variable_values[f\"y[{i}]\"] = 1.0 if y[i].X > 0.5 else 0.0\n\n    for z in zones:\n        for i in sites:\n            variable_values[f\"x[{z},{i}]\"] = (\n                1.0 if x[z, i].X > 0.5 else 0.0\n            )\n\n    result = {\n        \"status\": status,\n        \"objective\": float(round(model.ObjVal, 10)),\n        \"variables\": variable_values\n    }\nelse:\n    result = {\n        \"status\": status,\n        \"objective\": None,\n        \"variables\": {}\n    }\n\nprint(\"SOLUTION_JSON=\" + json.dumps(result, separators=(\",\", \":\")))\n```\n\n## 4. Sintesi della soluzione\n\nLo stato è **OPTIMAL** e il costo minimo è pari a **149 migliaia di euro**.\n\nI centri aperti sono:\n\n\\[\ny_B=1,\\qquad y_D=1.\n\\]\n\nLe assegnazioni non nulle sono:\n\n\\[\nx_{Z1,B}=x_{Z2,B}=x_{Z3,B}=1,\n\\]\n\n\\[\nx_{Z4,D}=x_{Z5,D}=x_{Z6,D}=1.\n\\]\n\nEntrambi i centri utilizzano interamente la propria capacità di tre zone. Il costo è composto da \\(88\\) di costi fissi e \\(61\\) di costi di assegnazione.",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": null,
+        "reasoning_details": [
+          {
+            "type": "reasoning.encrypted",
+            "data": "gAAAAABqeh-XxOTDG4tOtxAe-mL_151IhrUTtx0DmPoAu1iw0ANJstOqVrHZ_-xZ5Ey1o1WI-DIIjDW9TPacvmVHBG-HLxRWaecle8LGwtNtEKgm3X6KFjUjoMJEEp1fqE7BxU9vTj-Nu1hPPnTmJN6TXNag_bojR7BVq9jVc46JECaRtx9asv6iLwcefw9ZuNVw66MsJjphQpY1TR3COHE8EmZRK_n7q9nBXaqwtKvmV9WxDlJ20i20OWXGzmKeMdrP_O21ZN61E2qdtvV3w5TYtWUr9nSkjCNdVeBC3h1PmWpRVGika5ms2AFS0O1-I8Ozm48Usg4uINAdaGkZtxsRVTBHrWSdbmzgiiU_NbkvNoDhwqNSPzSyDaV9O_xXyOPofGaaowKYvTt22pi9CrxqkZQrmEv-ljf7JS7w-_0jASteknG5TkHu3QDWz6tvoXECyFp1KjkviNTlM3guSp81lDMGR2CKW4zh71TCPNPiGG6HxmwBzZwaI5XT1bzZK7C2aKfEX5bAUzfsVFBJIMY41upelciyPS0RR868wDuwY7518KTH2i8ybH6k7gkBem3TgMLMTq_GfjOW0xCmT4wXD_Q088OxBhenfD0TwiBac77Epuv9ijhc8WOK0hAaH4AGp2hTrI2rGbJFpECBz8JC8rVbOjzxkufmV9FXYvRBscIrnOjdULmf2ryOz-0PfWDG3-jFShbi8Ru5pqv4wDZ8xTQOZ9rIqXPxTuwpGYSDcFPlAEjlB9n8Kxo4qHCw3COyyw1_9QdcraZWmeo63at2PyK2ddo_SKkz5wGbg6QakkLTe0EgbsO-DqB4tn-AtISAVxzW83mf5RMRAfELPMfEkgirjUDMv4GNVLAZ_ByIEmrdagTS2nSofHIYy9IzEhSEMNO4lYzdror6fHvvS9B-gR71FhGMV3-qvGuaLJ060FQLODTcoEoHJVtiJs_OO_dLtpvotQkrFsx2ek6KM9svdj4WdoymmVWWGnKm2Kanahfa-dAwwb9-_pmenKmGgmACA89DLOTPoFJSSbWBLZyHYg4JlK-oBR0DksvXk8zHcE4yHAeymFXpItgSIzpugYkml0Oh7zVeyFMA_3sah9kPFIKWJgyKHCKMqT3u5DNwNfiHWNZebsMJbZjGva2LIlaRNoFDRWHG3t2ReyTsy9xWG8BzMOnFr-t5-qFWyOLQJtF61I_D61lPGiwekx7Om5litYri65ZJBj7n7dKbiYwVL-qiERMocsoLhZMp_M8FCqSTdr2-p5futhZ0tAGBiwitbTRYRjCFU5IKjGBd4LwwmSbTzOoms17g9bDFYbxhDiWtQ9YTQguc9ZfCkEjb52lZsq9aw4oMRllI5ugod98XH2WYhHfBVz7EvjIFpT8iOtKLfXojSEDg3cJx9n2O17Lroy6AUQd8MRyeXiY8HKnVpxXVWYwsXJ6_Q1tE1_CowpJvVZ5Bue3vZOZkGiW7ngTlZRGg2y-H1DxaRu_J2gf7yxtZX5FwHfeRXCGNT_O-c6yQPoEx2Gp6_dNc4A3XBE555wbG-s0tjrLPDb1p7NP7Nzj5vn66EKGNxPW8093llue0J54LnACLoTpHJOHpJL_igPG-dVMubmpP0nZ1QCH-DZrY_j8k-o2Ad73rG53k31x2lVfCrR0oqVkXnYEuFLydKjNtkTUdvaY8M1Bylcvb_kY4V4EfbwBAbpTCFDSRdi6DgRteKfRoA5_GeD_ghhJ6mlMRueOH7kBRJxWXPw_JOYHf9y-ynlLgMev-7sqhmok01bgHcbgD8t5zT-ONStwcoBr5mOkjA_oudMJAU79XyktJV4X7C-wQUCCOox88Na9ZdIdnCz76yh1kfnI6_OrXZ4K8KUuxi3kp4yUT6Acdmo1na1RyItWhlLeOmryzBaCn9fOzbsmXsSeP1YOxO8qkGPOL3Z4FeW39IJtBh65nSnWY0KD-vZVWtE_VPanZRUCXMzSmrAT_cb3sCo9sUGKuOdqGFICEvdlGYy2e07xDlHULYo2demn3vjDDSoHrVW-QRMoFC_VIuB9XPbSqFPwF_HuQ5ywqZtuFNPZeFqJ_U6yFSx2FbeVOIXZQFOuNPz2K8zGggzwDv83wWo-uzIkWf7vWh_yA70ARxM8581wMcxP6V3DE_CZ-U-DHyPet6ga7KBDTrhB6YLxm8yzqqty9wr-aOcQV5NYtUfOpkwC-Z6cfn8zoCKf-x6JBT1OoEUZVKUwHUs4pUB_MzPCgLbknlNouWBNlYABwAmRrWXdmHXB8KkW1QpNmhZ3uOuGbtKJyoeLdZXrjnbLrC50DDwvok7JxwmGVrxZYSJ1C8KtCFG_qdYMvweluT4b1jiR23FJsk2hkwPaK8e1TxWa-FcWoJdhrm2975iWxj_yfMpkiEW7i_I8eFwhLYHezGi_qDklzDTZnI9fBQF5vBbj12Y-ybbi7XoIP9KwW2TxT07pOt8emfL4e15Ax3b8JchI8JvbsHFFqywBaLUnMAAFG2nOGepQNXgDKYWhCFsxuONBLnazQZLevTOiZcq5_eiTnJpnbfPRBGqbAXQJBY1o4-Bhlv2rDGGmKdu03N1S-5vESY0ZJwLNISpwE_91sXBMJwaDhwAEuIzN-PBcuBXHVwNZ0vya6j5HwUFQKke6KjRJDNgiOLvaY1Cx9MEHfo3NAodhA4p6FugJLoWXsAKmi59XwiqqRDZSXIJnTHJ7dmIrqhuXLwuOY2G7gcDcK43UbTMZBdm2Em7oIvugk4Lw7feWSFQC2ZxpK3xN7FniQ6TjYKp16-AYscn82KTO43cQhBQJDlmnX9f3mw5et1qDiSjn2BLWfx6sGJbBMSRV2qHBmV3djyb-W7fVPT3M9K3pf-mly-6LP1irvlCErpF-YV_RC528Zzz4lYHg4YbJYGXgGUlBr_QtREVojj0SY9XqUujk0REom4mNPuk4OpDNSALUI0aJpkG1errhlx7tc3Bu5xkGjHLgDhy1V4ddj5c7lJLv9jwoV4DvE0UJw5dpF0nNhKYim-dcFB5R4O7qWHm2JaqSczwjo5F-8tJaa_Egq1pVT7RXjiVm_48P8KI4avvtFYo8LGlO6VtCemBJqjEIppgtNFbEbvAnpDd61ybMeHB4bfBFrALfo8tKo6_GW8I16LKeS_yelcflSBUPNaSjpudWPpk4vYAo6E_43DoXRrWh3KSKNkJrplQYW7dg8LnFfYeHDHRtptD1oPMHvD8ioZhJaqMl9GBZNMbyfKXNjSlMvNnMccXsp4TvbFiGzPtnAhnQjVP2yKTglUp_khFJo-6i8hF2wYza5T4kP29Fb_RRw3nlQ2gTRMVzbVjC2QpVk2PuFR-Zo0rYyBNCIy1YPkjoqwt__y8Qm_FCEs0AU1QBuxqWoQr35db6aO5HuobIOJJfdOnlR6vesBQyLq-_4UrS9Nb5CV7WRMRMVDoDvkVyoauQntZh-CIvJmp21XubSQOW2ZWZd7FjN959TcvS0N-YEJI_S6uR7MiANIrLGQPDR-1Iu8SzER1TBvVrzhn3yTgOz0zKYDY9UInXaIATAe5KBEE8txw==.eyJlbmRwb2ludF9zbHVnIjoib3BlbmFpL2dwdC01LjYtc29sLTIwMjYwNzA5fG9wZW5haSJ9",
+            "format": "openai-responses-v1",
+            "id": "rs_08adff6b2541d14c016a7a1f8af3e4819596b639081e9d5ab2",
+            "index": 0
+          },
+          {
+            "type": "reasoning.encrypted",
+            "data": "gAAAAABqeh-hM1gkGRImpSkG8vznC3lKB7Tfd8WMkJ5gHEu0MfT3NOJXXEKJjk-X2Fh7P7OHRR-kaOdEJvr_JOFfjosgXaBN9FOZWM7agQow_4Uv3K3xUgxjDsgHx14qy9_SgrMEkijjRx9FiCgGr_RcFT-mWTNCnNBIeVYyt4E8IdjIdhgjdoGpGYCC_diV_TYS87UDv3CP_IBx_uB3m7ZIws13zy1kI4tS_zUjh_AgKfRaeeu30NAkGET2lsLW-66pC7xLM-XxpHguqTBFnAuxrvC-1Pb3gzf3s1AvUaYyAyEmVWsPTDglTt1SUE3SCRMur2EedMxEUFHrKdk7svHZcztvm-LNLrbaeU-oas5aHjfyMUdyTok8xN0OOqa7Om0Wv3TgedU_teTOp4YycWCUcdzfUWToWESVWBxxqZ0l3Q99PtzkMI19sk1VMh97_kbWTMq7Sdw1syFJV38qUp_E89ADuw2tiwXAJt6hgcGLlzcnNKpIbM5gicULFydbgzharcKHv6muh6B0EN1-O60FoYzq1hy2pOosY-gSxo0zOCy-RkGJJRtSD91F5K4lq6n-PjMYK3nhStR3bHjLo0fCkDtc-p4SztlUXzUIBLjah0qc0E9pEKZitfFtxwgnuGl5xZoSBRxjZAbMJ0TUCbPkLCRgiIkOp7jlcl-73DXnzKcxNI2BcHVRslP_GgXNgWP5bva2sbxxifjBTu9MfsQR4kOGf3oXHsIkIAnCl8toSMN-sLHX2xgX00qje4fWm0J3AxD7Qi4ojWZkEu4aU0np2wbgLpUy03OU0saAJEd1JwIyoXGMwtAURFWLjQ5r1vr3kvrAm3Q5ekdHf_-YzA-T91XiS3ySjF-1YT8gh97TppLP0NlPc4OZw7INhFFRjXawsQXu-T8BYaDjziXjpdJc7FzX7Bm4FEEfatJANgLOtLIp2m3s0y-I9orP5643qNNOLqCJFD36324at53cKJbV4jHvn8f3M4-ZM7NlCOwynJPQvMomGvaOQ0ZEjvPqsl4QvWMZDqsebedj6Q2be121_xMWSjoL0F7AYIB33Qm9RHCFc2JPBDxgF83pe2hszgn9Lq6F0l7D_mrPAva8fuqE8HGJ3I30xNMGQ9QETzgj_y09Z7LiqlVT-wZjJDWjBH0rcx8TAvnxj-CCGC9V5DAMu7Ks_cEFzPmJWOLakOU9zl8T7os6tRRmINiJ-hyPYJwavKZvNpTXY3cexD5g4G4g07M9Xn-6d-rhvrZRH9vIDYK5u7kPl2TH7uFxqbWcRt_Qy6zx7sTXfH7QWFh6lc7YucYfhi_16R1fx8x7qlr816rolHovX_vSgtoINkllaIa-cwxFiLjsbDeetYS_yd11K04QsPA_-bGdg3c-PqaQoGfWyMgxugZVU2ZS-LNDU5pZEr82nF_5-ld9wkvUuiH_jU8VJUFHVdyCJ6suc-uy8VQSU7cO2vw5F17Q4PmoyrIA9AzbmXE7zjLTuH6jigWjc_4w2x3MurlGx6YzzT5BXkJNy5tRl8f8V1TOGVcQv1kamyJiKJrT_XFXn4gaygrIQkibr8C8nB03vdmfqayX0M7N-fAVTsvscJ3xqkiOnpKcVHLdYY8s9m0ofcK4351j3Vw3xP9ZCFp16qXQYSOT5E_Szc84Tc-Rd27Sdy2EIRj8cotT0WLVq0MPsNwmz0PSN1cpC76NfeC5nMVEof9iCC3dkB9Ua-TbJCwVLKNCsbtMHfF0hZeSbxFz1e1IL3G0RdI6u1JJuJPr9fLtSlI23dBrB_YX_d3SXkoVGVmwaI8kS4KHTKeF34UMCKttXvRk2DHhUy-0OgS-qX5L0FFnQzfDPmMrGz9Fe04CmwN9tnTGngEy46hJ-KeHxfs3gQhBDBVQxQPXqGvQN15f_jp6BYttNdvR6ZKBpOo2GeAJpHzac09N33iLHz1JjdFSKbbIDlCAqIiLwxEHYAamD8PDWIAI5uvwjZ8QlfjBv27T3nDzSHI78zYRq_ADkmJSnKhFYRpgXt49eG5fYOXK46enzhjVG0O27rXdopTTO5QIlNWs1aJVsmN_oku2iu5Yh3KkFEQrRdXMl5daXzeJpsdY950UDyTWhRRVxOMVl7SHz7x0eAfslLM5eHRnAEtRrfHeDt2_U-W_F01PBSqELD2FJVUw2lHEOIYotPuGDtHekdcsuQG8CL6QDHhkKvjHip5tRUSGLKa1qKsV6vAhO1xkUfY2GYCx3OMv1aGGRreHU0sZYUtQO6soFnsJSYS8rwduKaz2XjYoFXtEcg3tv8HnRdbceZHon76ymN9v35kr_j_s2ltZwhqut2gJvMaWCeIRAsOuXRZVpQ_NuqlfKkGSSZV36y7erB-uxrd5shOlEP06fcx3nEM-m1ARiwPZ2lZc8D9cA9ImRXmABHHml4XKoeCNDjloEOWuoGZliCZZmUnQqV58SiGHdbV7sVC2_xph3SUmJHXff-GdHEOQwbv5ADnjhHs-nXkZl_fE4y2U6j-eOUbubOarNmriparGfHokOQsyeTpGrZ7-RXaUsMxIRlIYQimQ-btsVlpmYw6qLUv5EkXR162_PTJIz3ASJgSF8qWNWG8h4tvSjXSKTnni3RUVvvooHV6Jtap5CJ_kbW1zLXo_UZCGk9mDYR7SpevZasMZqcDBmnxKcpkgXxZxH2oJtbwVDMsF26G-ztR9-IXe_5YHjRe8D_wUmZsPIvwdqSuklJ4z0x9Hb0VxEJVOU9B3UReRccpBPPjUsA0ymYgphvRdbYS2FBtE3Xe-l7aSa1LWO_4Zqa4R6UouYMBk2OdtgBo8brzm2846PqR_zr9GB8BJDyCLRs-xF-mo6e8P4WFzKG0V3WsLAwBy49O-gqcXK-REyosgzJ_RmREwJu1pKK10gac1EtAtv2JhbIMneCP0bGrsbKJhLuzNP_cMI-p5PKvQ9VxtVegOmm7TnJ6N95kQ2OI0mS6CtHISI9AI3sUpVIzBkf7dRGeeAsCkgKomGT5K1FhDwiREgDmV6iWZug2hCKpSf7Xcf3xCoNiqomASTiYs9z7KdJ3brE_3UnDu2yJmrBY-MM8XM16zE6hi09_8OooUC-g8pylWbyV6QelxnFuGrehd2WAjvdZoGd4b3zZkffhQ9npE_GTsoWuvUwnlqvkDB15q_5WLTPNXxOsCrny4aEDhR1aEwhxVztTqCTJ7fdWFvVHGWDbqmaGiWmdIYnjxLIza5qo0Mf5K4aGB-3Nf6HLmaUKYjEHX8GmrjvEAr4BF-JheXjKHjB0GoGCeODRUQOzVW-EClxk6J5q8a1xcDghbq0da_pxaFE4C7qvn5_n_Sq_Fm2rL03bQwx6-6r2FtDXEeE5SRD6lMTdeF6h33soQdBHI7FpxCnIDlta-7sYjKNzTR6NgKX0lX5cEATTZFZChSCeebnqgKUpJllcSJTeiRA_I4Zyux8bQ6OhPmG74oinw9FYgCvxPxho5mU5bs3lEWe0d3Tvugp88t32N13VLQwIs1GfCRo87CNp0hL18SFYVMKTnGh4QnY--aVDo-8FDHX2RhGgeJ8aCAMzwRCBxrh5wxaQGUZL8z2wNvoDpvrLG-IZQd9rrM8VVRtiZ0-BjSYUKVoobu0rAQK1kbxtTADw0tTm7w38Q97AsFQtUoXJAjkGfbel8EJeetGVrACyBZA3ivvuIF33f3ozPcPx6EZnrBlM2GNlVXTiLwM-Nx5WmAPL8dIcuhjUKMZBp2_-QwVRJps9jZETg-OzRuYsYXjCEO54ndIDUQ5BNLJk=.eyJlbmRwb2ludF9zbHVnIjoib3BlbmFpL2dwdC01LjYtc29sLTIwMjYwNzA5fG9wZW5haSJ9",
+            "format": "openai-responses-v1",
+            "id": "rs_08adff6b2541d14c016a7a1f978b3081959f6c4e830c0f7758",
+            "index": 1
+          }
+        ]
+      },
+      "native_finish_reason": "completed"
+    }
+  ],
+  "created": 1786388361,
+  "model": "openai/gpt-5.6-sol",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 2828,
+    "prompt_tokens": 654,
+    "total_tokens": 3482,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 1034,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.08811,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.08811,
+      "upstream_inference_prompt_cost": 0.00327,
+      "upstream_inference_completions_cost": 0.08484
+    }
+  },
+  "provider": "OpenAI",
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "openai/gpt-5.6-sol",
+    "required_provider": "openai",
+    "allow_fallbacks": false,
+    "require_parameters": true
+  },
+  "_experiment": {
+    "elapsed_seconds": 42.08370400000058,
+    "completed_at_utc": "2026-08-10T19:00:02.605012+00:00"
+  }
+}

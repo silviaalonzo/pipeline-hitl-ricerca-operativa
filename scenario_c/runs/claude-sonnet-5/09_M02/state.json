@@ -1,0 +1,65 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "claude-sonnet-5",
+  "problem_id": "M02",
+  "problem_sequence": 9,
+  "domain": "Produzione",
+  "difficulty": "Media",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-24T18:46:56.757281+00:00",
+  "updated_at_utc": "2026-08-24T18:47:18.480029+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T18:47:18.479341+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "Costo fisso di setup -> parametro setup_i e variabile binaria y_i nel termine obiettivo",
+              "Lotto minimo se prodotto -> vincolo x_i >= lotmin_i * y_i",
+              "Domanda massima -> vincolo x_i <= dmax_i * y_i",
+              "Ore macchina disponibili (90) -> vincolo sum(mach_i * x_i) <= 90",
+              "Ore lavoro disponibili (100) -> vincolo sum(lab_i * x_i) <= 100",
+              "Almeno due articoli diversi prodotti -> vincolo sum(y_i) >= 2",
+              "Massimizzare margine netto -> funzione obiettivo max sum(margin_i*x_i - setup_i*y_i)"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "claude-sonnet-5",
+    "problem_id": "M02",
+    "retrieved_at_utc": "2026-08-24T18:46:56.757266+00:00",
+    "semantic": [],
+    "episodic": [],
+    "semantic_count_total": 0,
+    "episodic_count_total": 0
+  },
+  "pending_handoff": null
+}

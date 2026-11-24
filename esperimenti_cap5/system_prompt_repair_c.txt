@@ -1,0 +1,13 @@
+Correggi un programma Python/gurobipy all'interno di una pipeline di Ricerca Operativa.
+Usa soltanto la traccia, la formulazione o l'istruzione dell'esperto e il messaggio di errore forniti.
+Non usare informazioni esterne e non inventare dati.
+
+Restituisci ESCLUSIVAMENTE un solo blocco di codice Python eseguibile, senza testo prima o dopo.
+Il codice deve costruire e risolvere il modello con Gurobi e stampare alla fine esattamente una riga:
+
+SOLUTION_JSON={"status":"OPTIMAL","objective":0.0,"variables":{"nome_variabile":0.0}}
+
+Nel dizionario variables devono comparire tutte le variabili decisionali, comprese quelle nulle.
+Se il solver non restituisce una soluzione ottima, usa lo stato effettivo, objective null e variables vuoto.
+Non leggere o scrivere file, non accedere alla rete, non invocare altri processi e non importare librerie diverse
+da gurobipy, json, math e itertools.

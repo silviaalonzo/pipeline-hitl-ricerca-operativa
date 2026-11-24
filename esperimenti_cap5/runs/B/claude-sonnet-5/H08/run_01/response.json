@@ -1,0 +1,73 @@
+{
+  "id": "gen-1786380352-haarEojAuS2LFnzlTGxw",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "# H08 — Rete di emergenza capacitada con backup\n\n## 1. Insiemi, parametri e variabili decisionali\n\n**Insiemi**\n- $S = \\{A,B,C,D,E,F,G,H\\}$: stazioni candidate\n- $Z = \\{Z1,\\dots,Z12\\}$: zone da servire\n- $West = \\{A,B,C,D\\} \\subset S$\n- $East = \\{E,F,G,H\\} \\subset S$\n- $ZC = \\{Z3, Z8, Z11\\} \\subset Z$: zone critiche\n- $R \\subseteq Z \\times S$: coppie (zona, stazione) raggiungibili (definite dalla tabella tempi)\n- $R_z = \\{s \\in S : (z,s)\\in R\\}$: stazioni che possono servire la zona $z$\n- $R_s = \\{z \\in Z : (z,s)\\in R\\}$: zone servibili dalla stazione $s$\n\n**Parametri**\n- $f_s$: costo fisso apertura stazione $s\\in S$\n- $cap_s$: capacità stazione $s\\in S$\n- $d_z$: domanda zona $z\\in Z$\n- $t_{z,s}$: tempo di percorrenza per $(z,s)\\in R$\n\n**Variabili decisionali**\n- $y_s \\in \\{0,1\\}$: 1 se la stazione $s$ è aperta\n- $x_{z,s} \\in \\{0,1\\}$ per $(z,s)\\in R$: 1 se la zona $z$ è assegnata alla stazione $s$\n\n## 2. Formulazione matematica\n\n$$\n\\min \\sum_{s\\in S} f_s y_s \\;+\\; \\sum_{(z,s)\\in R} d_z\\, t_{z,s}\\, x_{z,s}\n$$\n\nsoggetto a:\n\n**Assegnazione unica**\n$$\n\\sum_{s\\in R_z} x_{z,s} = 1 \\qquad \\forall z\\in Z\n$$\n\n**Attivazione (assegnazione solo a stazioni aperte)**\n$$\nx_{z,s} \\le y_s \\qquad \\forall (z,s)\\in R\n$$\n\n**Capacità**\n$$\n\\sum_{z\\in R_s} d_z\\, x_{z,s} \\le cap_s\\, y_s \\qquad \\forall s\\in S\n$$\n\n**Numero esatto di stazioni aperte**\n$$\n\\sum_{s\\in S} y_s = 4\n$$\n\n**Copertura geografica**\n$$\n\\sum_{s\\in West} y_s \\ge 1, \\qquad \\sum_{s\\in East} y_s \\ge 1\n$$\n\n**Backup per zone critiche**\n$$\n\\sum_{s\\in R_z} y_s \\ge 2 \\qquad \\forall z\\in ZC\n$$\n\n**Dominio**\n$$\ny_s \\in \\{0,1\\}\\ \\forall s\\in S, \\qquad x_{z,s}\\in\\{0,1\\}\\ \\forall (z,s)\\in R\n$$\n\n## 3. Codice Python (gurobipy)\n\n```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\n# ---------------- Dati ----------------\nstations = ['A','B','C','D','E','F','G','H']\nfixed = {'A':35,'B':32,'C':40,'D':30,'E':38,'F':33,'G':36,'H':31}\ncap   = {'A':42,'B':44,'C':46,'D':40,'E':45,'F':43,'G':44,'H':42}\n\nwest = ['A','B','C','D']\neast = ['E','F','G','H']\n\nzones = [f'Z{i}' for i in range(1,13)]\ndemand = {'Z1':8,'Z2':7,'Z3':10,'Z4':6,'Z5':9,'Z6':8,'Z7':7,\n          'Z8':11,'Z9':6,'Z10':9,'Z11':8,'Z12':7}\n\nreach = {\n 'Z1': {'A':3,'B':5},\n 'Z2': {'A':6,'B':8,'C':10},\n 'Z3': {'B':11,'C':4,'D':6},\n 'Z4': {'C':7,'D':9},\n 'Z5': {'A':6,'D':3,'E':5},\n 'Z6': {'B':11,'E':8,'F':10},\n 'Z7': {'C':7,'F':4,'G':6,'H':8},\n 'Z8': {'D':3,'G':9,'H':11},\n 'Z9': {'E':8,'F':10,'H':5},\n 'Z10':{'F':4,'G':6,'H':8},\n 'Z11':{'A':6,'E':5,'H':11},\n 'Z12':{'B':11,'G':3,'H':5},\n}\n\ncritical = ['Z3','Z8','Z11']\n\npairs = [(z,s) for z in zones for s in reach[z]]\n\n# ---------------- Modello ----------------\nm = gp.Model(\"H08_emergency_network\")\n\ny = m.addVars(stations, vtype=GRB.BINARY, name=\"y\")\nx = m.addVars(pairs, vtype=GRB.BINARY, name=\"x\")\n\n# Funzione obiettivo\nm.setObjective(\n    gp.quicksum(fixed[s]*y[s] for s in stations) +\n    gp.quicksum(demand[z]*reach[z][s]*x[z,s] for (z,s) in pairs),\n    GRB.MINIMIZE\n)\n\n# Assegnazione unica\nfor z in zones:\n    m.addConstr(gp.quicksum(x[z,s] for s in reach[z]) == 1, name=f\"assign_{z}\")\n\n# Attivazione\nfor (z,s) in pairs:\n    m.addConstr(x[z,s] <= y[s], name=f\"link_{z}_{s}\")\n\n# Capacità\nfor s in stations:\n    m.addConstr(\n        gp.quicksum(demand[z]*x[z,s] for z in zones if s in reach[z]) <= cap[s]*y[s],\n        name=f\"cap_{s}\"\n    )\n\n# Numero stazioni aperte\nm.addConstr(gp.quicksum(y[s] for s in stations) == 4, name=\"num_open\")\n\n# Copertura Ovest/Est\nm.addConstr(gp.quicksum(y[s] for s in west) >= 1, name=\"west_open\")\nm.addConstr(gp.quicksum(y[s] for s in east) >= 1, name=\"east_open\")\n\n# Backup zone critiche\nfor z in critical:\n    m.addConstr(gp.quicksum(y[s] for s in reach[z]) >= 2, name=f\"backup_{z}\")\n\nm.optimize()\n\n# ---------------- Output ----------------\nstatus_map = {\n    GRB.OPTIMAL: \"OPTIMAL\",\n    GRB.INFEASIBLE: \"INFEASIBLE\",\n    GRB.UNBOUNDED: \"UNBOUNDED\",\n}\n\nif m.status == GRB.OPTIMAL:\n    variables = {}\n    for s in stations:\n        variables[f\"y_{s}\"] = round(y[s].X, 4)\n    for (z,s) in pairs:\n        variables[f\"x_{z}_{s}\"] = round(x[z,s].X, 4)\n    result = {\n        \"status\": \"OPTIMAL\",\n        \"objective\": round(m.ObjVal, 4),\n        \"variables\": variables\n    }\nelse:\n    result = {\n        \"status\": status_map.get(m.status, str(m.status)),\n        \"objective\": None,\n        \"variables\": {}\n    }\n\nprint(\"SOLUTION_JSON=\" + json.dumps(result))\n```\n\n## 4. Sintesi della soluzione\n\nIl modello apre esattamente 4 stazioni rispettando i vincoli di copertura geografica (almeno una a Ovest A–D e una a Est E–H) e di backup per le zone critiche Z3, Z8, Z11 (per ciascuna almeno due stazioni raggiungibili risultano aperte). Ogni zona viene assegnata a un’unica stazione aperta e raggiungibile, nel rispetto della capacità residua di ciascuna stazione. La funzione obiettivo minimizza la somma dei costi fissi di apertura e del costo di trasporto (domanda × tempo di percorrenza) per le assegnazioni effettuate. Il valore ottimo, lo stato del solver e tutte le variabili (comprese quelle nulle) sono riportati nella riga `SOLUTION_JSON` prodotta dall'esecuzione del codice.",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": "I'm setting up an optimization problem with eight stations divided into west and east regions, twelve zones with three marked as critical, and parameters for fixed costs, capacity constraints, demand levels, and travel times between zones and stations.\n\nThe model uses binary variables to decide which stations to open and how to assign zones to stations, with the objective of minimizing total fixed costs plus travel-weighted demand. I'm defining constraints to ensure each zone gets assigned to exactly one reachable station, respecting capacity limits, opening exactly four stations with at least one in each region, and guaranteeing that critical zones have access to at least two open stations.\n\nNow I'm setting up the Gurobi implementation with the station data and beginning to define the fixed costs... Writing config data...",
+        "reasoning_details": [
+          {
+            "type": "reasoning.text",
+            "text": "I'm setting up an optimization problem with eight stations divided into west and east regions, twelve zones with three marked as critical, and parameters for fixed costs, capacity constraints, demand levels, and travel times between zones and stations.\n\nThe model uses binary variables to decide which stations to open and how to assign zones to stations, with the objective of minimizing total fixed costs plus travel-weighted demand. I'm defining constraints to ensure each zone gets assigned to exactly one reachable station, respecting capacity limits, opening exactly four stations with at least one in each region, and guaranteeing that critical zones have access to at least two open stations.\n\nNow I'm setting up the Gurobi implementation with the station data and beginning to define the fixed costs... Writing config data...",
+            "format": "anthropic-claude-v1",
+            "index": 0,
+            "signature": "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"
+          }
+        ]
+      },
+      "native_finish_reason": "end_turn"
+    }
+  ],
+  "created": 1786380352,
+  "model": "anthropic/claude-sonnet-5",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 4446,
+    "prompt_tokens": 1310,
+    "total_tokens": 5756,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 210,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.04708,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.04708,
+      "upstream_inference_prompt_cost": 0.00262,
+      "upstream_inference_completions_cost": 0.04446
+    }
+  },
+  "provider": "Anthropic",
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "anthropic/claude-sonnet-5",
+    "required_provider": "anthropic",
+    "allow_fallbacks": false,
+    "require_parameters": true
+  },
+  "_experiment": {
+    "elapsed_seconds": 33.50298250000196,
+    "completed_at_utc": "2026-08-10T16:46:24.754493+00:00"
+  }
+}

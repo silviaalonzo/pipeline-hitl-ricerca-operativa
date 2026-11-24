@@ -1,0 +1,272 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+### Insiemi
+
+- Dipendenti:
+  \[
+  I=\{\text{Ana, Bruno, Carla, Diego, Elena, Fabio}\}.
+  \]
+
+- Turni:
+  \[
+  S=\{\text{M1, M2, P1, P2, N1, N2}\}.
+  \]
+
+- Turni notturni:
+  \[
+  N=\{\text{N1, N2}\}.
+  \]
+
+- Assegnazioni disponibili:
+  \[
+  A\subseteq I\times S,
+  \]
+  dove:
+  \[
+  \begin{aligned}
+  A_{\text{Ana}}&=\{\text{M1,M2,P1,P2}\},\\
+  A_{\text{Bruno}}&=\{\text{M1,M2,P1,P2}\},\\
+  A_{\text{Carla}}&=\{\text{M2,P1,P2,N1,N2}\},\\
+  A_{\text{Diego}}&=\{\text{M1,P1,P2,N1,N2}\},\\
+  A_{\text{Elena}}&=\{\text{M1,M2,P1,P2,N1,N2}\},\\
+  A_{\text{Fabio}}&=\{\text{M1,M2,P1,P2}\}.
+  \end{aligned}
+  \]
+
+### Parametri
+
+- \(c_{is}\): costo di assegnazione del dipendente \(i\) al turno \(s\), definito per ogni \((i,s)\in A\), secondo la tabella fornita.
+- \(L=2\): numero massimo di turni assegnabili a ciascun dipendente.
+- \(L_N=1\): numero massimo di turni notturni assegnabili a ciascun dipendente.
+
+### Variabili decisionali
+
+Per ogni \((i,s)\in A\):
+\[
+x_{is}=
+\begin{cases}
+1 & \text{se il dipendente }i\text{ è assegnato al turno }s,\\
+0 & \text{altrimenti.}
+\end{cases}
+\]
+
+---
+
+## 2. Formulazione matematica completa
+
+### Funzione obiettivo
+
+Minimizzare il costo complessivo delle assegnazioni:
+
+\[
+\min \quad \sum_{(i,s)\in A} c_{is}x_{is}.
+\]
+
+### Copertura dei turni
+
+Ogni turno deve essere coperto esattamente da un dipendente:
+
+\[
+\sum_{i:(i,s)\in A}x_{is}=1
+\qquad \forall s\in S.
+\]
+
+### Limite complessivo per dipendente
+
+Ogni dipendente può lavorare al massimo due turni:
+
+\[
+\sum_{s:(i,s)\in A}x_{is}\leq 2
+\qquad \forall i\in I.
+\]
+
+### Limite sui turni notturni
+
+Ogni dipendente può lavorare al massimo un turno notturno:
+
+\[
+\sum_{s\in N:(i,s)\in A}x_{is}\leq 1
+\qquad \forall i\in I.
+\]
+
+### Dominio
+
+\[
+x_{is}\in\{0,1\}
+\qquad \forall (i,s)\in A.
+\]
+
+---
+
+## 3. Codice Python eseguibile con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+employees = ["Ana", "Bruno", "Carla", "Diego", "Elena", "Fabio"]
+shifts = ["M1", "M2", "P1", "P2", "N1", "N2"]
+night_shifts = ["N1", "N2"]
+
+costs = {
+    ("Ana", "M1"): 8,
+    ("Ana", "M2"): 7,
+    ("Ana", "P1"): 9,
+    ("Ana", "P2"): 8,
+
+    ("Bruno", "M1"): 7,
+    ("Bruno", "M2"): 8,
+    ("Bruno", "P1"): 8,
+    ("Bruno", "P2"): 9,
+
+    ("Carla", "M2"): 9,
+    ("Carla", "P1"): 8,
+    ("Carla", "P2"): 8,
+    ("Carla", "N1"): 11,
+    ("Carla", "N2"): 12,
+
+    ("Diego", "M1"): 10,
+    ("Diego", "P1"): 9,
+    ("Diego", "P2"): 8,
+    ("Diego", "N1"): 10,
+    ("Diego", "N2"): 11,
+
+    ("Elena", "M1"): 8,
+    ("Elena", "M2"): 10,
+    ("Elena", "P1"): 9,
+    ("Elena", "P2"): 9,
+    ("Elena", "N1"): 12,
+    ("Elena", "N2"): 10,
+
+    ("Fabio", "M1"): 9,
+    ("Fabio", "M2"): 8,
+    ("Fabio", "P1"): 10,
+    ("Fabio", "P2"): 7
+}
+
+available_assignments = list(costs.keys())
+
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+model = gp.Model("assegnazione_personale_turni", env=env)
+
+x = model.addVars(
+    available_assignments,
+    vtype=GRB.BINARY,
+    name="x"
+)
+
+model.setObjective(
+    gp.quicksum(costs[i, s] * x[i, s] for i, s in available_assignments),
+    GRB.MINIMIZE
+)
+
+model.addConstrs(
+    (
+        gp.quicksum(
+            x[i, s]
+            for i in employees
+            if (i, s) in costs
+        ) == 1
+        for s in shifts
+    ),
+    name="copertura"
+)
+
+model.addConstrs(
+    (
+        gp.quicksum(
+            x[i, s]
+            for s in shifts
+            if (i, s) in costs
+        ) <= 2
+        for i in employees
+    ),
+    name="massimo_due_turni"
+)
+
+model.addConstrs(
+    (
+        gp.quicksum(
+            x[i, s]
+            for s in night_shifts
+            if (i, s) in costs
+        ) <= 1
+        for i in employees
+    ),
+    name="massimo_un_notturno"
+)
+
+model.optimize()
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+status = status_names.get(model.Status, "STATUS_" + str(model.Status))
+
+if model.Status == GRB.OPTIMAL:
+    objective = float(round(model.ObjVal, 10))
+    variables = {
+        x[i, s].VarName: float(1 if x[i, s].X > 0.5 else 0)
+        for i, s in available_assignments
+    }
+else:
+    objective = None
+    variables = {}
+
+result = {
+    "status": status,
+    "objective": objective,
+    "variables": variables
+}
+
+model.dispose()
+env.dispose()
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato è **OPTIMAL** e il costo minimo è:
+
+\[
+z^*=49.
+\]
+
+Una soluzione ottima è:
+
+\[
+x_{\text{Bruno,M1}}=
+x_{\text{Ana,M2}}=
+x_{\text{Carla,P1}}=
+x_{\text{Fabio,P2}}=
+x_{\text{Diego,N1}}=
+x_{\text{Elena,N2}}=1.
+\]
+
+Tutte le altre variabili valgono zero. Il costo è:
+
+\[
+7+7+8+7+10+10=49.
+\]

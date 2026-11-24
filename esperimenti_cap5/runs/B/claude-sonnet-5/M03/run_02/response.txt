@@ -1,0 +1,144 @@
+# M03 — Assegnazione del personale ai turni
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- $E = \{Ana, Bruno, Carla, Diego, Elena, Fabio\}$ — dipendenti
+- $S = \{M1, M2, P1, P2, N1, N2\}$ — turni
+- $N \subset S = \{N1, N2\}$ — turni notturni
+- $A \subseteq E \times S$ — coppie (dipendente, turno) ammissibili (dove non c'è "—")
+
+**Parametri**
+- $c_{e,s}$ = costo dell'assegnazione del dipendente $e$ al turno $s$, per $(e,s)\in A$
+- $K=2$ = numero massimo di turni per dipendente
+- $K_N=1$ = numero massimo di turni notturni per dipendente
+
+**Variabili decisionali**
+$$x_{e,s} \in \{0,1\} \quad \forall (e,s)\in A$$
+$x_{e,s}=1$ se il dipendente $e$ è assegnato al turno $s$, 0 altrimenti (le coppie non ammissibili non vengono create come variabili).
+
+## 2. Formulazione matematica
+
+$$
+\min \sum_{(e,s)\in A} c_{e,s}\, x_{e,s}
+$$
+
+soggetto a:
+
+**Copertura esatta di ogni turno**
+$$
+\sum_{e:(e,s)\in A} x_{e,s} = 1 \qquad \forall s \in S
+$$
+
+**Massimo 2 turni per dipendente**
+$$
+\sum_{s:(e,s)\in A} x_{e,s} \le K \qquad \forall e \in E
+$$
+
+**Massimo 1 turno notturno per dipendente**
+$$
+\sum_{s \in N:(e,s)\in A} x_{e,s} \le K_N \qquad \forall e \in E
+$$
+
+**Dominio**
+$$
+x_{e,s} \in \{0,1\} \qquad \forall (e,s) \in A
+$$
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# Insiemi
+employees = ["Ana", "Bruno", "Carla", "Diego", "Elena", "Fabio"]
+shifts = ["M1", "M2", "P1", "P2", "N1", "N2"]
+night_shifts = ["N1", "N2"]
+
+# Costi (None = indisponibile)
+cost_table = {
+    "Ana":   {"M1": 8,    "M2": 7,    "P1": 9, "P2": 8, "N1": None, "N2": None},
+    "Bruno": {"M1": 7,    "M2": 8,    "P1": 8, "P2": 9, "N1": None, "N2": None},
+    "Carla": {"M1": None, "M2": 9,    "P1": 8, "P2": 8, "N1": 11,   "N2": 12},
+    "Diego": {"M1": 10,   "M2": None, "P1": 9, "P2": 8, "N1": 10,   "N2": 11},
+    "Elena": {"M1": 8,    "M2": 10,   "P1": 9, "P2": 9, "N1": 12,   "N2": 10},
+    "Fabio": {"M1": 9,    "M2": 8,    "P1": 10,"P2": 7, "N1": None, "N2": None},
+}
+
+# Coppie ammissibili A
+A = [(e, s) for e in employees for s in shifts if cost_table[e][s] is not None]
+cost = {(e, s): cost_table[e][s] for (e, s) in A}
+
+K = 2      # massimo turni per dipendente
+KN = 1     # massimo turni notturni per dipendente
+
+model = gp.Model("assegnazione_turni")
+model.Params.OutputFlag = 0
+
+# Variabili decisionali
+x = model.addVars(A, vtype=GRB.BINARY, name="x")
+
+# Funzione obiettivo
+model.setObjective(gp.quicksum(cost[e, s] * x[e, s] for (e, s) in A), GRB.MINIMIZE)
+
+# Copertura esatta di ogni turno
+for s in shifts:
+    model.addConstr(
+        gp.quicksum(x[e, s] for e in employees if (e, s) in A) == 1,
+        name=f"cover_{s}"
+    )
+
+# Massimo K turni per dipendente
+for e in employees:
+    model.addConstr(
+        gp.quicksum(x[e, s] for s in shifts if (e, s) in A) <= K,
+        name=f"maxshifts_{e}"
+    )
+
+# Massimo KN turni notturni per dipendente
+for e in employees:
+    model.addConstr(
+        gp.quicksum(x[e, s] for s in night_shifts if (e, s) in A) <= KN,
+        name=f"maxnight_{e}"
+    )
+
+model.optimize()
+
+status = model.Status
+result = {"status": None, "objective": None, "variables": {}}
+
+if status == GRB.OPTIMAL:
+    result["status"] = "OPTIMAL"
+    result["objective"] = model.ObjVal
+    variables = {}
+    for e in employees:
+        for s in shifts:
+            var_name = f"x_{e}_{s}"
+            if (e, s) in A:
+                variables[var_name] = x[e, s].X
+            else:
+                variables[var_name] = 0.0
+    result["variables"] = variables
+else:
+    result["status"] = str(status)
+    result["objective"] = None
+    result["variables"] = {}
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della soluzione
+
+Il solver restituisce lo stato **OPTIMAL** con costo totale **49**.
+
+L'assegnazione ottima (decisioni non nulle) è:
+- **Bruno → M1** (costo 7)
+- **Ana → M2** (costo 7)
+- **Carla → P1** (costo 8)
+- **Fabio → P2** (costo 7)
+- **Diego → N1** (costo 10)
+- **Elena → N2** (costo 10)
+
+Ogni dipendente lavora esattamente un turno, quindi i vincoli di massimo 2 turni e massimo 1 turno notturno per persona sono soddisfatti automaticamente. Questa soluzione coincide con la somma dei costi minimi per ciascun turno (assegnazione greedy senza conflitti), garantendo quindi l'ottimalità globale con costo complessivo pari a **49**.

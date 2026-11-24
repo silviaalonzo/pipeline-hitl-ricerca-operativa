@@ -1,0 +1,7 @@
+{
+  "returncode": 0,
+  "timed_out": false,
+  "elapsed_seconds": 0.07206624999980704,
+  "stdout": "SOLUTION_JSON={\"status\":\"OPTIMAL\",\"objective\":443.0,\"variables\":{\"x_S_A\":25.0,\"x_S_B\":15.0,\"x_A_B\":0.0,\"x_A_C\":25.0,\"x_B_C\":0.0,\"x_B_T\":15.0,\"x_C_T\":25.0,\"y_S_A\":1.0,\"y_S_B\":1.0,\"y_A_B\":0.0,\"y_A_C\":1.0,\"y_B_C\":0.0,\"y_B_T\":1.0,\"y_C_T\":1.0}}\n",
+  "stderr": ""
+}

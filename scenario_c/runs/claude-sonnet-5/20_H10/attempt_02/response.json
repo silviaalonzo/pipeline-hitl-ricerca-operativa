@@ -1,0 +1,67 @@
+{
+  "id": "gen-1787599421-uZzhfbJqGZufnyL8L1m9",
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "logprobs": null,
+      "message": {
+        "content": "```python\nimport gurobipy as gp\nfrom gurobipy import GRB\nimport json\n\n# --- Insiemi ---\nARCS = [('S','A'), ('S','B'), ('A','B'), ('A','C'), ('B','C'),\n         ('B','D'), ('C','D'), ('C','T'), ('D','T')]\nNODES = ['S','A','B','C','D','T']\nPRODUCTS = ['K1','K2']\n\n# --- Parametri ---\nfixed = {\n    ('S','A'):55, ('S','B'):50, ('A','B'):18, ('A','C'):38,\n    ('B','C'):22, ('B','D'):35, ('C','D'):20, ('C','T'):48, ('D','T'):44\n}\ncap = {\n    ('S','A'):35, ('S','B'):35, ('A','B'):15, ('A','C'):30,\n    ('B','C'):25, ('B','D'):25, ('C','D'):20, ('C','T'):35, ('D','T'):35\n}\ncost = {\n    ('S','A'): {'K1':2, 'K2':3},\n    ('S','B'): {'K1':3, 'K2':2},\n    ('A','B'): {'K1':1, 'K2':2},\n    ('A','C'): {'K1':2, 'K2':3},\n    ('B','C'): {'K1':2, 'K2':1},\n    ('B','D'): {'K1':3, 'K2':2},\n    ('C','D'): {'K1':1, 'K2':2},\n    ('C','T'): {'K1':3, 'K2':2},\n    ('D','T'): {'K1':2, 'K2':3},\n}\ndemand = {'K1':28, 'K2':22}\nMAXARCS = 7\n\nmodel = gp.Model(\"H10_multiproduct_network\")\nmodel.setParam('OutputFlag', 0)\n\n# --- Variabili ---\ny = model.addVars(ARCS, vtype=GRB.BINARY, name=\"y\")\nx = model.addVars(ARCS, PRODUCTS, vtype=GRB.INTEGER, lb=0, name=\"x\")\n\n# --- Funzione obiettivo ---\nobj = gp.quicksum(fixed[a] * y[a] for a in ARCS) + \\\n      gp.quicksum(cost[a][k] * x[a, k] for a in ARCS for k in PRODUCTS)\nmodel.setObjective(obj, GRB.MINIMIZE)\n\n# --- Vincoli di conservazione del flusso ---\nfor n in NODES:\n    for k in PRODUCTS:\n        inflow = gp.quicksum(x[a, k] for a in ARCS if a[1] == n)\n        outflow = gp.quicksum(x[a, k] for a in ARCS if a[0] == n)\n        if n == 'S':\n            rhs = -demand[k]\n        elif n == 'T':\n            rhs = demand[k]\n        else:\n            rhs = 0\n        model.addConstr(inflow - outflow == rhs, name=f\"balance_{n}_{k}\")\n\n# --- Capacità condivisa ---\nfor a in ARCS:\n    model.addConstr(\n        gp.quicksum(x[a, k] for k in PRODUCTS) <= cap[a] * y[a],\n        name=f\"cap_{a[0]}_{a[1]}\"\n    )\n\n# --- Attivazione obbligatoria degli archi da S ---\nmodel.addConstr(y[('S','A')] == 1, name=\"force_SA\")\nmodel.addConstr(y[('S','B')] == 1, name=\"force_SB\")\n\n# --- Limite sul numero di archi attivati ---\nmodel.addConstr(gp.quicksum(y[a] for a in ARCS) <= MAXARCS, name=\"max_arcs\")\n\nmodel.optimize()\n\nvariables = {}\nstatus_str = \"UNKNOWN\"\nobjective_value = None\n\nif model.status == GRB.OPTIMAL:\n    status_str = \"OPTIMAL\"\n    objective_value = model.ObjVal\n    for a in ARCS:\n        variables[f\"y_{a[0]}_{a[1]}\"] = float(round(y[a].X))\n    for a in ARCS:\n        for k in PRODUCTS:\n            variables[f\"x_{a[0]}_{a[1]}_{k}\"] = float(round(x[a, k].X))\nelse:\n    status_str = \"INFEASIBLE\" if model.status == GRB.INFEASIBLE else str(model.status)\n    objective_value = None\n    variables = {}\n\nprint(\"SOLUTION_JSON=\" + json.dumps({\n    \"status\": status_str,\n    \"objective\": objective_value,\n    \"variables\": variables\n}))\n```",
+        "refusal": null,
+        "role": "assistant",
+        "annotations": null,
+        "audio": null,
+        "function_call": null,
+        "tool_calls": null,
+        "reasoning": null
+      },
+      "native_finish_reason": "end_turn"
+    }
+  ],
+  "created": 1787599421,
+  "model": "anthropic/claude-sonnet-5",
+  "object": "chat.completion",
+  "moderation": null,
+  "service_tier": "default",
+  "system_fingerprint": null,
+  "usage": {
+    "completion_tokens": 1559,
+    "prompt_tokens": 3325,
+    "total_tokens": 4884,
+    "completion_tokens_details": {
+      "accepted_prediction_tokens": null,
+      "audio_tokens": 0,
+      "reasoning_tokens": 0,
+      "rejected_prediction_tokens": null,
+      "image_tokens": 0
+    },
+    "prompt_tokens_details": {
+      "audio_tokens": 0,
+      "cache_write_tokens": 0,
+      "cached_tokens": 0,
+      "video_tokens": 0
+    },
+    "cost": 0.02224,
+    "is_byok": false,
+    "cost_details": {
+      "upstream_inference_cost": 0.02224,
+      "upstream_inference_prompt_cost": 0.00665,
+      "upstream_inference_completions_cost": 0.01559
+    }
+  },
+  "provider": "Anthropic",
+  "_experiment": {
+    "elapsed_seconds": 11.029616292002174,
+    "completed_at_utc": "2026-08-24T19:23:52.482235+00:00",
+    "transport_attempt": 1
+  },
+  "_routing_request": {
+    "gateway": "openrouter",
+    "requested_model": "anthropic/claude-sonnet-5",
+    "required_provider": "anthropic",
+    "allow_fallbacks": false,
+    "require_parameters": true,
+    "actual_model": "anthropic/claude-sonnet-5",
+    "resolved_revision": false
+  }
+}

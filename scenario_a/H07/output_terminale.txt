@@ -1,0 +1,59 @@
+Set parameter Username
+Set parameter LicenseID to value 2852205
+Academic license - for non-commercial use only - expires 2027-08-08
+Gurobi Optimizer version 13.0.2 build v13.0.2rc1 (mac64[arm] - Darwin 25.4.0 25E246)
+
+CPU model: Apple M1
+Thread count: 8 physical cores, 8 logical processors, using up to 8 threads
+
+Optimize a model with 75 rows, 42 columns and 224 nonzeros (Min)
+Model fingerprint: 0xe1c790fd
+Model has 21 linear objective coefficients
+Variable types: 0 continuous, 42 integer (24 binary)
+Coefficient statistics:
+  Matrix range     [1e+00, 1e+02]
+  Objective range  [8e+00, 2e+02]
+  Bounds range     [1e+00, 1e+00]
+  RHS range        [1e+00, 8e+03]
+
+Presolve removed 9 rows and 6 columns
+Presolve time: 0.00s
+Presolved: 66 rows, 36 columns, 187 nonzeros
+Variable types: 0 continuous, 36 integer (21 binary)
+Found heuristic solution: objective 2370.0000000
+
+Root relaxation: objective 2.090000e+03, 37 iterations, 0.00 seconds (0.00 work units)
+
+    Nodes    |    Current Node    |     Objective Bounds      |     Work
+ Expl Unexpl |  Obj  Depth IntInf | Incumbent    BestBd   Gap | It/Node Time
+
+*    0     0               0    2090.0000000 2090.00000  0.00%     -    0s
+
+Explored 1 nodes (37 simplex iterations) in 0.01 seconds (0.00 work units)
+Thread count was 8 (of 8 available processors)
+
+Solution count 2: 2090 2370 
+
+Optimal solution found (tolerance 1.00e-04)
+Best objective 2.090000000000e+03, best bound 2.090000000000e+03, gap 0.0000%
+
+======================================================================
+Stato finale Gurobi : 2
+Runtime Gurobi      : 0.0097 s
+Variabili           : 42
+Vincoli             : 75
+Valore obiettivo    : 2090
+
+Fornitori attivati (3): A, E, F  — costi fissi 320
+
+Acquisti non nulli:
+  C1 da A:    70 unità  × costo  9 =    630  (qualità 96, rischio 2)
+  C1 da F:    10 unità  × costo 10 =    100  (qualità 94, rischio 3)
+  C2 da E:    70 unità  × costo  8 =    560  (qualità 98, rischio 2)
+  C3 da F:    60 unità  × costo  8 =    480  (qualità 98, rischio 3)
+
+  C1: qualità media 95.750 (≥ 95), fornitori attivi 2 (≥ 2)
+  C2: qualità media 98.000 (≥ 95), fornitori attivi 2 (≥ 2)
+  C3: qualità media 98.000 (≥ 95), fornitori attivi 2 (≥ 2)
+  Rischio totale: 490 / 580
+======================================================================

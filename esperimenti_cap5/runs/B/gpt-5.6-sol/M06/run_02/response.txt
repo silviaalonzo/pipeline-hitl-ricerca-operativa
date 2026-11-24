@@ -1,0 +1,233 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+### Insiemi
+
+- Lavori:
+  \[
+  J=\{J1,J2,J3,J4,J5,J6,J7\}.
+  \]
+- Macchine:
+  \[
+  M=\{A,B\}.
+  \]
+- Coppie lavoro-macchina compatibili:
+  \[
+  E=(J\times M)\setminus\{(J7,A)\}.
+  \]
+- Macchine compatibili con il lavoro \(j\):
+  \[
+  M_j=\{m\in M:(j,m)\in E\}.
+  \]
+
+### Parametri
+
+Il parametro \(p_{jm}\) indica il tempo di lavorazione di \(j\) sulla macchina \(m\):
+
+\[
+\begin{array}{c|cc}
+j & p_{jA} & p_{jB}\\ \hline
+J1&7&9\\
+J2&6&5\\
+J3&8&7\\
+J4&5&8\\
+J5&9&6\\
+J6&4&7\\
+J7&-&5
+\end{array}
+\]
+
+### Variabili decisionali
+
+Per ogni \((j,m)\in E\):
+
+\[
+x_{jm}=
+\begin{cases}
+1 & \text{se il lavoro }j\text{ è assegnato alla macchina }m,\\
+0 & \text{altrimenti}.
+\end{cases}
+\]
+
+Inoltre:
+
+\[
+C_{\max}\geq 0
+\]
+
+è il makespan, ossia il massimo carico delle due macchine.
+
+---
+
+## 2. Formulazione matematica completa
+
+\[
+\min C_{\max}
+\]
+
+soggetto a:
+
+### Assegnazione di ogni lavoro
+
+\[
+\sum_{m\in M_j}x_{jm}=1
+\qquad \forall j\in J.
+\]
+
+In particolare, \(J7\) può essere assegnato esclusivamente a \(B\), perché \((J7,A)\notin E\).
+
+### Definizione del makespan
+
+\[
+\sum_{j:(j,A)\in E}p_{jA}x_{jA}\leq C_{\max},
+\]
+
+\[
+\sum_{j:(j,B)\in E}p_{jB}x_{jB}\leq C_{\max}.
+\]
+
+### Dominio
+
+\[
+x_{jm}\in\{0,1\}
+\qquad \forall (j,m)\in E,
+\]
+
+\[
+C_{\max}\geq 0.
+\]
+
+Non sono necessarie variabili di sequenziamento: in assenza di sovrapposizioni, setup e date di rilascio, il completamento dell’ultima lavorazione su ciascuna macchina coincide con il relativo carico totale.
+
+---
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# Insiemi
+J = ["J1", "J2", "J3", "J4", "J5", "J6", "J7"]
+M = ["A", "B"]
+
+# Tempi definiti esclusivamente per le coppie compatibili
+p = {
+    ("J1", "A"): 7, ("J1", "B"): 9,
+    ("J2", "A"): 6, ("J2", "B"): 5,
+    ("J3", "A"): 8, ("J3", "B"): 7,
+    ("J4", "A"): 5, ("J4", "B"): 8,
+    ("J5", "A"): 9, ("J5", "B"): 6,
+    ("J6", "A"): 4, ("J6", "B"): 7,
+    ("J7", "B"): 5
+}
+E = list(p.keys())
+
+# Ambiente silenzioso, per produrre soltanto la riga JSON finale
+env = gp.Env(empty=True)
+env.setParam("OutputFlag", 0)
+env.start()
+
+model = gp.Model("M06_bilanciamento_due_macchine", env=env)
+model.Params.OutputFlag = 0
+
+# Variabili decisionali
+x = model.addVars(E, vtype=GRB.BINARY, name="x")
+C_max = model.addVar(lb=0.0, vtype=GRB.CONTINUOUS, name="C_max")
+
+# Ogni lavoro deve essere assegnato a una sola macchina compatibile
+for j in J:
+    model.addConstr(
+        gp.quicksum(x[j, m] for m in M if (j, m) in p) == 1,
+        name=f"assegnazione_{j}"
+    )
+
+# Il makespan deve essere almeno pari al carico di ogni macchina
+for m in M:
+    model.addConstr(
+        gp.quicksum(p[j, m] * x[j, m] for j in J if (j, m) in p) <= C_max,
+        name=f"carico_{m}"
+    )
+
+# Funzione obiettivo
+model.setObjective(C_max, GRB.MINIMIZE)
+
+# Risoluzione
+model.optimize()
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+status = status_names.get(model.Status, str(model.Status))
+
+if model.Status == GRB.OPTIMAL:
+    variables = {"C_max": float(C_max.X)}
+    for j, m in E:
+        value = float(round(x[j, m].X))
+        variables[f"x[{j},{m}]"] = value
+
+    result = {
+        "status": "OPTIMAL",
+        "objective": float(model.ObjVal),
+        "variables": variables
+    }
+else:
+    result = {
+        "status": status,
+        "objective": None,
+        "variables": {}
+    }
+
+model.dispose()
+env.dispose()
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato è **OPTIMAL** e il makespan minimo è:
+
+\[
+C_{\max}^*=22.
+\]
+
+Le decisioni non nulle sono:
+
+\[
+x_{J1,A}=x_{J2,A}=x_{J4,A}=x_{J6,A}=1,
+\]
+
+\[
+x_{J3,B}=x_{J5,B}=x_{J7,B}=1,
+\]
+
+\[
+C_{\max}=22.
+\]
+
+I carichi risultanti sono:
+
+\[
+L_A=7+6+5+4=22,
+\qquad
+L_B=7+6+5=18.
+\]
+
+Pertanto il makespan è \(\max\{22,18\}=22\).

@@ -1,0 +1,115 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["Aprire esattamente due centri -> vincolo sum_i y_i = 2","Ogni zona assegnata a un solo centro aperto -> vincolo sum_i x_ij = 1 per ogni j","Capacità massima per sito -> vincolo sum_j x_ij <= cap_i * y_i","Costi fissi e di assegnazione -> funzione obiettivo min sum f_i*y_i + sum c_ij*x_ij","Centro deve essere aperto per ricevere assegnazioni -> vincolo di capacità legato a y_i"]}
+
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+- I = {A, B, C, D} : siti candidati per i centri di assistenza
+- J = {Z1, Z2, Z3, Z4, Z5, Z6} : zone commerciali da servire
+
+**Parametri**
+- f_i : costo fisso di apertura del sito i ∈ I (migliaia di euro)
+  - f_A=38, f_B=42, f_C=35, f_D=46
+- cap_i : capacità massima (numero di zone) del sito i ∈ I
+  - cap_A=2, cap_B=3, cap_C=2, cap_D=3
+- c_ij : costo di assegnazione della zona j ∈ J al sito i ∈ I (migliaia di euro)
+  (matrice riportata nella traccia)
+- p = 2 : numero di centri da aprire
+
+**Variabili decisionali**
+- y_i ∈ {0,1} per ogni i ∈ I : 1 se il sito i viene aperto, 0 altrimenti
+- x_ij ∈ {0,1} per ogni i ∈ I, j ∈ J : 1 se la zona j è assegnata al sito i, 0 altrimenti
+
+## 2. Formulazione matematica
+
+**Funzione obiettivo**
+
+min  Σ_{i∈I} f_i · y_i  +  Σ_{i∈I} Σ_{j∈J} c_ij · x_ij
+
+**Vincoli**
+
+1. Numero di centri da aprire:
+   Σ_{i∈I} y_i = p
+
+2. Ogni zona assegnata a esattamente un centro:
+   Σ_{i∈I} x_ij = 1   ∀ j ∈ J
+
+3. Capacità dei siti (attiva solo se il sito è aperto):
+   Σ_{j∈J} x_ij ≤ cap_i · y_i   ∀ i ∈ I
+
+4. Dominio delle variabili:
+   y_i ∈ {0,1}   ∀ i ∈ I
+   x_ij ∈ {0,1}   ∀ i ∈ I, j ∈ J
+
+## 3. Codice Python (gurobipy)
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+
+# --- Dati ---
+I = ['A', 'B', 'C', 'D']
+J = ['Z1', 'Z2', 'Z3', 'Z4', 'Z5', 'Z6']
+
+f = {'A': 38, 'B': 42, 'C': 35, 'D': 46}
+cap = {'A': 2, 'B': 3, 'C': 2, 'D': 3}
+
+c = {
+    ('A', 'Z1'): 8,  ('B', 'Z1'): 14, ('C', 'Z1'): 11, ('D', 'Z1'): 17,
+    ('A', 'Z2'): 10, ('B', 'Z2'): 9,  ('C', 'Z2'): 13, ('D', 'Z2'): 15,
+    ('A', 'Z3'): 12, ('B', 'Z3'): 8,  ('C', 'Z3'): 14, ('D', 'Z3'): 10,
+    ('A', 'Z4'): 15, ('B', 'Z4'): 11, ('C', 'Z4'): 9,  ('D', 'Z4'): 7,
+    ('A', 'Z5'): 9,  ('B', 'Z5'): 13, ('C', 'Z5'): 8,  ('D', 'Z5'): 14,
+    ('A', 'Z6'): 14, ('B', 'Z6'): 10, ('C', 'Z6'): 7,  ('D', 'Z6'): 9,
+}
+
+p = 2  # numero di centri da aprire
+
+# --- Modello ---
+model = gp.Model("Localizzazione_centri_assistenza")
+
+y = model.addVars(I, vtype=GRB.BINARY, name="y")
+x = model.addVars(I, J, vtype=GRB.BINARY, name="x")
+
+# Funzione obiettivo
+model.setObjective(
+    gp.quicksum(f[i] * y[i] for i in I) +
+    gp.quicksum(c[i, j] * x[i, j] for i in I for j in J),
+    GRB.MINIMIZE
+)
+
+# Vincolo: numero di centri aperti
+model.addConstr(gp.quicksum(y[i] for i in I) == p, name="num_centri")
+
+# Vincolo: ogni zona assegnata a un solo centro
+for j in J:
+    model.addConstr(gp.quicksum(x[i, j] for i in I) == 1, name=f"assegna_{j}")
+
+# Vincolo: capacità dei siti
+for i in I:
+    model.addConstr(
+        gp.quicksum(x[i, j] for j in J) <= cap[i] * y[i],
+        name=f"capacita_{i}"
+    )
+
+model.optimize()
+
+# --- Output ---
+if model.Status == GRB.OPTIMAL:
+    variables = {}
+    for i in I:
+        variables[f"y_{i}"] = round(y[i].X, 4)
+    for i in I:
+        for j in J:
+            variables[f"x_{i}_{j}"] = round(x[i, j].X, 4)
+
+    import json
+    print(f'SOLUTION_JSON={{"status":"OPTIMAL","objective":{round(model.ObjVal,4)},'
+          f'"variables":{json.dumps(variables)}}}')
+else:
+    import json
+    print(f'SOLUTION_JSON={{"status":"{model.Status}","objective":null,"variables":{{}}}}')
+```
+
+## 4. Sintesi della soluzione
+
+Il modello è un problema di localizzazione di impianti (facility location) con vincoli di capacità e apertura di esattamente p=2 centri su 4 siti candidati. Le variabili binarie y_i decidono quali siti aprire, mentre le x_ij determinano l'assegnazione di ciascuna delle 6 zone al centro aperto scelto, rispettando le capacità massime. L'obiettivo minimizza la somma dei costi fissi di apertura e dei costi di assegnazione zona-centro. Il codice Gurobi costruisce il modello a partire esclusivamente dai dati forniti nella traccia, lo risolve e stampa lo stato, il valore ottimo della funzione obiettivo e tutte le variabili decisionali (comprese quelle nulle) nel formato richiesto.

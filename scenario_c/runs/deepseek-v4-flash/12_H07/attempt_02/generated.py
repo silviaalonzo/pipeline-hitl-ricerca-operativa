@@ -1,0 +1,167 @@
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+suppliers = ["A", "B", "C", "D", "E", "F"]
+components = ["C1", "C2", "C3"]
+
+fixed_cost = {
+    "A": 120,
+    "B": 140,
+    "C": 100,
+    "D": 150,
+    "E": 90,
+    "F": 110,
+}
+
+capacity = {
+    "A": 100,
+    "B": 110,
+    "C": 90,
+    "D": 120,
+    "E": 80,
+    "F": 95,
+}
+
+risk = {
+    "A": 2,
+    "B": 3,
+    "C": 1,
+    "D": 4,
+    "E": 2,
+    "F": 3,
+}
+
+unit_cost = {
+    ("A", "C1"): 9,
+    ("A", "C2"): 12,
+    ("A", "C3"): 11,
+    ("B", "C1"): 10,
+    ("B", "C2"): 9,
+    ("B", "C3"): 12,
+    ("C", "C1"): 11,
+    ("C", "C2"): 10,
+    ("C", "C3"): 9,
+    ("D", "C2"): 11,
+    ("D", "C3"): 10,
+    ("E", "C1"): 12,
+    ("E", "C2"): 8,
+    ("F", "C1"): 10,
+    ("F", "C3"): 8,
+}
+
+quality = {
+    "A": {"C1": 96, "C2": 94, "C3": 95},
+    "B": {"C1": 93, "C2": 97, "C3": 92},
+    "C": {"C1": 98, "C2": 95, "C3": 96},
+    "D": {"C2": 94, "C3": 93},
+    "E": {"C1": 97, "C2": 98},
+    "F": {"C1": 94, "C3": 98},
+}
+
+demand = {"C1": 80, "C2": 70, "C3": 60}
+
+m = gp.Model("sourcing_components")
+m.setParam("OutputFlag", 0)
+m.setParam("MIPGap", 0)
+
+y = {s: m.addVar(vtype=GRB.BINARY, name=f"y_{s}") for s in suppliers}
+x = {}
+z = {}
+
+for s in suppliers:
+    for comp in components:
+        if (s, comp) in unit_cost:
+            z[s, comp] = m.addVar(vtype=GRB.BINARY, name=f"z_{s}_{comp}")
+            x[s, comp] = m.addVar(vtype=GRB.INTEGER, lb=0, name=f"x_{s}_{comp}")
+
+m.setObjective(
+    gp.quicksum(fixed_cost[s] * y[s] for s in suppliers)
+    + gp.quicksum(unit_cost[s, comp] * x[s, comp] for (s, comp) in x),
+    GRB.MINIMIZE,
+)
+
+for comp in components:
+    m.addConstr(
+        gp.quicksum(x[s, comp] for s in suppliers if (s, comp) in x) == demand[comp],
+        name=f"demand_{comp}",
+    )
+
+for s in suppliers:
+    m.addConstr(
+        gp.quicksum(x[s, comp] for comp in components if (s, comp) in x)
+        <= capacity[s] * y[s],
+        name=f"capacity_{s}",
+    )
+
+for s in suppliers:
+    for comp in components:
+        if (s, comp) in x:
+            m.addConstr(z[s, comp] <= y[s], name=f"active_link_{s}_{comp}")
+            m.addConstr(x[s, comp] >= 10 * z[s, comp], name=f"min_qty_{s}_{comp}")
+            m.addConstr(x[s, comp] <= capacity[s] * z[s, comp], name=f"max_qty_{s}_{comp}")
+
+m.addConstr(gp.quicksum(y[s] for s in suppliers) <= 4, name="max_active_suppliers")
+m.addConstr(y["A"] + y["B"] >= 1, name="at_least_one_AB")
+
+for comp in components:
+    m.addConstr(
+        gp.quicksum(z[s, comp] for s in suppliers if (s, comp) in z) >= 2,
+        name=f"min_two_suppliers_{comp}",
+    )
+
+for comp in components:
+    weighted_quality = gp.quicksum(
+        quality[s][comp] * x[s, comp]
+        for s in suppliers
+        if (s, comp) in x
+    )
+    total_quantity = gp.quicksum(
+        x[s, comp]
+        for s in suppliers
+        if (s, comp) in x
+    )
+    m.addConstr(weighted_quality >= 95 * total_quantity, name=f"quality_{comp}")
+
+m.addConstr(
+    gp.quicksum(risk[s] * x[s, comp] for s in suppliers for comp in components if (s, comp) in x)
+    <= 580,
+    name="risk_limit",
+)
+
+m.optimize()
+
+status_map = {
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.UNBOUNDED: "UNBOUNDED",
+    GRB.INF_OR_UNBD: "INF_OR_UNBD",
+    GRB.TIME_LIMIT: "TIME_LIMIT",
+    GRB.NODE_LIMIT: "NODE_LIMIT",
+    GRB.SOLUTION_LIMIT: "SOLUTION_LIMIT",
+    GRB.INTERRUPTED: "INTERRUPTED",
+    GRB.NUMERIC: "NUMERIC",
+    GRB.SUBOPTIMAL: "SUBOPTIMAL",
+}
+
+if m.Status == GRB.OPTIMAL:
+    status = "OPTIMAL"
+    objective = m.ObjVal
+    variables = {}
+    for s in suppliers:
+        variables[y[s].VarName] = y[s].X
+    for(s, comp) in x:
+        variables[z[s, comp].VarName] = z[s, comp].X
+        variables[x[s, comp].VarName] = x[s, comp].X
+else:
+    status = status_map.get(m.Status, str(m.Status))
+    objective = 0.0
+    variables = {}
+
+result = {
+    "status": status,
+    "objective": objective,
+    "variables": variables,
+}
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))

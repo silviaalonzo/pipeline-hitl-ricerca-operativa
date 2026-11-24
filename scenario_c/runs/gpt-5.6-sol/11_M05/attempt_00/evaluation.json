@@ -1,0 +1,31 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "massimizzare il valore complessivo -> funzione obiettivo max somma dei valori",
+        "budget massimo 100 -> vincolo somma dei budget <= 100",
+        "personale massimo 18 -> vincolo somma del personale <= 18",
+        "P5 richiede P2 -> vincolo x_P5 <= x_P2",
+        "P7 richiede P3 -> vincolo x_P7 <= x_P3",
+        "P4 e P6 incompatibili -> vincolo x_P4 + x_P6 <= 1",
+        "almeno un progetto digitale -> vincolo x_P1 + x_P3 + x_P7 >= 1",
+        "almeno tre progetti -> vincolo somma x_i >= 3"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

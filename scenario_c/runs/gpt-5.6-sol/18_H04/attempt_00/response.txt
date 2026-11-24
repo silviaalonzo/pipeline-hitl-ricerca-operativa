@@ -1,0 +1,314 @@
+TRACEABILITY_JSON={"status":"READY","unresolved":[],"undefined_symbols":[],"requirements_mapped":["copertura della domanda per rotta -> vincoli di capacità assegnata","disponibilità condivisa della flotta -> vincoli aggregati per tipo","massimo due tipi per rotta -> variabili binarie y e vincoli di cardinalità","almeno un veicolo grande su R4 -> x[R4,Grande]>=1","emissioni totali non superiori a 145 -> vincolo globale sulle emissioni","minimizzazione del costo dei viaggi -> funzione obiettivo"]}
+## Insiemi, parametri e variabili decisionali
+
+**Insiemi**
+
+- Rotte: \(R=\{\mathrm{R1},\mathrm{R2},\mathrm{R3},\mathrm{R4}\}\).
+- Tipi di veicolo: \(T=\{\mathrm{Piccolo},\mathrm{Medio},\mathrm{Grande}\}\).
+
+**Parametri**
+
+- Domanda \(d_r\):
+  \[
+  d_{\mathrm{R1}}=42,\quad d_{\mathrm{R2}}=55,\quad
+  d_{\mathrm{R3}}=38,\quad d_{\mathrm{R4}}=64.
+  \]
+- Capacità per viaggio \(q_t\):
+  \[
+  q_{\mathrm{Piccolo}}=8,\quad q_{\mathrm{Medio}}=14,\quad
+  q_{\mathrm{Grande}}=20.
+  \]
+- Disponibilità \(a_t\):
+  \[
+  a_{\mathrm{Piccolo}}=10,\quad a_{\mathrm{Medio}}=9,\quad
+  a_{\mathrm{Grande}}=6.
+  \]
+- Emissioni per viaggio \(e_t\):
+  \[
+  e_{\mathrm{Piccolo}}=5,\quad e_{\mathrm{Medio}}=8,\quad
+  e_{\mathrm{Grande}}=11.
+  \]
+- Limite totale di emissioni: \(E^{\max}=145\).
+- Numero massimo di tipi utilizzabili su ogni rotta: \(K=2\).
+- Costo \(c_{rt}\) di un viaggio:
+
+  \[
+  \begin{array}{c|ccc}
+  &\mathrm{Piccolo}&\mathrm{Medio}&\mathrm{Grande}\\ \hline
+  \mathrm{R1}&45&62&82\\
+  \mathrm{R2}&52&68&88\\
+  \mathrm{R3}&40&58&79\\
+  \mathrm{R4}&60&77&96
+  \end{array}
+  \]
+
+**Variabili decisionali**
+
+- \(x_{rt}\in\mathbb Z_{\ge 0}\): numero di viaggi del tipo \(t\) assegnati alla rotta \(r\).
+- \(y_{rt}\in\{0,1\}\): vale 1 se il tipo \(t\) è utilizzato sulla rotta \(r\), 0 altrimenti.
+
+## Formulazione matematica completa
+
+### Funzione obiettivo
+
+\[
+\min \quad \sum_{r\in R}\sum_{t\in T} c_{rt}x_{rt}.
+\]
+
+### Copertura della domanda
+
+\[
+\sum_{t\in T}q_t x_{rt}\ge d_r
+\qquad \forall r\in R.
+\]
+
+### Disponibilità condivisa per tipo
+
+\[
+\sum_{r\in R}x_{rt}\le a_t
+\qquad \forall t\in T.
+\]
+
+### Attivazione dei tipi di veicolo
+
+\[
+x_{rt}\le a_t y_{rt}
+\qquad \forall r\in R,\ t\in T,
+\]
+
+\[
+x_{rt}\ge y_{rt}
+\qquad \forall r\in R,\ t\in T.
+\]
+
+Questi vincoli impongono \(y_{rt}=1\) se e solo se almeno un viaggio del tipo \(t\) è assegnato alla rotta \(r\).
+
+### Massimo due tipi per rotta
+
+\[
+\sum_{t\in T}y_{rt}\le 2
+\qquad \forall r\in R.
+\]
+
+### Presenza di un veicolo grande su R4
+
+\[
+x_{\mathrm{R4},\mathrm{Grande}}\ge 1.
+\]
+
+### Limite totale di emissioni
+
+\[
+\sum_{r\in R}\sum_{t\in T}e_t x_{rt}\le 145.
+\]
+
+### Dominio
+
+\[
+x_{rt}\in\mathbb Z_{\ge 0},\qquad
+y_{rt}\in\{0,1\}
+\qquad \forall r\in R,\ t\in T.
+\]
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+routes = ["R1", "R2", "R3", "R4"]
+types = ["Piccolo", "Medio", "Grande"]
+
+demand = {
+    "R1": 42,
+    "R2": 55,
+    "R3": 38,
+    "R4": 64
+}
+
+capacity = {
+    "Piccolo": 8,
+    "Medio": 14,
+    "Grande": 20
+}
+
+availability = {
+    "Piccolo": 10,
+    "Medio": 9,
+    "Grande": 6
+}
+
+emissions = {
+    "Piccolo": 5,
+    "Medio": 8,
+    "Grande": 11
+}
+
+cost = {
+    ("R1", "Piccolo"): 45,
+    ("R1", "Medio"): 62,
+    ("R1", "Grande"): 82,
+    ("R2", "Piccolo"): 52,
+    ("R2", "Medio"): 68,
+    ("R2", "Grande"): 88,
+    ("R3", "Piccolo"): 40,
+    ("R3", "Medio"): 58,
+    ("R3", "Grande"): 79,
+    ("R4", "Piccolo"): 60,
+    ("R4", "Medio"): 77,
+    ("R4", "Grande"): 96
+}
+
+max_emissions = 145
+max_types_per_route = 2
+
+model = gp.Model("H04_allocazione_flotta")
+model.Params.OutputFlag = 0
+model.Params.MIPGap = 0.0
+
+x = model.addVars(
+    routes,
+    types,
+    vtype=GRB.INTEGER,
+    lb=0,
+    name="x"
+)
+
+y = model.addVars(
+    routes,
+    types,
+    vtype=GRB.BINARY,
+    name="y"
+)
+
+model.setObjective(
+    gp.quicksum(cost[r, t] * x[r, t] for r in routes for t in types),
+    GRB.MINIMIZE
+)
+
+model.addConstrs(
+    (
+        gp.quicksum(capacity[t] * x[r, t] for t in types) >= demand[r]
+        for r in routes
+    ),
+    name="copertura_domanda"
+)
+
+model.addConstrs(
+    (
+        gp.quicksum(x[r, t] for r in routes) <= availability[t]
+        for t in types
+    ),
+    name="disponibilita"
+)
+
+model.addConstrs(
+    (
+        x[r, t] <= availability[t] * y[r, t]
+        for r in routes
+        for t in types
+    ),
+    name="link_superiore"
+)
+
+model.addConstrs(
+    (
+        x[r, t] >= y[r, t]
+        for r in routes
+        for t in types
+    ),
+    name="link_inferiore"
+)
+
+model.addConstrs(
+    (
+        gp.quicksum(y[r, t] for t in types) <= max_types_per_route
+        for r in routes
+    ),
+    name="massimo_due_tipi"
+)
+
+model.addConstr(
+    x["R4", "Grande"] >= 1,
+    name="grande_su_R4"
+)
+
+model.addConstr(
+    gp.quicksum(
+        emissions[t] * x[r, t]
+        for r in routes
+        for t in types
+    ) <= max_emissions,
+    name="limite_emissioni"
+)
+
+model.optimize()
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+solver_status = status_names.get(model.Status, "STATUS_" + str(model.Status))
+
+if model.Status == GRB.OPTIMAL:
+    variable_values = {}
+
+    for r in routes:
+        for t in types:
+            variable_values[f"x[{r},{t}]"] = float(round(x[r, t].X))
+
+    for r in routes:
+        for t in types:
+            variable_values[f"y[{r},{t}]"] = float(round(y[r, t].X))
+
+    result = {
+        "status": "OPTIMAL",
+        "objective": float(round(model.ObjVal, 10)),
+        "variables": variable_values
+    }
+else:
+    result = {
+        "status": solver_status,
+        "objective": None,
+        "variables": {}
+    }
+
+print("SOLUTION_JSON=" + json.dumps(result, separators=(",", ":")))
+```
+
+## Sintesi della soluzione
+
+Lo stato ottimo è **OPTIMAL** e il costo minimo è:
+
+\[
+z^*=962.
+\]
+
+Le decisioni non nulle sono:
+
+\[
+x_{\mathrm{R1},\mathrm{Medio}}=3,\quad
+x_{\mathrm{R2},\mathrm{Medio}}=4,\quad
+x_{\mathrm{R3},\mathrm{Grande}}=2,
+\]
+\[
+x_{\mathrm{R4},\mathrm{Medio}}=2,\quad
+x_{\mathrm{R4},\mathrm{Grande}}=2.
+\]
+
+Le corrispondenti variabili binarie \(y\) valgono 1. Sono utilizzati 9 viaggi medi e 4 grandi; le emissioni totali sono \(9\cdot8+4\cdot11=116\), inferiori al limite di 145.

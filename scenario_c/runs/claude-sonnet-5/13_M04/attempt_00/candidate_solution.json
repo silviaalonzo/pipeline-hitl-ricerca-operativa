@@ -1,0 +1,11 @@
+{
+  "status": "OPTIMAL",
+  "objective": 1240.0,
+  "variables": {
+    "Van": -0.0,
+    "Autocarro": 2.0,
+    "Refrigerato": 1.0,
+    "Elettrico": 1.0,
+    "Bilico": 2.0
+  }
+}

@@ -1,0 +1,106 @@
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+products = ["P1", "P2", "P3"]
+periods = ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8"]
+
+init = {"P1": 22, "P2": 18, "P3": 25}
+final_min = {"P1": 18, "P2": 15, "P3": 20}
+hours = {"P1": 2, "P2": 3, "P3": 1}
+min_lot = {"P1": 24, "P2": 20, "P3": 28}
+max_lot = {"P1": 82, "P2": 70, "P3": 90}
+setup_cost = {"P1": 52, "P2": 60, "P3": 45}
+hold_cost = {"P1": 1.2, "P2": 1.6, "P3": 0.9}
+
+demand = {
+    ("P1", "T1"): 34, ("P1", "T2"): 48, ("P1", "T3"): 42, ("P1", "T4"): 55,
+    ("P1", "T5"): 38, ("P1", "T6"): 50, ("P1", "T7"): 46, ("P1", "T8"): 40,
+    ("P2", "T1"): 28, ("P2", "T2"): 32, ("P2", "T3"): 45, ("P2", "T4"): 36,
+    ("P2", "T5"): 50, ("P2", "T6"): 34, ("P2", "T7"): 42, ("P2", "T8"): 39,
+    ("P3", "T1"): 40, ("P3", "T2"): 35, ("P3", "T3"): 38, ("P3", "T4"): 44,
+    ("P3", "T5"): 36, ("P3", "T6"): 48, ("P3", "T7"): 41, ("P3", "T8"): 45
+}
+
+prod_cost = {
+    ("P1", "T1"): 5, ("P1", "T2"): 8, ("P1", "T3"): 5, ("P1", "T4"): 8,
+    ("P1", "T5"): 5, ("P1", "T6"): 8, ("P1", "T7"): 5, ("P1", "T8"): 8,
+    ("P2", "T1"): 7, ("P2", "T2"): 10, ("P2", "T3"): 7, ("P2", "T4"): 10,
+    ("P2", "T5"): 7, ("P2", "T6"): 10, ("P2", "T7"): 7, ("P2", "T8"): 10,
+    ("P3", "T1"): 9, ("P3", "T2"): 6, ("P3", "T3"): 9, ("P3", "T4"): 6,
+    ("P3", "T5"): 9, ("P3", "T6"): 6, ("P3", "T7"): 9, ("P3", "T8"): 6
+}
+
+capacity = {
+    "T1": 250, "T2": 245, "T3": 235, "T4": 260,
+    "T5": 240, "T6": 255, "T7": 245, "T8": 265
+}
+
+m = gp.Model("L02")
+m.Params.OutputFlag = 0
+
+x = m.addVars(products, periods, vtype=GRB.INTEGER, lb=0, name="x")
+y = m.addVars(products, periods, vtype=GRB.BINARY, name="y")
+I = m.addVars(products, periods, vtype=GRB.INTEGER, lb=0, ub=75, name="I")
+
+# Bilancio di scorta
+for p in products:
+    for idx, t in enumerate(periods):
+        if idx == 0:
+            m.addConstr(I[p, t] == init[p] + x[p, t] - demand[p, t], name=f"bal_{p}_{t}")
+        else:
+            prev = periods[idx - 1]
+            m.addConstr(I[p, t] == I[p, prev] + x[p, t] - demand[p, t], name=f"bal_{p}_{t}")
+
+# Scorta finale minima
+for p in products:
+    m.addConstr(I[p, "T8"] >= final_min[p], name=f"fin_{p}")
+
+# Giacenza complessiva
+for t in periods:
+    m.addConstr(gp.quicksum(I[p, t] for p in products) <= 150, name=f"tot_inv_{t}")
+
+# Setup e lotti minimi/massimi
+for p in products:
+    for t in periods:
+        m.addConstr(x[p, t] >= min_lot[p] * y[p, t], name=f"lotmin_{p}_{t}")
+        m.addConstr(x[p, t] <= max_lot[p] * y[p, t], name=f"lotmax_{p}_{t}")
+
+# Capacità condivisa
+for t in periods:
+    m.addConstr(gp.quicksum(hours[p] * x[p, t] for p in products) <= capacity[t], name=f"cap_{t}")
+
+# Limiti sui setup
+m.addConstr(gp.quicksum(y[p, t] for p in products for t in periods) <= 18, name="setup_total")
+m.addConstr(gp.quicksum(y[p, "T3"] for p in products) <= 2, name="setup_T3")
+m.addConstr(gp.quicksum(y[p, "T6"] for p in products) <= 2, name="setup_T6")
+
+# Funzione obiettivo
+obj = gp.quicksum(
+    prod_cost[p, t] * x[p, t] + setup_cost[p] * y[p, t] + hold_cost[p] * I[p, t]
+    for p in products
+    for t in periods
+)
+m.setObjective(obj, GRB.MINIMIZE)
+
+m.optimize()
+
+if m.status == GRB.OPTIMAL:
+    variables = {v.VarName: round(v.X, 6) for v in m.getVars()}
+    print("SOLUTION_JSON=" + json.dumps({
+        "status": "OPTIMAL",
+        "objective": round(m.ObjVal, 6),
+        "variables": variables
+    }))
+else:
+    status_map = {
+        GRB.INFEASIBLE: "INFEASIBLE",
+        GRB.UNBOUNDED: "UNBOUNDED",
+        GRB.INF_OR_UNBD: "INF_OR_UNBD"
+    }
+    status = status_map.get(m.status, f"STATUS_{m.status}")
+    print("SOLUTION_JSON=" + json.dumps({
+        "status": status,
+        "objective": None,
+        "variables": {}
+    }))

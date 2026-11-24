@@ -1,0 +1,269 @@
+## 1. Insiemi, parametri e variabili decisionali
+
+**Insieme dei prodotti**
+
+\[
+I=\{A,B,C,D\}.
+\]
+
+**Parametri**
+
+Per ogni prodotto \(i\in I\):
+
+- \(p_i\): margine unitario;
+- \(f_i\): costo fisso di setup;
+- \(m_i\): ore-macchina per unità;
+- \(l_i\): ore di lavoro per unità;
+- \(q_i^{\min}\): lotto minimo;
+- \(q_i^{\max}\): domanda massima.
+
+| \(i\) | \(p_i\) | \(f_i\) | \(m_i\) | \(l_i\) | \(q_i^{\min}\) | \(q_i^{\max}\) |
+|---|---:|---:|---:|---:|---:|---:|
+| A | 42 | 80 | 3 | 2 | 4 | 20 |
+| B | 36 | 65 | 2 | 3 | 5 | 25 |
+| C | 50 | 90 | 4 | 2 | 3 | 16 |
+| D | 31 | 50 | 1 | 2 | 6 | 30 |
+
+Capacità disponibili:
+
+\[
+M=90,\qquad L=100.
+\]
+
+**Variabili decisionali**
+
+\[
+x_i=\text{quantità intera prodotta del prodotto }i,
+\]
+
+\[
+y_i=
+\begin{cases}
+1 & \text{se viene attivata la produzione del prodotto }i,\\
+0 & \text{altrimenti}.
+\end{cases}
+\]
+
+Domini:
+
+\[
+x_i\in\mathbb Z_+,\qquad y_i\in\{0,1\}\quad \forall i\in I.
+\]
+
+## 2. Formulazione matematica completa
+
+La funzione obiettivo massimizza il margine di produzione al netto dei costi di setup:
+
+\[
+\max \quad
+\sum_{i\in I}\left(p_i x_i-f_i y_i\right).
+\]
+
+Esplicitamente:
+
+\[
+\max \quad
+42x_A+36x_B+50x_C+31x_D
+-80y_A-65y_B-90y_C-50y_D.
+\]
+
+Vincolo sulle ore-macchina:
+
+\[
+3x_A+2x_B+4x_C+x_D\leq 90.
+\]
+
+Vincolo sulle ore di lavoro:
+
+\[
+2x_A+3x_B+2x_C+2x_D\leq 100.
+\]
+
+Vincoli di attivazione, lotto minimo e domanda massima:
+
+\[
+q_i^{\min}y_i\leq x_i\leq q_i^{\max}y_i
+\qquad \forall i\in I.
+\]
+
+In forma esplicita:
+
+\[
+4y_A\leq x_A\leq20y_A,
+\]
+
+\[
+5y_B\leq x_B\leq25y_B,
+\]
+
+\[
+3y_C\leq x_C\leq16y_C,
+\]
+
+\[
+6y_D\leq x_D\leq30y_D.
+\]
+
+Devono essere prodotti almeno due articoli diversi:
+
+\[
+y_A+y_B+y_C+y_D\geq2.
+\]
+
+Domini:
+
+\[
+x_A,x_B,x_C,x_D\in\mathbb Z_+,
+\]
+
+\[
+y_A,y_B,y_C,y_D\in\{0,1\}.
+\]
+
+## 3. Codice Python eseguibile con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+products = ["A", "B", "C", "D"]
+
+margin = {"A": 42, "B": 36, "C": 50, "D": 31}
+setup = {"A": 80, "B": 65, "C": 90, "D": 50}
+machine = {"A": 3, "B": 2, "C": 4, "D": 1}
+labor = {"A": 2, "B": 3, "C": 2, "D": 2}
+min_lot = {"A": 4, "B": 5, "C": 3, "D": 6}
+max_demand = {"A": 20, "B": 25, "C": 16, "D": 30}
+
+machine_capacity = 90
+labor_capacity = 100
+
+model = gp.Model("M02_Piano_di_produzione")
+model.Params.OutputFlag = 0
+
+x = {
+    i: model.addVar(
+        vtype=GRB.INTEGER,
+        lb=0,
+        ub=max_demand[i],
+        name=f"x_{i}"
+    )
+    for i in products
+}
+
+y = {
+    i: model.addVar(
+        vtype=GRB.BINARY,
+        name=f"y_{i}"
+    )
+    for i in products
+}
+
+model.setObjective(
+    gp.quicksum(margin[i] * x[i] - setup[i] * y[i] for i in products),
+    GRB.MAXIMIZE
+)
+
+model.addConstr(
+    gp.quicksum(machine[i] * x[i] for i in products) <= machine_capacity,
+    name="capacita_macchina"
+)
+
+model.addConstr(
+    gp.quicksum(labor[i] * x[i] for i in products) <= labor_capacity,
+    name="capacita_lavoro"
+)
+
+for i in products:
+    model.addConstr(
+        x[i] >= min_lot[i] * y[i],
+        name=f"lotto_minimo_{i}"
+    )
+    model.addConstr(
+        x[i] <= max_demand[i] * y[i],
+        name=f"domanda_massima_{i}"
+    )
+
+model.addConstr(
+    gp.quicksum(y[i] for i in products) >= 2,
+    name="almeno_due_prodotti"
+)
+
+model.optimize()
+
+status_names = {
+    1: "LOADED",
+    2: "OPTIMAL",
+    3: "INFEASIBLE",
+    4: "INF_OR_UNBD",
+    5: "UNBOUNDED",
+    6: "CUTOFF",
+    7: "ITERATION_LIMIT",
+    8: "NODE_LIMIT",
+    9: "TIME_LIMIT",
+    10: "SOLUTION_LIMIT",
+    11: "INTERRUPTED",
+    12: "NUMERIC",
+    13: "SUBOPTIMAL",
+    14: "INPROGRESS",
+    15: "USER_OBJ_LIMIT",
+    16: "WORK_LIMIT",
+    17: "MEM_LIMIT"
+}
+
+status = status_names.get(model.Status, f"STATUS_{model.Status}")
+
+if model.Status == GRB.OPTIMAL:
+    variables = {}
+    for i in products:
+        value = float(round(x[i].X))
+        variables[f"x_{i}"] = 0.0 if abs(value) < 1e-9 else value
+    for i in products:
+        value = float(round(y[i].X))
+        variables[f"y_{i}"] = 0.0 if abs(value) < 1e-9 else value
+
+    payload = {
+        "status": "OPTIMAL",
+        "objective": float(round(model.ObjVal, 10)),
+        "variables": variables
+    }
+else:
+    payload = {
+        "status": status,
+        "objective": None,
+        "variables": {}
+    }
+
+print("SOLUTION_JSON=" + json.dumps(payload, separators=(",", ":")))
+```
+
+## 4. Sintesi della soluzione
+
+Lo stato del solver è **OPTIMAL**. Il piano ottimo prevede:
+
+\[
+x_A=20,\qquad x_D=30,
+\]
+
+con attivazione dei soli prodotti A e D:
+
+\[
+y_A=y_D=1,\qquad y_B=y_C=0.
+\]
+
+Le due risorse sono completamente utilizzate:
+
+\[
+3(20)+1(30)=90 \text{ ore-macchina},
+\]
+
+\[
+2(20)+2(30)=100 \text{ ore di lavoro}.
+\]
+
+Il margine netto ottimo è:
+
+\[
+42(20)+31(30)-80-50=\boxed{1640}.
+\]

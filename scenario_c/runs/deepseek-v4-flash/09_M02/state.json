@@ -1,0 +1,96 @@
+{
+  "schema_version": 2,
+  "scenario": "C",
+  "model": "deepseek-v4-flash",
+  "problem_id": "M02",
+  "problem_sequence": 9,
+  "domain": "Produzione",
+  "difficulty": "Media",
+  "model_class": "MILP intera",
+  "created_at_utc": "2026-08-24T20:38:09.873656+00:00",
+  "updated_at_utc": "2026-08-24T20:41:23.800893+00:00",
+  "status": "COMPLETED",
+  "auto_repair_count_current_cycle": 0,
+  "traceability_repair_count": 0,
+  "stage_2_assurance_completed": false,
+  "attempts": [
+    {
+      "number": 0,
+      "kind": "INITIAL",
+      "directory": "attempt_00",
+      "created_at_utc": "2026-08-24T20:41:23.800043+00:00",
+      "evaluation": {
+        "success": true,
+        "repairable": false,
+        "stage": 4,
+        "failure_class": "corretta",
+        "detail": "Soluzione ammissibile e gap entro tolleranza",
+        "finish_reason": "stop",
+        "declared_objective_corrected_automatically": false,
+        "traceability": {
+          "present": true,
+          "valid": true,
+          "complete_ready": true,
+          "value": {
+            "status": "READY",
+            "unresolved": [],
+            "undefined_symbols": [],
+            "requirements_mapped": [
+              "quattro articoli -> insieme P",
+              "margine e setup per articolo -> parametri m_i e s_i",
+              "ore macchina e lavoro disponibili -> capacita M=90 e H=100",
+              "lotto minimo e domanda massima -> vincoli x_i >= L_i y_i e x_i <= U_i y_i",
+              "almeno due articoli diversi -> vincolo sum_i y_i >= 2",
+              "massimizzare margine netto -> funzione obiettivo max sum_i (m_i x_i - s_i y_i)"
+            ]
+          },
+          "needs_expert": false,
+          "errors": []
+        }
+      }
+    }
+  ],
+  "interventions": [],
+  "memory_retrieval": {
+    "model": "deepseek-v4-flash",
+    "problem_id": "M02",
+    "retrieved_at_utc": "2026-08-24T20:38:09.873645+00:00",
+    "semantic": [
+      {
+        "id": "S-002",
+        "created_at_utc": "2026-08-24T20:18:42.444653+00:00",
+        "source_episode": "H02-H01",
+        "principle": "Nei problemi di produzione multi-periodo, indicizzare esplicitamente anche la scorta iniziale e collegare periodi consecutivi mediante il bilancio produzione più scorta precedente uguale domanda più scorta finale; completare poi il collegamento tra produzione e setup con limiti minimo e massimo di lotto.",
+        "tags": [
+          "Produzione e scorte",
+          "MILP intera",
+          "stadio-3",
+          "output_troncato_o_senza_codice"
+        ]
+      }
+    ],
+    "episodic": [
+      {
+        "id": "H02-H01",
+        "created_at_utc": "2026-08-24T20:18:42.444642+00:00",
+        "problem_id": "H02",
+        "domain": "Produzione e scorte",
+        "model_class": "MILP intera",
+        "stage": 3,
+        "failure_class": "output_troncato_o_senza_codice",
+        "correction_summary": "Dopo tre riparazioni automatiche concluse senza codice eseguibile, l’esperto ha completato il modello MILP introducendo variabili di produzione, scorta e setup, bilanci intertemporali, condizioni iniziali e finali, capacità, limite ai setup e vincoli di lotto.",
+        "expert_instruction": "Eseguire direttamente il modello Python/Gurobi fornito dall'esperto.",
+        "active_minutes": 20.0,
+        "tags": [
+          "Produzione e scorte",
+          "MILP intera",
+          "stadio-3",
+          "output_troncato_o_senza_codice"
+        ]
+      }
+    ],
+    "semantic_count_total": 2,
+    "episodic_count_total": 2
+  },
+  "pending_handoff": null
+}

@@ -1,0 +1,141 @@
+# Piano di Produzione con Costi di Setup — Formulazione e Soluzione
+
+## 1. Insiemi, Parametri e Variabili Decisionali
+
+**Insiemi**
+- $I = \{A, B, C, D\}$ : insieme dei prodotti
+
+**Parametri**
+| Simbolo | Descrizione |
+|---|---|
+| $m_i$ | margine unitario del prodotto $i$ |
+| $s_i$ | costo fisso di setup del prodotto $i$ |
+| $a_i$ | ore macchina per unità di prodotto $i$ |
+| $b_i$ | ore lavoro per unità di prodotto $i$ |
+| $L_i$ | lotto minimo del prodotto $i$ (se avviato) |
+| $U_i$ | domanda massima del prodotto $i$ |
+| $M = 90$ | ore macchina disponibili |
+| $H = 100$ | ore lavoro disponibili |
+| $K = 2$ | numero minimo di prodotti diversi da avviare |
+
+**Variabili decisionali**
+- $x_i \in \mathbb{Z}_{\ge 0}$ : quantità prodotta dell'articolo $i$ (lotto intero)
+- $y_i \in \{0,1\}$ : indicatore di setup (1 se il prodotto $i$ viene avviato, 0 altrimenti)
+
+## 2. Formulazione Matematica
+
+$$
+\max \sum_{i \in I} \left( m_i x_i - s_i y_i \right)
+$$
+
+soggetto a:
+
+$$
+\sum_{i \in I} a_i x_i \le M \qquad \text{(capacità macchina)}
+$$
+
+$$
+\sum_{i \in I} b_i x_i \le H \qquad \text{(capacità lavoro)}
+$$
+
+$$
+x_i \ge L_i \, y_i \qquad \forall i \in I \qquad \text{(lotto minimo se avviato)}
+$$
+
+$$
+x_i \le U_i \, y_i \qquad \forall i \in I \qquad \text{(domanda massima, link a } y_i\text{)}
+$$
+
+$$
+\sum_{i \in I} y_i \ge K \qquad \text{(almeno due prodotti diversi)}
+$$
+
+$$
+x_i \in \mathbb{Z}_{\ge 0}, \quad y_i \in \{0,1\} \qquad \forall i \in I
+$$
+
+## 3. Codice Python con Gurobi
+
+```python
+import gurobipy as gp
+from gurobipy import GRB
+import json
+
+# --- Dati ---
+products = ['A', 'B', 'C', 'D']
+
+margin = {'A': 42, 'B': 36, 'C': 50, 'D': 31}
+setup  = {'A': 80, 'B': 65, 'C': 90, 'D': 50}
+mach   = {'A': 3,  'B': 2,  'C': 4,  'D': 1}
+labor  = {'A': 2,  'B': 3,  'C': 2,  'D': 2}
+lmin   = {'A': 4,  'B': 5,  'C': 3,  'D': 6}
+dmax   = {'A': 20, 'B': 25, 'C': 16, 'D': 30}
+
+MACH_CAP = 90
+LABOR_CAP = 100
+MIN_PRODUCTS = 2
+
+# --- Modello ---
+model = gp.Model("Piano_Produzione_Setup")
+
+x = model.addVars(products, vtype=GRB.INTEGER, lb=0, name="x")
+y = model.addVars(products, vtype=GRB.BINARY, name="y")
+
+# Funzione obiettivo
+model.setObjective(
+    gp.quicksum(margin[i]*x[i] - setup[i]*y[i] for i in products),
+    GRB.MAXIMIZE
+)
+
+# Vincoli di capacità
+model.addConstr(gp.quicksum(mach[i]*x[i] for i in products) <= MACH_CAP, name="mach_cap")
+model.addConstr(gp.quicksum(labor[i]*x[i] for i in products) <= LABOR_CAP, name="labor_cap")
+
+# Vincoli lotto minimo / domanda massima (link con y)
+for i in products:
+    model.addConstr(x[i] >= lmin[i]*y[i], name=f"lotto_min_{i}")
+    model.addConstr(x[i] <= dmax[i]*y[i], name=f"dom_max_{i}")
+
+# Almeno due prodotti diversi
+model.addConstr(gp.quicksum(y[i] for i in products) >= MIN_PRODUCTS, name="min_prodotti")
+
+model.optimize()
+
+# --- Output ---
+status_map = {
+    GRB.OPTIMAL: "OPTIMAL",
+    GRB.INFEASIBLE: "INFEASIBLE",
+    GRB.UNBOUNDED: "UNBOUNDED",
+}
+status = status_map.get(model.status, str(model.status))
+
+if model.status == GRB.OPTIMAL:
+    variables = {}
+    for i in products:
+        variables[f"x_{i}"] = round(x[i].X, 4)
+    for i in products:
+        variables[f"y_{i}"] = round(y[i].X, 4)
+    objective = round(model.ObjVal, 4)
+
+    print("=== Risultati ===")
+    print(f"Stato solver: {status}")
+    print(f"Margine netto totale: {objective}")
+    for i in products:
+        if x[i].X > 1e-6:
+            print(f"Prodotto {i}: quantità = {x[i].X:.0f}, setup attivo = {int(round(y[i].X))}")
+
+    result = {"status": status, "objective": objective, "variables": variables}
+else:
+    result = {"status": status, "objective": None, "variables": {}}
+
+print("SOLUTION_JSON=" + json.dumps(result))
+```
+
+## 4. Sintesi della Soluzione
+
+Il modello MILP massimizza il margine netto (ricavi da vendita meno costi fissi di setup) rispettando:
+- capacità di 90 ore-macchina e 100 ore-lavoro,
+- lotti minimi e domande massime per ciascun articolo (attivati solo se il prodotto viene avviato),
+- l'obbligo di produrre almeno due articoli diversi.
+
+Risolvendo con Gurobi, il solver individua la combinazione ottima di prodotti da avviare (variabili $y_i$) e le relative quantità (variabili $x_i$) che massimizzano il margine netto totale, rispettando tutti i vincoli di capacità e commerciali. Il risultato esatto (valore ottimo e quantità prodotte per ciascun articolo) viene stampato a runtime dal codice, insieme alla riga di riepilogo `SOLUTION_JSON` contenente stato, valore obiettivo e tutte le variabili decisionali (comprese quelle nulle).

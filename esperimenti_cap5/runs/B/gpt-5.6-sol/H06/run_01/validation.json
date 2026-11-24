@@ -1,0 +1,204 @@
+{
+  "problem_id": "H06",
+  "candidate_status": "OPTIMAL",
+  "feasible": false,
+  "correct": false,
+  "recomputed_objective": 42.0,
+  "known_optimum": 42.0,
+  "relative_gap": 0.0,
+  "max_violation": 38.0,
+  "declared_objective": 42.0,
+  "declared_objective_delta": 0.0,
+  "missing_variables_assumed_zero": [
+    "o_J1_J2",
+    "o_J1_J3",
+    "o_J1_J4",
+    "o_J1_J5",
+    "o_J1_J6",
+    "o_J1_J7",
+    "o_J2_J3",
+    "o_J2_J4",
+    "o_J2_J5",
+    "o_J2_J6",
+    "o_J2_J7",
+    "o_J3_J4",
+    "o_J3_J5",
+    "o_J3_J6",
+    "o_J3_J7",
+    "o_J4_J5",
+    "o_J4_J6",
+    "o_J4_J7",
+    "o_J5_J6",
+    "o_J5_J7",
+    "o_J6_J7"
+  ],
+  "unknown_variables": [
+    "x[J1,J2]",
+    "x[J1,J3]",
+    "x[J1,J4]",
+    "x[J1,J5]",
+    "x[J1,J6]",
+    "x[J1,J7]",
+    "x[J2,J3]",
+    "x[J2,J4]",
+    "x[J2,J5]",
+    "x[J2,J6]",
+    "x[J2,J7]",
+    "x[J3,J4]",
+    "x[J3,J5]",
+    "x[J3,J6]",
+    "x[J3,J7]",
+    "x[J4,J5]",
+    "x[J4,J6]",
+    "x[J4,J7]",
+    "x[J5,J6]",
+    "x[J5,J7]",
+    "x[J6,J7]"
+  ],
+  "duplicate_variable_names": [],
+  "normalized_variable_names": {
+    "S[J1]": "S_J1",
+    "S[J2]": "S_J2",
+    "S[J3]": "S_J3",
+    "S[J4]": "S_J4",
+    "S[J5]": "S_J5",
+    "S[J6]": "S_J6",
+    "S[J7]": "S_J7",
+    "C[J1]": "C_J1",
+    "C[J2]": "C_J2",
+    "C[J3]": "C_J3",
+    "C[J4]": "C_J4",
+    "C[J5]": "C_J5",
+    "C[J6]": "C_J6",
+    "C[J7]": "C_J7",
+    "T[J1]": "T_J1",
+    "T[J2]": "T_J2",
+    "T[J3]": "T_J3",
+    "T[J4]": "T_J4",
+    "T[J5]": "T_J5",
+    "T[J6]": "T_J6",
+    "T[J7]": "T_J7"
+  },
+  "numeric_error": null,
+  "bound_violations": [],
+  "integrality_violations": [],
+  "constraint_violations": [
+    {
+      "constraint": "ordine2_J1_J2",
+      "lhs": -12.0,
+      "sense": ">=",
+      "rhs": 7.0,
+      "violation": 19.0
+    },
+    {
+      "constraint": "ordine2_J1_J3",
+      "lhs": -5.0,
+      "sense": ">=",
+      "rhs": 4.0,
+      "violation": 9.0
+    },
+    {
+      "constraint": "ordine2_J1_J4",
+      "lhs": -24.0,
+      "sense": ">=",
+      "rhs": 6.0,
+      "violation": 30.0
+    },
+    {
+      "constraint": "ordine2_J1_J5",
+      "lhs": -9.0,
+      "sense": ">=",
+      "rhs": 3.0,
+      "violation": 12.0
+    },
+    {
+      "constraint": "ordine2_J1_J6",
+      "lhs": -30.0,
+      "sense": ">=",
+      "rhs": 8.0,
+      "violation": 38.0
+    },
+    {
+      "constraint": "ordine2_J1_J7",
+      "lhs": -19.0,
+      "sense": ">=",
+      "rhs": 5.0,
+      "violation": 24.0
+    },
+    {
+      "constraint": "ordine2_J2_J4",
+      "lhs": -12.0,
+      "sense": ">=",
+      "rhs": 6.0,
+      "violation": 18.0
+    },
+    {
+      "constraint": "ordine2_J2_J6",
+      "lhs": -18.0,
+      "sense": ">=",
+      "rhs": 8.0,
+      "violation": 26.0
+    },
+    {
+      "constraint": "ordine2_J2_J7",
+      "lhs": -7.0,
+      "sense": ">=",
+      "rhs": 5.0,
+      "violation": 12.0
+    },
+    {
+      "constraint": "ordine2_J3_J4",
+      "lhs": -19.0,
+      "sense": ">=",
+      "rhs": 6.0,
+      "violation": 25.0
+    },
+    {
+      "constraint": "ordine2_J3_J5",
+      "lhs": -4.0,
+      "sense": ">=",
+      "rhs": 3.0,
+      "violation": 7.0
+    },
+    {
+      "constraint": "ordine2_J3_J6",
+      "lhs": -25.0,
+      "sense": ">=",
+      "rhs": 8.0,
+      "violation": 33.0
+    },
+    {
+      "constraint": "ordine2_J3_J7",
+      "lhs": -14.0,
+      "sense": ">=",
+      "rhs": 5.0,
+      "violation": 19.0
+    },
+    {
+      "constraint": "ordine2_J4_J6",
+      "lhs": -6.0,
+      "sense": ">=",
+      "rhs": 8.0,
+      "violation": 14.0
+    },
+    {
+      "constraint": "ordine2_J5_J6",
+      "lhs": -21.0,
+      "sense": ">=",
+      "rhs": 8.0,
+      "violation": 29.0
+    },
+    {
+      "constraint": "ordine2_J5_J7",
+      "lhs": -10.0,
+      "sense": ">=",
+      "rhs": 5.0,
+      "violation": 15.0
+    }
+  ],
+  "tolerances": {
+    "feasibility": 1e-06,
+    "integrality": 1e-05,
+    "relative_gap": 0.001
+  }
+}

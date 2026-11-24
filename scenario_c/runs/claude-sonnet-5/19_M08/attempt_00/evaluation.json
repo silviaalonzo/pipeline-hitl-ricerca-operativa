@@ -1,0 +1,28 @@
+{
+  "success": true,
+  "repairable": false,
+  "stage": 4,
+  "failure_class": "corretta",
+  "detail": "Soluzione ammissibile e gap entro tolleranza",
+  "finish_reason": "stop",
+  "declared_objective_corrected_automatically": false,
+  "traceability": {
+    "present": true,
+    "valid": true,
+    "complete_ready": true,
+    "value": {
+      "status": "READY",
+      "unresolved": [],
+      "undefined_symbols": [],
+      "requirements_mapped": [
+        "Coprire dieci zone -> vincoli di copertura per ogni zona Z1..Z10",
+        "Zone critiche Z3 e Z7 con doppia copertura -> vincoli >=2 per Z3 e Z7",
+        "Massimo cinque centri apribili -> vincolo sum(x_i) <= 5",
+        "Minimizzare il costo di apertura -> funzione obiettivo di costo",
+        "Centri e zone coperte da matrice -> parametro di copertura a_{i,j} e insieme Centri/Zone"
+      ]
+    },
+    "needs_expert": false,
+    "errors": []
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "schema_version": 2,
+  "created_at_utc": "2026-08-24T21:33:05.146884+00:00",
+  "model": "deepseek-v4-flash",
+  "problem_id": "H09",
+  "problem_sequence": 14,
+  "handoff_number": 1,
+  "stage": 3,
+  "failure_class": "output_troncato_o_senza_codice",
+  "failure_detail": "Atteso un solo blocco Python, trovati 0",
+  "handoff_mode": "CORRECTION",
+  "allowed_actions": [
+    "CORRECT",
+    "ACCEPT_FAILURE"
+  ],
+  "automatic_repairs_exhausted": 3,
+  "problem_prompt": "# H09 — Produzione e scorte multi-prodotto con straordinario\n\nDifficoltà: Elevata\nClasse: MILP\n\nUn impianto pianifica tre prodotti per sei periodi. La domanda deve essere soddisfatta senza arretrati; le scorte iniziali sono nulle e a fine orizzonte devono restare almeno 2 unità di ciascun prodotto.\nOgni prodotto richiede un setup nel periodo in cui viene prodotto e un lotto minimo. Nel primo periodo possono essere attivati tutti e tre i prodotti; nei periodi successivi se ne possono attivare al massimo due. La capacità base può essere aumentata con al massimo 20 ore di straordinario al costo di 18 per ora.\nLa scorta totale a fine periodo non può superare 40. Produzione e scorte sono intere; lo straordinario è continuo. Minimizzare tutti i costi.\n\n## Domanda\n\nProdotto | T1 | T2 | T3 | T4 | T5 | T6\n--- | --- | --- | --- | --- | --- | ---\nA | 12 | 18 | 14 | 20 | 16 | 19\nB | 10 | 9 | 15 | 12 | 17 | 14\nC | 8 | 11 | 10 | 13 | 9 | 15\n\n## Costo unitario di produzione\n\nProdotto | T1 | T2 | T3 | T4 | T5 | T6\n--- | --- | --- | --- | --- | --- | ---\nA | 7 | 8 | 9 | 7 | 10 | 8\nB | 9 | 8 | 8 | 10 | 7 | 9\nC | 11 | 10 | 12 | 9 | 11 | 8\n\n## Parametri di prodotto\n\nProdotto | Setup | Holding | Ore/unità | Lotto min.\n--- | --- | --- | --- | ---\nA | 35 | 2 | 2 | 5\nB | 40 | 2 | 3 | 4\nC | 45 | 3 | 4 | 3\n\n## Capacità base\n\nPeriodo | T1 | T2 | T3 | T4 | T5 | T6\n--- | --- | --- | --- | --- | --- | ---\nOre | 120 | 115 | 125 | 110 | 120 | 115\n\n## Consegna\n\n1. Definire con precisione insiemi, parametri e variabili decisionali.\n2. Formulare il modello matematico completo, indicando dominio delle variabili, funzione obiettivo e vincoli.\n3. Scrivere codice Python eseguibile con Gurobi che costruisca e risolva il modello.\n4. Riportare lo stato del solver, il valore ottimo e tutte le decisioni non nulle.\n",
+  "last_code": "",
+  "last_response_excerpt": "",
+  "response_source_attempt": null,
+  "validation": null,
+  "attempt_history": [
+    {
+      "attempt_number": 0,
+      "attempt_kind": "INITIAL",
+      "finish_reason": "length",
+      "content_characters": 0,
+      "completion_tokens": 24000,
+      "reasoning_tokens": 24000,
+      "code_extracted": false,
+      "failure_class": "output_troncato_o_senza_codice",
+      "failure_detail": "Atteso un solo blocco Python, trovati 0"
+    },
+    {
+      "attempt_number": 1,
+      "attempt_kind": "AUTO_REPAIR",
+      "finish_reason": "length",
+      "content_characters": 0,
+      "completion_tokens": 24000,
+      "reasoning_tokens": 24000,
+      "code_extracted": false,
+      "failure_class": "output_troncato_o_senza_codice",
+      "failure_detail": "Atteso un solo blocco Python, trovati 0"
+    },
+    {
+      "attempt_number": 2,
+      "attempt_kind": "AUTO_REPAIR",
+      "finish_reason": "length",
+      "content_characters": 0,
+      "completion_tokens": 24000,
+      "reasoning_tokens": 24000,
+      "code_extracted": false,
+      "failure_class": "output_troncato_o_senza_codice",
+      "failure_detail": "Atteso un solo blocco Python, trovati 0"
+    },
+    {
+      "attempt_number": 3,
+      "attempt_kind": "AUTO_REPAIR",
+      "finish_reason": "length",
+      "content_characters": 0,
+      "completion_tokens": 24000,
+      "reasoning_tokens": 24000,
+      "code_extracted": false,
+      "failure_class": "output_troncato_o_senza_codice",
+      "failure_detail": "Atteso un solo blocco Python, trovati 0"
+    }
+  ],
+  "automatic_diagnosis": "Tutti i tentativi hanno esaurito il limite di output nel ragionamento interno: il modello non ha emesso contenuto finale né codice eseguibile. L'handoff riguarda quindi la capacità di concludere la risposta, non un errore matematico già osservabile.",
+  "ground_truth_disclosed": false
+}
